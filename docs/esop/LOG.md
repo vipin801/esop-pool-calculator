@@ -26,7 +26,7 @@ same entry covers. Both shas are listed.
 
 ---
 
-[000] 2026-08-15 | prompt P1 | branch main | commit <pending>
+[000] 2026-08-15 | prompt P1 | branch main | commit c407b7c (sha backfilled by the follow-up commit, also covered by this entry)
 Changed: Initialised the repo. Scaffolded Next.js 16.3.1 App Router, React 19.2.8, strict TypeScript, pnpm 11.21.0, Vitest 3.2.7, with test/typecheck/build scripts. No UI library, no feature code.
 Changed: Added docs/esop/ENGINE_SPEC.md (byte-identical copy of esop-engine-spec-v2.md), docs/esop/PROJECT.md, docs/esop/LOG.md.
 Tests: 0 passed / 0 total, tsc pass, build pass

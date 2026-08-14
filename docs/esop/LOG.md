@@ -44,3 +44,22 @@ Open items:
 - No CLAUDE.md or AGENTS.md. create-next-app generated boilerplate ones and they were removed rather than shipped unread. A short CLAUDE.md pointing every session at docs/esop/PROJECT.md would enforce standing rule 1 automatically.
 - `git config user.email` was the placeholder `your@email.com`. Set repo-locally to vipinsharma12233@gmail.com so commits attribute correctly.
 - The route `/tools/esop-pool-size` does not exist yet. No feature code was written this session.
+
+[001] 2026-08-15 | prompt P2 | branch main | commit <pending>
+Changed: Added the data layer at src/lib/esop: types.ts (full input and output shapes from ENGINE_SPEC.md), defaults.ts (v2 defaults table, every entry provenance-tagged), benchmarks.ts (advisory and observed tracks).
+Changed: Added 39 tests across three files. Recorded model decisions M1 to M6 in PROJECT.md. Removed `passWithNoTests` from vitest.config.ts, closing an open item from [000].
+Tests: 39 passed / 39 total, tsc pass, build pass
+Decisions:
+- M1 to M6 recorded in PROJECT.md. The two that will bite hardest later are M2 (what the two provenance tiers actually mean) and M6 (benchmark ladders are not partitions).
+- The grant basis and strike policy forks are discriminated unions, not a flag plus two optional bags, so a rupee grant table cannot exist without the basis that gives it meaning.
+- `PoolSizing` welds the pool percentage to the grantBasisKind and strikePolicyKind that produced it, so the PROJECT.md prohibition on a naked pool percentage is structural rather than a review-time check.
+- `ComplianceFlag.disclaimer` is the literal type 'General information, not legal advice.', so a compliance row without the required wording does not compile.
+- Statutory limits and solver parameters were pulled out of the defaults table into `STATUTORY` and `SOLVER` with no provenance tag, per M3.
+Open items:
+- **The prompt asked for a test that benchmark bands are "ordered and non-overlapping within a track". Non-overlapping is false for the data ENGINE_SPEC.md mandates, in both tracks.** Advisory states Series B as 15-18 and Series C+ as 15-20, which share a floor. Observed states Indian Series A and Series B both as "most below 10%", which makes them identical, and the growth-round average of 7.5-8% sits inside both. The spec wins over code, so the data was not altered and the test expectation was not quietly weakened. Instead each track declares its overlaps as data with a reason, and the test asserts found overlaps equal declared overlaps exactly, so any new overlap still fails loudly. Raised for a decision: leave as is, or restate the ladders as partitions in a future spec revision.
+- Ordering is asserted as monotonic in a direction each track declares per geography, not as always-increasing. The observed India ladder decreases with stage, which is the spec's actual finding and the reason both tracks exist. An always-increasing assertion would have contradicted the source.
+- `VestingSchedule.frequency` is carried but spec section 4.3 vests linearly after the cliff and models no tick, so the field is presentational until the engine uses it.
+- `attritionByBandPct` sets only a leadership override. The spec calls for band overrides but gives no numbers for the other three, so they fall back to the base rate.
+- Ten defaults are `provisional`, meaning the spec sets no v2 value: refreshRatePct, refreshSizePct, bufferPct, valuationGrowthPctPerYear, horizonYears, hiresPerYear, seniorityMixPct, grantValueByBand, attritionByBandPct, accountingBasis. Each needs a market check before launch.
+- There is no assembled `DEFAULT_INPUTS: EsopInputs`. defaults.ts holds assumptions only; valuation, share count and existing pool are founder-entered, not defaults. Whoever builds the form or the engine will need a seed-input builder.
+- No engine and no UI, per prompt scope. `EsopOutputs` is a shape with no producer yet.

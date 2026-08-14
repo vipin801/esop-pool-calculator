@@ -35,7 +35,16 @@ Numbered D1, D2, D3… Never renumber. Never delete. If a decision is reversed, 
 
 The math lives in [ENGINE_SPEC.md](./ENGINE_SPEC.md) and is not restated here. If code or UI copy ever disagrees with the spec, the code changes, not the spec.
 
-This section records only decisions the spec leaves open, as they get made. None yet.
+This section records only decisions the spec leaves open, as they get made. Numbered M1, M2, M3… Never renumber.
+
+| # | Decision | Made |
+|---|---|---|
+| M1 | Where the spec gives a range and the form needs a point, the default is the midpoint of that range, tagged `estimate`. Applies to the Basis A grant percentages and the sector attrition overrides. | 2026-08-15 |
+| M2 | Provenance has exactly two tiers. `estimate` means the spec states the value or it is advisory consensus. `provisional` means the spec sets no v2 value and this is a placeholder, or the figure is a dated third-party observation we have not verified. Every `provisional` is a to-do before launch. | 2026-08-15 |
+| M3 | Statutory limits and the fixed-point solver parameters carry no provenance tag. They are law and algorithm respectively, not estimates, and tagging them would be a category error under D6. They live in `STATUTORY` and `SOLVER`, outside the defaults table. | 2026-08-15 |
+| M4 | The band vocabulary is leadership, senior, mid, junior, mapping to the spec's CXO-or-VP, senior IC, mid IC, junior. | 2026-08-15 |
+| M5 | `exerciseWindowDays` is a closed union of the four options the spec names: 30, 90, 365, 1825. A founder cannot enter an arbitrary window until we decide to open it. | 2026-08-15 |
+| M6 | Neither benchmark ladder is a partition, so overlapping bands are carried as data, not forbidden. Each track declares its stage trend and its known overlaps, and the tests assert the found overlaps equal the declared ones exactly. The advisory ladder overlaps at Series B against Series C+; the observed India ladder overlaps at three pairs, because "below 10%" is a ceiling and not a band. | 2026-08-15 |
 
 ## Compliance facts, current as at August 2026
 

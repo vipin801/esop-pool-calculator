@@ -45,7 +45,7 @@ Open items:
 - `git config user.email` was the placeholder `your@email.com`. Set repo-locally to vipinsharma12233@gmail.com so commits attribute correctly.
 - The route `/tools/esop-pool-size` does not exist yet. No feature code was written this session.
 
-[001] 2026-08-15 | prompt P2 | branch main | commit <pending>
+[001] 2026-08-15 | prompt P2 | branch main | commit ec8a9f0 (sha backfilled by the follow-up commit, also covered by this entry)
 Changed: Added the data layer at src/lib/esop: types.ts (full input and output shapes from ENGINE_SPEC.md), defaults.ts (v2 defaults table, every entry provenance-tagged), benchmarks.ts (advisory and observed tracks).
 Changed: Added 39 tests across three files. Recorded model decisions M1 to M6 in PROJECT.md. Removed `passWithNoTests` from vitest.config.ts, closing an open item from [000].
 Tests: 39 passed / 39 total, tsc pass, build pass

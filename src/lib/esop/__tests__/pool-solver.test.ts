@@ -271,6 +271,79 @@ describe('the fixed point converges across the plausible input range', () => {
   });
 });
 
+describe('the recommended pool is one pool, quoted in two units', () => {
+  /**
+   * AUDIT_P4 defect 2. `poolPctOfFullyDiluted` used to be the last loop iterate
+   * while `poolOptions` was recomputed from the final run at that iterate, so
+   * the two fields of one `PoolSizing` described two different pools: worst gap
+   * 0.00489 percentage points across these 500 cases, and 0.0012 on the standard
+   * fixture. Both are inside the spec's 0.01 point convergence tolerance, which
+   * is why nothing noticed, and neither is inside "these are the same pool".
+   *
+   * Spec section 7 item 1 asks for the recommended pool "in % of fully diluted
+   * and in options". One pool, two units. The bound below is float noise rather
+   * than a tolerance, because after the fix the percentage is computed from the
+   * option count by the spec's own formula and the two cannot drift.
+   */
+  const CASES = randomCases(500);
+  const TIGHT = 1e-9;
+
+  it('quotes an option count that is exactly the percentage it quotes', () => {
+    const failures: string[] = [];
+    let worstRelative = 0;
+
+    for (const { seed, args } of CASES) {
+      const { sizing } = solveRecommendedPool(args);
+      const fd0 = args.company.fullyDilutedShares;
+      const impliedOptions = poolOptionsForPct({
+        fullyDilutedSharesAtYear0: fd0,
+        poolPct: sizing.poolPctOfFullyDiluted,
+      });
+
+      const scale = Math.max(sizing.poolOptions, impliedOptions, 1);
+      const relative = Math.abs(impliedOptions - sizing.poolOptions) / scale;
+      worstRelative = Math.max(worstRelative, relative);
+
+      if (relative > TIGHT) {
+        failures.push(
+          `seed ${seed}: ${sizing.poolOptions} options reported, ${impliedOptions} implied by ${sizing.poolPctOfFullyDiluted}%`,
+        );
+      }
+    }
+
+    expect(failures.slice(0, 5)).toEqual([]);
+    expect(worstRelative).toBeLessThan(TIGHT);
+  });
+
+  it('quotes a percentage that is exactly the option count it quotes', () => {
+    for (const [label, basis] of [
+      ['percent of equity', BASIS_A],
+      ['rupee value', BASIS_B],
+    ] as const) {
+      const args = withArgs({ grantPolicy: { grantBasis: basis } });
+      const { sizing } = solveRecommendedPool(args);
+      const fd0 = args.company.fullyDilutedShares;
+
+      // The spec's own denominator: FD_0 + max(0, K - existing).
+      const impliedPct = (sizing.poolOptions / (fd0 + sizing.poolOptions)) * 100;
+
+      expect(impliedPct, label).toBeCloseTo(sizing.poolPctOfFullyDiluted, 9);
+    }
+  });
+
+  it('adds exactly the pool it recommends to the count it reports at year 0', () => {
+    for (const { seed, args } of CASES.slice(0, 100)) {
+      const solution = solveRecommendedPool(args);
+      const fd0 = args.company.fullyDilutedShares;
+
+      expect(solution.fullyDilutedSharesAtYear0, `seed ${seed}`).toBeCloseTo(
+        fd0 + solution.sizing.poolOptions,
+        6,
+      );
+    }
+  });
+});
+
 describe('the displayed figure', () => {
   it('rounds up to the nearest half point, per the last line of section 4.5', () => {
     expect(roundPoolPctForDisplay(12.01)).toBe(12.5);

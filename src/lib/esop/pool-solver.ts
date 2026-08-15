@@ -26,9 +26,15 @@
  * 2. **A non-converged run still returns a number.** The last iterate that was
  *    finite and in range comes back with `converged: false`. A founder gets a
  *    figure and a warning, not an exception and a blank screen.
- * 3. **The reported figures are computed at the reported percentage.** After
- *    the loop the path is run once more at the answer, so the option count, the
- *    roll forward and the percentage cannot disagree with one another.
+ * 3. **The percentage and the option count are one pool.** After the loop the
+ *    path is run once more, the option count comes off that single run, and the
+ *    percentage is computed from the option count by the spec's own formula, so
+ *    the two cannot describe different pools. This promise used to be worded to
+ *    cover the roll forward as well, and that part was not true: the returned
+ *    run is priced at the converged *iterate*, which sits within the spec's 0.01
+ *    point tolerance of the reported answer rather than exactly on it. It is not
+ *    claimed here now. On a non-converged run there is no gap at all, because
+ *    the level leads and the run is at exactly that level.
  */
 
 import { SOLVER } from './defaults';
@@ -241,16 +247,39 @@ export function solveRecommendedPool(args: SolveRecommendedPoolArgs): Recommende
     final.run.totalGrossConsumptionOptions - final.run.totalReturnedToPool,
   );
   const bufferedRequirement = netConsumption * (1 + args.grantPolicy.bufferPct / 100);
-  const poolOptions = nonNegative(bufferedRequirement - existingUnallocated);
+
+  /**
+   * The recommended pool, in options, from the one final run — and then the
+   * percentage from those options, rather than from the loop.
+   *
+   * Section 7 item 1 asks for the pool "in % of fully diluted and in options".
+   * One pool, two units, so one of them has to be computed from the other.
+   * Reporting the last iterate as the percentage while recomputing the options
+   * from the final run gave two fields describing two pools up to the spec's
+   * 0.01 point tolerance, which is what AUDIT_P4 defect 2 measured.
+   *
+   * Which is primary follows the spec: section 4.5 computes `K` first and the
+   * percentage from it, so the option count leads and the percentage is
+   * `(K - existing) / (FD_0 + max(0, K - existing))`, exactly as written.
+   *
+   * On a non-converged run there is no such state — the requirement and the
+   * level disagree, which is what non-convergence *means* — so the pool level
+   * the model last stood on leads instead, and the options are the options at
+   * that level. Either way the two are one pool. M23.
+   */
+  const poolOptions = converged
+    ? nonNegative(bufferedRequirement - existingUnallocated)
+    : poolOptionsForPct({ fullyDilutedSharesAtYear0: fd0, poolPct });
+  const recommendedPoolPct = (poolOptions / (fd0 + poolOptions)) * 100;
 
   return {
     sizing: {
       grantBasisKind: args.grantPolicy.grantBasis.kind,
       strikePolicyKind: args.grantPolicy.strikePolicy.kind,
       valueBasis: valueBasisFor(args.grantPolicy),
-      poolPctOfFullyDiluted: poolPct,
+      poolPctOfFullyDiluted: recommendedPoolPct,
       poolOptions,
-      displayPoolPctOfFullyDiluted: roundPoolPctForDisplay(poolPct),
+      displayPoolPctOfFullyDiluted: roundPoolPctForDisplay(recommendedPoolPct),
     },
     solver: {
       iterations,
@@ -262,8 +291,14 @@ export function solveRecommendedPool(args: SolveRecommendedPoolArgs): Recommende
     netConsumptionOptions: netConsumption,
     grossConsumptionOptions: final.run.totalGrossConsumptionOptions,
     returnedToPoolOptions: final.run.totalReturnedToPool,
-    fullyDilutedSharesAtYear0: fd0 + final.newOptions,
-    existingPoolIsEnough: poolOptions === 0,
+    fullyDilutedSharesAtYear0: fd0 + poolOptions,
+    /**
+     * Only claimable on a converged run. On a non-converged one `poolOptions` is
+     * the level the loop stopped at rather than the plan's requirement, so a
+     * zero there says the loop stopped at zero, not that the existing pool
+     * covers the plan.
+     */
+    existingPoolIsEnough: converged && poolOptions === 0,
     rollForward: final.run,
   };
 }

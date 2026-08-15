@@ -703,13 +703,33 @@ export interface SolverDiagnostics {
   readonly maxIterations: number;
 }
 
-/** Spec section 8. */
-export type EngineWarningId =
-  | 'notionalValueOverstatesReceipt'
-  | 'cliffBelowStatutoryMinimum'
-  | 'authorisedCapitalShortfall'
-  | 'solverDidNotConverge'
-  | 'seniorityMixDoesNotSumTo100';
+/**
+ * Spec section 8, plus two operational warnings the spec's own guardrail list
+ * does not name but the engine's behaviour requires: a non-converged solver
+ * and a mix that does not sum to 100.
+ *
+ * A closed array, not a bare union, mirroring `ESOP_ERROR_CODES` in errors.ts
+ * and `COMPLIANCE_CHECK_IDS` above: the type is derived from the array, so a
+ * warning id cannot exist in the type and nowhere at runtime, or vanish from
+ * the type while a string literal referencing it survives in the source.
+ * `cliffBelowStatutoryMinimum` was a member here from [004] to [012]: section
+ * 5's twelve-month floor is now enforced by `requireLawfulVestingSchedule`
+ * throwing an `EsopErrorCode` of the same name — a different union — before an
+ * engine call exists that could warn about it instead. Warning about a state
+ * the engine already refuses to compute would be dead code with no path to it,
+ * which is exactly what an enumerable union is here to catch.
+ */
+export const ENGINE_WARNING_IDS = [
+  /** Strike at FMV plus the notional basis understates what the employee receives. */
+  'notionalValueOverstatesReceipt',
+  /** Authorised capital is short of issued shares plus the pool. */
+  'authorisedCapitalShortfall',
+  /** The section 4.5 fixed point did not converge inside 25 iterations. */
+  'solverDidNotConverge',
+  /** `H_t,b` from a seniority mix that does not sum to 100 loses hires silently. */
+  'seniorityMixDoesNotSumTo100',
+] as const;
+export type EngineWarningId = (typeof ENGINE_WARNING_IDS)[number];
 
 export interface EngineWarning {
   readonly id: EngineWarningId;

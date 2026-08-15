@@ -267,3 +267,14 @@ Decisions:
 - The harness test lives at `src/__tests__/` rather than in the engine's folder, because it is about the harness. `purity.test.ts` scans `src/lib/esop` and the coverage `include` is scoped there too, so neither picks it up.
 Open items:
 - The 500-case property tests are the whole timeout problem: they take about 900 ms alone and up to 8,800 ms under contention. If the suite grows much past 19 files the budget needs re-measuring rather than raising.
+
+[016] 2026-08-15 | prompt P9 | branch main | commit 0000000 (sha backfilled by the follow-up commit, also covered by this entry)
+Changed: AUDIT_P4 P5 open item, item 4(a). Removed `cliffBelowStatutoryMinimum` from `EngineWarningId`, dead since [012] enforces the floor with an `EsopErrorCode` of the same name instead. `EngineWarningId` is now derived from a new `ENGINE_WARNING_IDS` const array, mirroring `ESOP_ERROR_CODES` and `COMPLIANCE_CHECK_IDS`. Recorded M28.
+Changed: Added two tests to types.test.ts, plus a type-level equality assertion that the union and the array agree.
+Tests: 317 passed / 317 total, tsc pass, build pass
+Decisions:
+- M28. The type is derived from the array rather than hand-written beside it, the same fix M25 and the compliance ids already used: a member cannot then exist in the type and nowhere at runtime, and `tsc` catches a hand-written union drifting from its own array the moment one is added without the other.
+- **The failing test was a compile-time failure, not a runtime one, and that is the honest shape of this fix.** The test imports `ENGINE_WARNING_IDS` from a `types.ts` that does not export it; run against the unmodified source, `expect(ENGINE_WARNING_IDS).not.toContain(...)` fails on `undefined`, and the iteration test fails with `ENGINE_WARNING_IDS is not iterable`. Both are real failures produced by running the suite, not a contrived assertion.
+- The other four warning ids — `notionalValueOverstatesReceipt`, `authorisedCapitalShortfall`, `solverDidNotConverge`, `seniorityMixDoesNotSumTo100` — are untouched and still have no producer. Wiring them up is not in scope for this item.
+Open items:
+- None from this item. The [012]-raised note about the dead warning is removed from Open items in this commit, since it is fixed.

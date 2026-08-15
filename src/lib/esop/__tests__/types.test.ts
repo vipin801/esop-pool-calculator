@@ -3,11 +3,13 @@ import { describe, expect, it } from 'vitest';
 import {
   BANDS,
   COMPLIANCE_DISCLAIMER,
+  ENGINE_WARNING_IDS,
   EXERCISE_WINDOW_DAYS_OPTIONS,
   EXPOSED_INSTRUMENTS,
   type Band,
   type ComplianceCheck,
   type ComplianceInputs,
+  type EngineWarningId,
   type EsopInputs,
   type ExerciseWindowDays,
   type FundingRound,
@@ -67,6 +69,16 @@ type _roundCarriesSpecInputs = Expect<
 
 /** The round schedule hangs off the root input, not off some optional extra. */
 type _roundsAreOnTheInput = Expect<Equal<EsopInputs['rounds'], readonly FundingRound[]>>;
+
+/**
+ * `EngineWarningId` is enumerable, mirroring `ESOP_ERROR_CODES` in errors.ts and
+ * `COMPLIANCE_CHECK_IDS` above: the type has to be exactly the array's members,
+ * not a superset or a subset written by hand alongside it, so a warning id
+ * cannot exist in the type and nowhere at runtime.
+ */
+type _engineWarningIdIsEnumerable = Expect<
+  Equal<EngineWarningId, (typeof ENGINE_WARNING_IDS)[number]>
+>;
 
 /* The directives below must sit on the line immediately above the offending
  * expression, so each illegal literal is passed to a one-line acceptor. */
@@ -132,6 +144,32 @@ describe('enumerations', () => {
   it('defaults the exercise window options to include 90 days', () => {
     const options: readonly number[] = EXERCISE_WINDOW_DAYS_OPTIONS;
     expect(options).toContain(90);
+  });
+});
+
+describe('engine warning ids', () => {
+  /**
+   * AUDIT_P4 session P9, item 4(a). `cliffBelowStatutoryMinimum` was a member
+   * of `EngineWarningId` from [004] to [012]. Section 5's twelve-month floor is
+   * now enforced by `requireLawfulVestingSchedule` throwing an `EsopErrorCode`
+   * of the same name — a different union — before an engine call exists that
+   * could warn about it instead. A warning with no reachable path to it is dead
+   * code, and it must not survive as a member of an otherwise-live union where
+   * it is indistinguishable from one.
+   */
+  it('does not carry the vesting floor, which the engine blocks rather than warns about', () => {
+    expect(ENGINE_WARNING_IDS).not.toContain('cliffBelowStatutoryMinimum');
+  });
+
+  it('is exactly the four warnings the engine can still raise', () => {
+    expect([...ENGINE_WARNING_IDS].sort()).toEqual(
+      [
+        'notionalValueOverstatesReceipt',
+        'authorisedCapitalShortfall',
+        'solverDidNotConverge',
+        'seniorityMixDoesNotSumTo100',
+      ].sort(),
+    );
   });
 });
 

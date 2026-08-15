@@ -3,6 +3,12 @@
 Append-only. Newest at the bottom. Never edit or delete a past entry; if something was
 wrong, say so in a later entry.
 
+One exception, and only one: a later entry may append a single trailing `Superseded in
+part by [nnn]:` line to the entry it corrects, naming what is wrong and where the
+correction lives. Nothing above that line is ever altered. Without it a reader of the
+old entry alone is misled, which is the trap append-only is supposed to prevent rather
+than create.
+
 One entry per commit, including commits made by hand. If you find an unlogged commit,
 log it before doing anything else.
 
@@ -131,6 +137,7 @@ Open items:
 - `recommendedPoolUnderBothBases` needs the comparison grant table passed in, because `GrantBasis` is a union and the selected arm carries only its own. The form will have to hold both tables to satisfy output item 1.
 - Still open from [000] and [002]: `esop-engine-spec-v2.md` sits at the repo root beside the canonical copy at docs/esop/ENGINE_SPEC.md, and there is no CLAUDE.md pointing a session at PROJECT.md.
 - An untracked `~$op-engine-spec-v2.md` appeared at the repo root this session. It is the lock file Word writes while `esop-engine-spec-v2.md` is open. Deliberately not committed and not deleted, since the file is presumably still open. The repo has no .gitignore rule for `~$*`, so it will keep showing up in `git status` until one is added or the root copy of the spec is removed.
+Superseded in part by [008]: the Decisions claim above that a runaway plan "comes back at 10% flagged rather than at 99.9% pretending" is wrong — it returns 97.839%. Content left as written, per append-only.
 
 [005] 2026-08-15 | prompt P6 | branch main | commit 4282752 (sha backfilled by the follow-up commit, also covered by this entry)
 Changed: Added docs/esop/AUDIT_P4.md, the adversarial audit of everything built in [000] to [004]. No source and no test was changed by that session; the audit ran seven deliberate mutations and reverted every one.
@@ -230,3 +237,12 @@ Open items:
 - The Ind AS 102 schedule excludes options granted before year 0 and returns the excluded count. Their grant-date value needs a price per share from before the plan starts that the engine does not hold. A company with a large existing grant book sees an expense understated by exactly that; the fix is an input, not a formula.
 - Nothing wires the compliance checks to the roll forward. `runComplianceChecks` takes an `AuthorisedCapitalHeadroom` and nothing yet hands it the roll forward's own. That join belongs to whatever assembles `EsopOutputs`, which still has no producer.
 - Defect 5 is now permanently unobservable rather than merely unobservable today, because an unlawful cliff can no longer reach the engine. Still worth correcting for what the code says.
+
+[013] 2026-08-15 | prompt P9 | branch main | commit 0000000 (sha backfilled by the follow-up commit, also covered by this entry)
+Changed: Appended a single `Superseded in part by [008]` pointer line to entry [004], and recorded the exception it relies on in the LOG preamble.
+Tests: 312 passed / 312 total, tsc pass, build pass (documentation only)
+Decisions:
+- **Append-only gets exactly one exception, written into the preamble rather than left as a precedent.** A later entry may append one trailing `Superseded in part by [nnn]:` line to the entry it corrects; nothing above that line is ever altered. [008] corrected [004]'s runaway claim by appending a new entry, which is what the rule as written allowed, and left a reader of [004] alone still misled — the trap the rule exists to prevent rather than create. The pointer closes it without rewriting history.
+- The pointer names what is wrong and where the correction lives, and nothing else. It is not a summary of [008] and it does not touch [004]'s Decisions or Open items.
+Open items:
+- None from this item.

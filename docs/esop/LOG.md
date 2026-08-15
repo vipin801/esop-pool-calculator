@@ -256,7 +256,7 @@ Decisions:
 Open items:
 - None from this item.
 
-[015] 2026-08-15 | prompt P9 | branch main | commit 0000000 (sha backfilled by the follow-up commit, also covered by this entry)
+[015] 2026-08-15 | prompt P9 | branch main | commit 23d0da5 (sha backfilled by the follow-up commit, also covered by this entry)
 Changed: Scoped the long test timeout to the coverage run. vitest.config.ts exports `TEST_TIMEOUT_MS` (15s), `COVERAGE_TEST_TIMEOUT_MS` (30s) and `testTimeoutFor(argv)`; the standard suite no longer inherits the coverage budget.
 Changed: Added src/__tests__/vitest-config.test.ts, 5 tests, asserting the scoping and the absence of a coverage threshold.
 Tests: 317 passed / 317 total, tsc pass, build pass

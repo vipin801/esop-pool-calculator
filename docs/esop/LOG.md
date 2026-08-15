@@ -106,7 +106,7 @@ Open items:
 - The round engine takes the pre-round cap table as an input. Nothing yet feeds it from the grant demand in 4.1 and 4.2, because the roll forward (4.4) and the fixed point (4.5) are what connect them.
 - Closing an earlier open item from [002]: `lastRoundPrice` still takes `X_t` from the smooth growth path rather than from a round in this schedule. The schedule now exists, so that wiring is available whenever the strike policy is revisited.
 
-[004] 2026-08-15 | prompt P5 | branch main | commit <pending> (sha backfilled by the follow-up commit, also covered by this entry)
+[004] 2026-08-15 | prompt P5 | branch main | commit d4606c8 (sha backfilled by the follow-up commit, also covered by this entry)
 Changed: Added src/lib/esop/cohorts.ts (section 4.3), roll-forward.ts (4.4) and pool-solver.ts (4.5). Cohorts are tracked by grant year and band, with the vested fraction, the three-way split of a leaver, continuing-employee exercises, and the mid-year attrition exposure. The roll forward runs 4.1, 4.2 and 4.3 against a pool balance year by year and interpolates the exhaustion month. The solver iterates the spec's two formulae from 10% to a 0.01 point tolerance, capped at 25, and returns the iteration count.
 Changed: Extended types.ts with `valueBasis` on `GrantPolicyInputs`, `valueBasis` and `displayPoolPctOfFullyDiluted` on `PoolSizing`, `hiresSupported` on `PoolExhaustion`, and fourteen fields on `RollForwardYear` covering the exercised leg, paid-up capital and the two fully diluted counts. Added six error codes and a `requirePercentage` guard. Added a `valueBasis` default and `baseAttritionPctForSector`. Added 101 tests across four files plus two test helpers. Recorded M15 to M21.
 Tests: 253 passed / 253 total, tsc pass, build pass

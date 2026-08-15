@@ -135,7 +135,7 @@ carried deliberately. Each has a file and line reference in the audit.
 - **Defect 11.** `rounds.ts` has no property or fuzz coverage in the repo. The audit ran 500 cases through it by hand and found nothing; nothing in the suite would.
 - **Defect 12.** Untested exported surface, still at 0% coverage: `approximateOpeningCohortsFromTotal`, `openingHeadcountCohorts`, `baseAttritionPctForSector`, and the zero-run-rate exhaustion branch. `cliffMeetsStatutoryMinimum` came off this list in [012]; the compliance checks call it.
 - **Defect 13.** Weak tests, listed in full in the audit's section 5. `pool-solver.test.ts` "reproduces itself when fed back in" became an exact tautology in [007] and needs replacing with a genuine fixed-point check.
-- No coverage threshold is set. Wiring one up is a policy decision to take before P5 ships, not a side effect of installing the tool.
+- No coverage threshold is set, and [015] made this explicit and tested: it stays unset until P9 decides whether to have one, deliberately, so it does not decay from "we decided not to" into "we forgot to".
 - Carried from [000]: `esop-engine-spec-v2.md` sits at the repo root beside the canonical copy at `docs/esop/ENGINE_SPEC.md`, byte-identical today with nothing testing that it stays so; and there is still no `CLAUDE.md` pointing a session at this file.
 
 Raised in [012], the compliance session; closed where noted:

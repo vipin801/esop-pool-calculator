@@ -279,7 +279,7 @@ Decisions:
 Open items:
 - None from this item. The [012]-raised note about the dead warning is removed from Open items in this commit, since it is fixed.
 
-[017] 2026-08-15 | prompt P9 | branch main | commit 0000000 (sha backfilled by the follow-up commit, also covered by this entry)
+[017] 2026-08-15 | prompt P9 | branch main | commit 7692a3c (sha backfilled by the follow-up commit, also covered by this entry)
 Changed: AUDIT_P4 P5 open item, item 4(b). Added `OpeningGrantCohortInput.grantDateValuePerOption`, threaded through `GrantCohort` and `openingGrantCohorts()`. `esopExpenseSchedule` now amortises an opening cohort that supplies a value on the same `expected`/`elapsed` machinery an in-plan cohort uses, unified behind a `start` plan-year and an `elapsedOffset` per cohort rather than two separate code paths. `EsopExpenseSchedule` gains `includedOpeningOptions`, kept apart from `excludedOpeningOptions`. Recorded M29.
 Changed: Added four tests to compliance.test.ts pinning the three states apart, plus reversal behaviour for an included opening cohort.
 Tests: 322 passed / 322 total, tsc pass, build pass, lint 0 errors

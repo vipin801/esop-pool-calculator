@@ -117,4 +117,18 @@ This tool answers how big, how long, and how many hires. The Funding Round Simul
 
 ## Open items
 
-None.
+Findings from [AUDIT_P4.md](./AUDIT_P4.md) that are **not** fixed. Defects 1, 2 and 3 and
+both chores were closed in LOG [006] to [010]; these are the rest, carried deliberately.
+Each has a file and line reference in the audit.
+
+- **Defect 4.** The statutory 12-month cliff is not blocked anywhere in the engine. `cliffMeetsStatutoryMinimum` exists, returns the right answer, and nothing calls it; `EngineWarningId.cliffBelowStatutoryMinimum` is never raised. A cliff of 0 runs end to end. Spec section 5 and the compliance facts above both say to block it.
+- **Defect 5.** The mid-year exposure factor is applied to continuing-employee exercises, which contradicts M17's "scoped to attrition exposure and to nothing else". Unobservable today because a grant-year cohort has `v = 0` under any lawful cliff, so it goes live the moment defect 4 does.
+- **Defect 7.** `DEFAULTS.horizonYears` is 4 and `DEFAULTS.hiresPerYear` has five entries. Anything seeding a form from `DEFAULTS` silently drops the fifth year.
+- **Defect 8.** `exerciseWindowDays` is carried and never read, so spec section 6's "linked to the exercise window input" does not exist: 30 days and 5 years produce identical numbers. Same class as `FairValueAssumptions.expectedLifeYears` and `.volatilityPct`, which leave `theta` a free scalar rather than a function of the strike.
+- **Defect 9.** `recycleForfeited` is tagged `estimate` where M2 argues for `provisional`, and it moves the headline number. `vestYears`, `vestFrequency`, `cliffMonths` and `sector` sit on the same line.
+- **Defect 10.** The LOG template promises "Both shas are listed" and every entry carries one. The convention is unachievable as written — a backfill commit cannot contain its own hash either — so it needs restating rather than complying with.
+- **Defect 11.** `rounds.ts` has no property or fuzz coverage in the repo. The audit ran 500 cases through it by hand and found nothing; nothing in the suite would.
+- **Defect 12.** Untested exported surface, all at 0% coverage: `approximateOpeningCohortsFromTotal`, `openingHeadcountCohorts`, `baseAttritionPctForSector`, `cliffMeetsStatutoryMinimum`, and the zero-run-rate exhaustion branch.
+- **Defect 13.** Weak tests, listed in full in the audit's section 5. `pool-solver.test.ts` "reproduces itself when fed back in" became an exact tautology in [007] and needs replacing with a genuine fixed-point check.
+- No coverage threshold is set. Wiring one up is a policy decision to take before P5 ships, not a side effect of installing the tool.
+- Carried from [000]: `esop-engine-spec-v2.md` sits at the repo root beside the canonical copy at `docs/esop/ENGINE_SPEC.md`, byte-identical today with nothing testing that it stays so; and there is still no `CLAUDE.md` pointing a session at this file.

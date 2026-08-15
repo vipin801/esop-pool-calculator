@@ -70,7 +70,11 @@ import type {
   RollForwardYear,
   VestingSchedule,
 } from './types';
-import { pricePerShare as pricePerShareOf, valuationAtYear } from './valuation';
+import {
+  fullyDilutedShares as fullyDilutedSharesOf,
+  pricePerShare as pricePerShareOf,
+  valuationAtYear,
+} from './valuation';
 
 const MONTHS_PER_YEAR = 12;
 
@@ -427,8 +431,25 @@ export function runRollForward(args: RollForwardArgs): RollForwardResult {
     const topUp = topUpForYear(topUps, year);
 
     /** The top-up is authorised at the start of the year, so it prices the year. */
-    const openingFullyDiluted = fullyDiluted + topUp;
     available = openingAvailable + topUp;
+
+    /**
+     * FD_t, composed from its three buckets rather than carried as a running
+     * total.
+     *
+     * This is the count that prices year t, and the unallocated pool is in it
+     * because ENGINE_SPEC.md section 3 puts it there. Composing it here is what
+     * makes that checkable: a running total can have a term quietly dropped from
+     * the expression that divides into it, which is exactly the error AUDIT_P4
+     * found surviving the whole suite. The closing count below stays an
+     * evolution on purpose, so the M18 bucket identity remains a property the
+     * tests can catch a leaked flow with rather than an identity by definition.
+     */
+    const openingFullyDiluted = fullyDilutedSharesOf({
+      issuedShares: issued,
+      grantedOutstandingOptions: granted,
+      unallocatedPoolOptions: available,
+    });
 
     const valuation = valuationAtYear({
       postMoneyValuation: company.postMoneyValuation,

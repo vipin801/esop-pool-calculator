@@ -22,9 +22,69 @@
 import {
   EsopEngineError,
   requireFinite,
+  requireNonNegative,
   requirePositive,
   requireYearIndex,
 } from './errors';
+
+/* ------------------------------------------------------------------------- *
+ * FD_t — the count, before anything prices it
+ * ------------------------------------------------------------------------- */
+
+/**
+ * The three buckets `FD_t` is made of. ENGINE_SPEC.md section 3 and model
+ * decision M18.
+ *
+ * Named rather than added inline because the whole question this module exists
+ * to answer — does the fully diluted count include the unallocated pool — has to
+ * have exactly one answer, in exactly one place. It had two before: `rounds.ts`
+ * added its four holdings together, and the roll forward never composed the
+ * count at all, it evolved it year on year and let the identity hold
+ * emergently. A count that is never written down cannot be checked.
+ */
+export interface FullyDilutedBuckets {
+  /** Shares actually issued: founders, investors, and options already exercised. */
+  readonly issuedShares: number;
+  /** Granted and outstanding. Allocated, not yet issued. */
+  readonly grantedOutstandingOptions: number;
+  /**
+   * The unallocated pool. In the count, always — this is the term v1 dropped and
+   * the term AUDIT_P4's surviving mutation deleted.
+   *
+   * Signed, unlike the other two. Section 4.4 defines exhaustion as the first
+   * year `Available_t` goes below zero, so an overdrawn pool is a state the roll
+   * forward is required to carry rather than clamp, and the fully diluted count
+   * has to be able to express it. A negative here is a deficit, not a holding.
+   */
+  readonly unallocatedPoolOptions: number;
+}
+
+/**
+ * `FD_t = issued shares + granted outstanding + unallocated pool`.
+ *
+ * Every fully diluted count the engine reports goes through here.
+ */
+export function fullyDilutedShares(buckets: FullyDilutedBuckets): number {
+  const { issuedShares, grantedOutstandingOptions, unallocatedPoolOptions } = buckets;
+
+  requireNonNegative(
+    issuedShares,
+    'negativeShareCount',
+    'Issued shares cannot be negative.',
+  );
+  requireNonNegative(
+    grantedOutstandingOptions,
+    'negativeShareCount',
+    'Granted and outstanding options cannot be negative.',
+  );
+  requireFinite(
+    unallocatedPoolOptions,
+    'negativeShareCount',
+    'The unallocated pool must be a finite number of options. It may be negative, which is an overdrawn pool.',
+  );
+
+  return issuedShares + grantedOutstandingOptions + unallocatedPoolOptions;
+}
 
 /**
  * One year of the market path.

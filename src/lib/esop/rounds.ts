@@ -47,6 +47,7 @@ import type {
   PoolShuffleOutcome,
   PreRoundHoldings,
 } from './types';
+import { fullyDilutedShares as fullyDilutedSharesOf } from './valuation';
 
 /* ------------------------------------------------------------------------- *
  * Holdings and cap tables
@@ -78,9 +79,21 @@ export function sharesExcludingPool(holdings: PreRoundHoldings): number {
   return holdings.founderShares + holdings.investorShares + holdings.grantedOptions;
 }
 
-/** S_ex + U. */
+/**
+ * S_ex + U, composed through the one definition of `FD_t` in section 3.
+ *
+ * A round's cap table splits the issued shares by holder and the roll forward
+ * does not, but both are counting the same three things, so both go through
+ * `fullyDilutedShares` in valuation.ts rather than each adding up its own terms.
+ */
 export function fullyDilutedShares(holdings: PreRoundHoldings): number {
-  return sharesExcludingPool(holdings) + holdings.unallocatedPool;
+  requireHoldings(holdings);
+
+  return fullyDilutedSharesOf({
+    issuedShares: holdings.founderShares + holdings.investorShares,
+    grantedOutstandingOptions: holdings.grantedOptions,
+    unallocatedPoolOptions: holdings.unallocatedPool,
+  });
 }
 
 /** A cap table with its four rows, its total, and every percentage on the same base. */

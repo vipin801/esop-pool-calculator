@@ -167,7 +167,7 @@ Open items:
 - `pool-solver.test.ts` "reproduces itself when fed back in" is now an exact tautology: it re-derives the spec formula from the same run the solver used, and the solver now reports exactly that. It was already close to one, and AUDIT_P4 listed it under test quality. It should be replaced by a genuine fixed-point check — run the plan at the reported pool and assert the formula returns the reported pool — rather than deleted.
 - The returned roll forward is still priced at the converged iterate rather than at the reported answer, a gap bounded by the spec's 0.01 point tolerance. M23 states this rather than hiding it. Closing it entirely needs either a tighter internal tolerance than section 4.5 mandates or an extra settle pass, and neither is worth doing without a reason.
 
-[008] 2026-08-15 | prompt P7 | branch main | commit 0000000 (sha backfilled by the follow-up commit, also covered by this entry)
+[008] 2026-08-15 | prompt P7 | branch main | commit 1288ead (sha backfilled by the follow-up commit, also covered by this entry)
 Changed: AUDIT_P4 defect 3. Pinned the non-convergence contract with two tests in pool-solver.test.ts: the returned figure, and the requirement that the figure and the option count beside it are one pool.
 Changed: No engine change. The contract's code landed in [007]; this entry decides it, records it and tests it.
 Tests: 272 passed / 272 total, tsc pass, build pass

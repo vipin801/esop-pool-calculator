@@ -132,7 +132,7 @@ Open items:
 - Still open from [000] and [002]: `esop-engine-spec-v2.md` sits at the repo root beside the canonical copy at docs/esop/ENGINE_SPEC.md, and there is no CLAUDE.md pointing a session at PROJECT.md.
 - An untracked `~$op-engine-spec-v2.md` appeared at the repo root this session. It is the lock file Word writes while `esop-engine-spec-v2.md` is open. Deliberately not committed and not deleted, since the file is presumably still open. The repo has no .gitignore rule for `~$*`, so it will keep showing up in `git status` until one is added or the root copy of the spec is removed.
 
-[005] 2026-08-15 | prompt P6 | branch main | commit 0000000 (sha backfilled by the follow-up commit, also covered by this entry)
+[005] 2026-08-15 | prompt P6 | branch main | commit 4282752 (sha backfilled by the follow-up commit, also covered by this entry)
 Changed: Added docs/esop/AUDIT_P4.md, the adversarial audit of everything built in [000] to [004]. No source and no test was changed by that session; the audit ran seven deliberate mutations and reverted every one.
 Tests: 253 passed / 253 total, tsc pass, build pass (unchanged from [004]; this commit carries documentation only)
 Decisions:

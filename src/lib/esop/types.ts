@@ -588,13 +588,23 @@ export interface EsopExpenseSchedule {
   readonly years: readonly EsopExpenseYear[];
   readonly totalExpenseRupees: number;
   /**
-   * Options granted before year 0. Their grant-date fair value depends on a
-   * price per share from before the plan starts, which the engine does not
-   * hold, so they are excluded from the schedule rather than valued at a price
-   * they were not granted at. Reported so the omission is a number and not a
-   * silence.
+   * Options granted before year 0 whose grant-date fair value was **not**
+   * supplied on their opening cohort. Their value depends on a price per share
+   * from before the plan starts, which the engine does not hold, so they are
+   * excluded from the schedule rather than valued at a price they were not
+   * granted at. Reported so the omission is a number and not a silence.
    */
   readonly excludedOpeningOptions: number;
+  /**
+   * Options granted before year 0 whose grant-date fair value *was* supplied,
+   * via `OpeningGrantCohortInput.grantDateValuePerOption`, and are therefore
+   * amortised in `years` above like any other cohort. Kept apart from
+   * `excludedOpeningOptions` rather than merged into one count: a founder who
+   * supplies a genuinely zero grant-date value needs the tool to say
+   * "included, at zero", not "unknown", and those two report as the same
+   * number the moment the total alone is asked.
+   */
+  readonly includedOpeningOptions: number;
 }
 
 /**

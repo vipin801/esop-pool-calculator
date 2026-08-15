@@ -278,3 +278,15 @@ Decisions:
 - The other four warning ids — `notionalValueOverstatesReceipt`, `authorisedCapitalShortfall`, `solverDidNotConverge`, `seniorityMixDoesNotSumTo100` — are untouched and still have no producer. Wiring them up is not in scope for this item.
 Open items:
 - None from this item. The [012]-raised note about the dead warning is removed from Open items in this commit, since it is fixed.
+
+[017] 2026-08-15 | prompt P9 | branch main | commit 0000000 (sha backfilled by the follow-up commit, also covered by this entry)
+Changed: AUDIT_P4 P5 open item, item 4(b). Added `OpeningGrantCohortInput.grantDateValuePerOption`, threaded through `GrantCohort` and `openingGrantCohorts()`. `esopExpenseSchedule` now amortises an opening cohort that supplies a value on the same `expected`/`elapsed` machinery an in-plan cohort uses, unified behind a `start` plan-year and an `elapsedOffset` per cohort rather than two separate code paths. `EsopExpenseSchedule` gains `includedOpeningOptions`, kept apart from `excludedOpeningOptions`. Recorded M29.
+Changed: Added four tests to compliance.test.ts pinning the three states apart, plus reversal behaviour for an included opening cohort.
+Tests: 322 passed / 322 total, tsc pass, build pass, lint 0 errors
+Decisions:
+- M29. `undefined` and `0` are different inputs and stayed different outputs: the test that matters here shows two opening cohorts of the same size, same age, differing only in whether a value was supplied, producing the *same* total expense — zero, either way — while `includedOpeningOptions` and `excludedOpeningOptions` disagree. Collapsing the two into one count would have been correct today and silently wrong the day a real company supplies a genuinely zero grant-date value.
+- **The first draft of the "amortises a non-zero value" test had the arithmetic wrong, and the test caught its own author rather than the code.** `ageYearsAtEndOfYear0 = 1` against a 4 year vest gives `elapsed_t = (t+1)/4`; full vesting lands at plan year 3, not plan year 2 as the first comment claimed. The assertion was corrected to the measured value at each year rather than loosened to pass; the code was right the first time.
+- The unifying design — one loop keyed by `start` and `elapsedOffset` rather than a branch for in-plan versus opening cohorts — replaces `grantYearById` with `startYearById`/`elapsedOffsetById`, both populated for every included cohort regardless of kind. This is also why `forfeitedByYearAndCohort` had to drop its `entry.grantYear === null` filter: an included opening cohort can still forfeit unvested options, and before this its reversals were silently invisible to the schedule because opening-cohort forfeiture data was never even collected.
+- Not built: what value a real opening cohort's grant-date price actually was. That is a UI or upload question, out of scope here; this item only gives the engine somewhere to put the answer once asked.
+Open items:
+- Closed: item 4(b) is off the [012]-raised list, and the wording there for the remaining two items now says explicitly they are blocked on the P6 assembler.

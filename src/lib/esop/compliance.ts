@@ -467,7 +467,7 @@ function perOptionValue(args: {
  * rather than be special-cased:
  *
  *   expected_t   = granted - (unvested forfeitures to date)
- *   elapsed_t    = clamp((t - s + 1) / k, 0, 1)
+ *   elapsed_t    = clamp(((t - start) + offset) / k, 0, 1)
  *   cumulative_t = value * expected_t * elapsed_t
  *
  * An option forfeited *before* vesting leaves `expected`, so the expense already
@@ -479,6 +479,17 @@ function perOptionValue(args: {
  *
  *   period_t = value * expected_t * (elapsed_t - elapsed_(t-1))       amortisation
  *            + value * elapsed_(t-1) * (expected_t - expected_(t-1))  reversal
+ *
+ * `start` and `offset` are what let an in-plan cohort and an opening cohort
+ * share this one loop. An in-plan cohort granted in year `s` starts accruing
+ * at `start = s` with `offset = 1`, giving the familiar `(t - s + 1)/k` — the
+ * "+1" credits a full recognition period to the year of grant itself, which is
+ * a P&L convention and not the same age used for the vesting curve elsewhere
+ * (M17). An opening cohort has no plan-year grant date; it starts accruing at
+ * `start = 0`, because it already exists when the schedule opens, with
+ * `offset = ageYearsAtEndOfYear0` — the real elapsed age the founder supplied,
+ * reusing the exact age arithmetic `stepGrantCohort` already uses for vesting,
+ * rather than inventing a second age convention for expense alone.
  */
 export function esopExpenseSchedule(args: EsopExpenseArgs): EsopExpenseSchedule {
   const { rollForward, vesting, fairValue, accountingBasis, strikePolicy, faceValuePerShare } = args;
@@ -493,15 +504,34 @@ export function esopExpenseSchedule(args: EsopExpenseArgs): EsopExpenseSchedule 
   const grantedById = new Map<string, number>();
   for (const cohort of rollForward.cohorts) grantedById.set(cohort.id, cohort.grantedOptions);
 
-  /** Granted before year 0, at a price the engine does not hold. Reported, not guessed. */
-  const excludedOpeningOptions = rollForward.cohorts
-    .filter((cohort) => cohort.grantYear === null)
-    .reduce((sum, cohort) => sum + cohort.grantedOptions, 0);
-
-  /** Grant-date value per option, once per cohort, from the year it was granted in. */
+  /**
+   * Grant-date value per option, once per cohort, and the accrual start point
+   * that goes with it. An in-plan cohort is valued from the roll forward's own
+   * `pricePerShare` in its grant year. An opening cohort is valued only when
+   * its caller supplied `grantDateValuePerOption` — `undefined` and `0` are
+   * different inputs, and only the first is excluded.
+   */
   const valueById = new Map<string, number>();
+  const startYearById = new Map<string, number>();
+  const elapsedOffsetById = new Map<string, number>();
+
+  let excludedOpeningOptions = 0;
+  let includedOpeningOptions = 0;
+
   for (const cohort of rollForward.cohorts) {
-    if (cohort.grantYear === null) continue;
+    if (cohort.grantYear === null) {
+      if (cohort.grantDateValuePerOption === undefined) {
+        excludedOpeningOptions += cohort.grantedOptions;
+        continue;
+      }
+
+      includedOpeningOptions += cohort.grantedOptions;
+      valueById.set(cohort.id, cohort.grantDateValuePerOption);
+      startYearById.set(cohort.id, 0);
+      elapsedOffsetById.set(cohort.id, cohort.ageYearsAtEndOfYear0);
+      continue;
+    }
+
     const grantYear = rollForward.years[cohort.grantYear];
     if (grantYear === undefined) continue;
 
@@ -515,11 +545,8 @@ export function esopExpenseSchedule(args: EsopExpenseArgs): EsopExpenseSchedule 
         faceValuePerShare,
       }),
     );
-  }
-
-  const grantYearById = new Map<string, number>();
-  for (const cohort of rollForward.cohorts) {
-    if (cohort.grantYear !== null) grantYearById.set(cohort.id, cohort.grantYear);
+    startYearById.set(cohort.id, cohort.grantYear);
+    elapsedOffsetById.set(cohort.id, 1);
   }
 
   /** Running per-cohort state: options still expected to vest, and elapsed vesting. */
@@ -528,9 +555,14 @@ export function esopExpenseSchedule(args: EsopExpenseArgs): EsopExpenseSchedule 
   );
   const elapsedById = new Map<string, number>([...valueById.keys()].map((id) => [id, 0]));
 
+  /**
+   * Every cohort's forfeitures, opening ones included: an included opening
+   * cohort can still have unvested options forfeited before it finishes
+   * vesting, and its reversal has to see them the same way an in-plan
+   * cohort's does.
+   */
   const forfeitedByYearAndCohort = new Map<string, number>();
   for (const entry of rollForward.cohortYears) {
-    if (entry.grantYear === null) continue;
     const key = `${entry.year}|${entry.cohortId}`;
     forfeitedByYearAndCohort.set(
       key,
@@ -546,15 +578,16 @@ export function esopExpenseSchedule(args: EsopExpenseArgs): EsopExpenseSchedule 
     let reversal = 0;
 
     for (const [id, value] of valueById) {
-      const cohortGrantYear = grantYearById.get(id);
-      if (cohortGrantYear === undefined || year.year < cohortGrantYear) continue;
+      const start = startYearById.get(id);
+      const offset = elapsedOffsetById.get(id);
+      if (start === undefined || offset === undefined || year.year < start) continue;
 
       const previousExpected = expectedById.get(id) ?? 0;
       const previousElapsed = elapsedById.get(id) ?? 0;
 
       const forfeited = forfeitedByYearAndCohort.get(`${year.year}|${id}`) ?? 0;
       const expected = Math.max(previousExpected - forfeited, 0);
-      const elapsed = clamp((year.year - cohortGrantYear + 1) / vesting.vestYears, 0, 1);
+      const elapsed = clamp((year.year - start + offset) / vesting.vestYears, 0, 1);
 
       amortisation += value * expected * (elapsed - previousElapsed);
       reversal += value * previousElapsed * (expected - previousExpected);
@@ -581,5 +614,6 @@ export function esopExpenseSchedule(args: EsopExpenseArgs): EsopExpenseSchedule 
     years,
     totalExpenseRupees: cumulative,
     excludedOpeningOptions,
+    includedOpeningOptions,
   };
 }

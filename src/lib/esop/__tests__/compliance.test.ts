@@ -18,6 +18,7 @@ import {
   taxDeferralStatus,
   type ComplianceCheckArgs,
 } from '../compliance';
+import { openingGrantCohorts } from '../cohorts';
 import { STATUTORY } from '../defaults';
 import { isEsopEngineError } from '../errors';
 import { authorisedCapitalHeadroom, runRollForward } from '../roll-forward';
@@ -669,6 +670,168 @@ describe('the Ind AS 102 expense estimate', () => {
     });
 
     expect(openingSchedule.excludedOpeningOptions).toBe(400_000);
+  });
+
+  /**
+   * Three states, not two. AUDIT_P4 session P9, item 4(b).
+   *
+   * A cohort whose grant-date value was never supplied is excluded because the
+   * engine holds no price to value it at. A cohort whose value was supplied
+   * and happens to be zero is included and contributes nothing. Both produce
+   * the same total expense today, and that equality is exactly the trap: the
+   * two are not the same fact about the company, and the moment a real opening
+   * cohort with a genuinely zero grant-date value (a scheme adopted at par,
+   * struck at grant) arrives, collapsing the two would misreport it as
+   * "unknown" when the founder told the tool it was known and zero.
+   */
+  describe('grant-date value on an opening cohort: unsupplied, zero and non-zero', () => {
+    /**
+     * Zero hires and zero attrition, so the opening cohort is the only source
+     * of expense in the schedule and the "same total" trap is real rather than
+     * coincidental — the standard fixture still grants new-hire options every
+     * year, which would swamp the opening cohort's contribution and make a
+     * `toBe(0)` assertion true for the wrong reason.
+     */
+    const isolated = {
+      hiring: { hiresPerYear: [0, 0, 0, 0] },
+      attrition: { baseAnnualPct: 0, byBand: {} },
+    };
+
+    it('is distinguishable in the schedule, not just in the total', () => {
+      const unsupplied = runRollForward(
+        withArgs({
+          ...isolated,
+          company: { grantedOutstandingOptions: 300_000 },
+          openingCohorts: openingGrantCohorts([
+            { band: 'mid', outstandingOptions: 300_000, ageYearsAtPlanStart: 2 },
+          ]),
+        }),
+      );
+      const suppliedZero = runRollForward(
+        withArgs({
+          ...isolated,
+          company: { grantedOutstandingOptions: 300_000 },
+          openingCohorts: openingGrantCohorts([
+            {
+              band: 'mid',
+              outstandingOptions: 300_000,
+              ageYearsAtPlanStart: 2,
+              grantDateValuePerOption: 0,
+            },
+          ]),
+        }),
+      );
+
+      const unsuppliedSchedule = esopExpenseSchedule({
+        rollForward: unsupplied,
+        vesting: args.vesting,
+        fairValue: args.grantPolicy.fairValue,
+        accountingBasis: 'indAS102',
+        strikePolicy: args.grantPolicy.strikePolicy,
+        faceValuePerShare: args.company.faceValuePerShare,
+      });
+      const suppliedZeroSchedule = esopExpenseSchedule({
+        rollForward: suppliedZero,
+        vesting: args.vesting,
+        fairValue: args.grantPolicy.fairValue,
+        accountingBasis: 'indAS102',
+        strikePolicy: args.grantPolicy.strikePolicy,
+        faceValuePerShare: args.company.faceValuePerShare,
+      });
+
+      // The trap: identical totals.
+      expect(unsuppliedSchedule.totalExpenseRupees).toBe(0);
+      expect(suppliedZeroSchedule.totalExpenseRupees).toBe(0);
+
+      // Not the same fact, and the schedule says so outside the total.
+      expect(unsuppliedSchedule.excludedOpeningOptions).toBe(300_000);
+      expect(unsuppliedSchedule.includedOpeningOptions).toBe(0);
+
+      expect(suppliedZeroSchedule.excludedOpeningOptions).toBe(0);
+      expect(suppliedZeroSchedule.includedOpeningOptions).toBe(300_000);
+    });
+
+    it('amortises a supplied non-zero value straight line over the remaining vesting', () => {
+      const withValue = runRollForward(
+        withArgs({
+          ...isolated,
+          company: { grantedOutstandingOptions: 300_000 },
+          openingCohorts: openingGrantCohorts([
+            {
+              band: 'mid',
+              outstandingOptions: 300_000,
+              ageYearsAtPlanStart: 0,
+              grantDateValuePerOption: 40,
+            },
+          ]),
+        }),
+      );
+      const withValueSchedule = esopExpenseSchedule({
+        rollForward: withValue,
+        vesting: args.vesting,
+        fairValue: args.grantPolicy.fairValue,
+        accountingBasis: 'indAS102',
+        strikePolicy: args.grantPolicy.strikePolicy,
+        faceValuePerShare: args.company.faceValuePerShare,
+      });
+
+      expect(withValueSchedule.includedOpeningOptions).toBe(300_000);
+      expect(withValueSchedule.excludedOpeningOptions).toBe(0);
+      expect(withValueSchedule.totalExpenseRupees).toBeGreaterThan(0);
+
+      // ageYearsAtPlanStart 0, so ageYearsAtEndOfYear0 is 1: elapsed_t =
+      // (t + 1)/4 against the fixture's 4 year vest. Quarter of the value each
+      // year, reaching 1 only at year 3 — the last year of the default 4 year
+      // horizon — and nowhere before it, with zero attrition so nothing else
+      // moves the expected count.
+      expect(withValueSchedule.years[0]?.cumulativeExpenseRupees).toBeCloseTo(
+        300_000 * 40 * 0.25,
+        0,
+      );
+      expect(withValueSchedule.years[2]?.cumulativeExpenseRupees).toBeCloseTo(
+        300_000 * 40 * 0.75,
+        0,
+      );
+      expect(withValueSchedule.years[3]?.cumulativeExpenseRupees).toBeCloseTo(
+        300_000 * 40,
+        0,
+      );
+      expect(withValueSchedule.years[3]?.expenseRupees).toBeGreaterThan(0);
+    });
+
+    it('reverses a supplied value the same way an in-plan cohort does, on unvested forfeiture', () => {
+      const churning = runRollForward(
+        withArgs({
+          hiring: { hiresPerYear: [0, 0, 0, 0] },
+          attrition: { baseAnnualPct: 30, byBand: {} },
+          company: { grantedOutstandingOptions: 300_000 },
+          openingCohorts: openingGrantCohorts([
+            {
+              band: 'mid',
+              outstandingOptions: 300_000,
+              ageYearsAtPlanStart: 0,
+              grantDateValuePerOption: 40,
+            },
+          ]),
+        }),
+      );
+      const churningSchedule = esopExpenseSchedule({
+        rollForward: churning,
+        vesting: args.vesting,
+        fairValue: args.grantPolicy.fairValue,
+        accountingBasis: 'indAS102',
+        strikePolicy: args.grantPolicy.strikePolicy,
+        faceValuePerShare: args.company.faceValuePerShare,
+      });
+
+      const reversed = churningSchedule.years.reduce(
+        (sum, entry) => sum + entry.forfeitureReversalRupees,
+        0,
+      );
+
+      expect(reversed).toBeLessThan(0);
+      expect(churningSchedule.totalExpenseRupees).toBeLessThan(300_000 * 40);
+    });
   });
 
   it('refuses an unlawful vesting schedule, same as every other entry point', () => {

@@ -245,6 +245,16 @@ export interface GrantCohort {
   /** Composition. Same year and band behave identically, so they share a cohort. */
   readonly fromNewHires: number;
   readonly fromRefresh: number;
+  /**
+   * Fair value per option at grant, carried only by opening cohorts whose
+   * caller supplied one via `OpeningGrantCohortInput.grantDateValuePerOption`.
+   * `undefined` and `0` are distinct states, not interchangeable — see that
+   * field's comment — and this one preserves the distinction through every
+   * year the roll forward advances the cohort, because `stepGrantCohort`
+   * closes each year with `{ ...cohort, outstandingOptions: closingOutstanding }`,
+   * which carries every other field, including this one, forward untouched.
+   */
+  readonly grantDateValuePerOption?: number;
 }
 
 /** One cohort's year: the vested fraction, the three-way split, and the closing state. */
@@ -516,6 +526,22 @@ export interface OpeningGrantCohortInput {
   readonly ageYearsAtPlanStart: number;
   /** Optional: what was originally granted, if some has already gone. */
   readonly grantedOptions?: number;
+  /**
+   * Fair value per option at this cohort's original grant date, for the Ind AS
+   * 102 estimate in compliance.ts. Optional, and `undefined` is not the same
+   * input as `0`.
+   *
+   * Leave it unsupplied and the cohort is excluded from the expense estimate,
+   * because the engine holds no price per share from before the plan started
+   * to value it at and would otherwise have to guess one. Supply it — including
+   * as exactly `0`, a scheme adopted at a price equal to par, say — and the
+   * cohort is amortised over its remaining vesting like any other, at the value
+   * given. The two states report differently: `EsopExpenseSchedule` keeps
+   * `excludedOpeningOptions` and `includedOpeningOptions` apart rather than
+   * merging them, because "we don't know" and "we know, and it was nothing"
+   * are different facts that happen to net to the same rupee total.
+   */
+  readonly grantDateValuePerOption?: number;
 }
 
 export function openingGrantCohorts(
@@ -545,6 +571,7 @@ export function openingGrantCohorts(
       outstandingOptions: input.outstandingOptions,
       fromNewHires: input.outstandingOptions,
       fromRefresh: 0,
+      grantDateValuePerOption: input.grantDateValuePerOption,
     };
   });
 }

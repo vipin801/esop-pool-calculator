@@ -180,7 +180,7 @@ Open items:
 - The engine still raises no warning on a non-converged run. `EngineWarningId.solverDidNotConverge` has existed since [004] and nothing produces it, so the flag is only reachable by a caller who reads `solver.converged` directly. The warning surface is P5 work.
 - Whether 97.8% is a *useful* thing to show a founder is a separate question from whether it is the contract, and this session only settled the second. A plan with no answer in range arguably deserves different copy entirely rather than a number with a caveat.
 
-[009] 2026-08-15 | prompt P7 | branch main | commit 0000000 (sha backfilled by the follow-up commit, also covered by this entry)
+[009] 2026-08-15 | prompt P7 | branch main | commit 023c7af (sha backfilled by the follow-up commit, also covered by this entry)
 Changed: AUDIT_P4 chore 1. Added .gitattributes with `* text=auto eol=lf`, plus binary rules for the image and font extensions, so `git checkout` stops rewriting the working tree under core.autocrlf=true.
 Tests: 271 passed / 271 total, tsc pass, build pass
 Decisions:

@@ -246,3 +246,12 @@ Decisions:
 - The pointer names what is wrong and where the correction lives, and nothing else. It is not a summary of [008] and it does not touch [004]'s Decisions or Open items.
 Open items:
 - None from this item.
+
+[014] 2026-08-15 | prompt P9 | branch main | commit 0000000 (sha backfilled by the follow-up commit, also covered by this entry)
+Changed: Recorded M27 in PROJECT.md: the `instrument` compliance row is deliberate and must not be removed as noise in a later cleanup.
+Tests: 312 passed / 312 total, tsc pass, build pass (documentation only)
+Decisions:
+- M27. The row looks redundant from the inside — the tool exposes only ESOP, so it reads `pass` for every founder who ever uses the form — and that is exactly why it needed writing down before a polish pass deletes it. Its job is to answer the RSU and SAR question rather than be silent on it, because silence on a pending law reads as assent.
+- **No new test, because the decision already has teeth.** `COMPLIANCE_CHECK_IDS` includes `instrument`, `runComplianceChecks` builds a `Record<ComplianceCheckId, ComplianceCheck>`, and compliance.test.ts asserts the produced ids equal the declared ids exactly. Dropping the row fails `tsc` and fails the suite. Adding a test that asserts the row exists would restate what the type already enforces, which AUDIT_P4 section 5 lists as a category of weak test.
+Open items:
+- None from this item.

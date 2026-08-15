@@ -32,8 +32,8 @@
 
 import { cliffMeetsStatutoryMinimum, requireLawfulVestingSchedule } from './cohorts';
 import { STATUTORY } from './defaults';
-import { exercisePriceAtYear } from './denominator';
-import { EsopEngineError, requireNonNegative } from './errors';
+import { exercisePriceAtYear, thetaScaledFairValue } from './denominator';
+import { EsopEngineError } from './errors';
 import type { RollForwardResult } from './roll-forward';
 import {
   COMPLIANCE_CHECK_IDS,
@@ -436,11 +436,12 @@ function clamp(value: number, low: number, high: number): number {
 /**
  * What one option granted in year `s` is carried at.
  *
- * Ind AS 102 uses fair value, which here is `theta * PPS_s`, the same ratio
- * section 2 uses to convert a rupee grant into options. Companies not on Ind AS
- * use the ICAI Guidance Note intrinsic basis instead, which is the spread at
- * grant and is frequently zero at a face value strike — the reason the two
- * bases are a founder-facing choice rather than an internal detail.
+ * Ind AS 102 uses fair value, `theta * PPS_s` — `thetaScaledFairValue` in
+ * denominator.ts, the same function section 2's fair value basis calls, and
+ * the same guard on theta. Companies not on Ind AS use the ICAI Guidance Note
+ * intrinsic basis instead, which is the spread at grant and is frequently zero
+ * at a face value strike — the reason the two bases are a founder-facing
+ * choice rather than an internal detail.
  */
 function perOptionValue(args: {
   readonly basis: AccountingBasis;
@@ -451,7 +452,7 @@ function perOptionValue(args: {
 }): number {
   const { basis, pricePerShare, theta, strikePolicy, faceValuePerShare } = args;
 
-  if (basis === 'indAS102') return theta * pricePerShare;
+  if (basis === 'indAS102') return thetaScaledFairValue({ theta, pricePerShare });
 
   const exercisePrice = exercisePriceAtYear({ strikePolicy, pricePerShare, faceValuePerShare });
 
@@ -495,11 +496,14 @@ export function esopExpenseSchedule(args: EsopExpenseArgs): EsopExpenseSchedule 
   const { rollForward, vesting, fairValue, accountingBasis, strikePolicy, faceValuePerShare } = args;
 
   requireLawfulVestingSchedule(vesting);
-  requireNonNegative(
-    fairValue.theta,
-    'thetaOutOfRange',
-    'Theta cannot be negative when valuing a grant.',
-  );
+  /**
+   * No standalone theta guard here. Theta is validated once, inside
+   * `thetaScaledFairValue`, and only on the path that actually multiplies by
+   * it — the Ind AS 102 branch of `perOptionValue`, for an in-plan cohort.
+   * Guarding it unconditionally at the top would reject a bad theta on an
+   * `icaiGuidanceNote` company that never reads theta at all, which is a
+   * false refusal, not a stricter one.
+   */
 
   const grantedById = new Map<string, number>();
   for (const cohort of rollForward.cohorts) grantedById.set(cohort.id, cohort.grantedOptions);

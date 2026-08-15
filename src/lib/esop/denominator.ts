@@ -44,6 +44,46 @@ export const DEFAULT_THETA: number = DEFAULTS.theta.value;
 export const MIN_REALISABLE_SPREAD_FRACTION_OF_PPS = 1e-6;
 
 /**
+ * theta * PPS_t: the Black-Scholes-style fair value of one option.
+ *
+ * Spec section 2 names this `D_t` under the fair value basis. Ind AS 102 uses
+ * the identical expression, in compliance.ts, to value a grant for the annual
+ * expense estimate — the same quantity behind two different questions, "how
+ * many options does this rupee buy" and "what does this option cost the P&L".
+ * It used to be written out independently in both files, and their theta
+ * guards had drifted apart: this one rejected theta outside `(0, 1]`, the
+ * expense path only rejected theta below zero, so `theta = 0` and
+ * `theta = 1.5` passed one call site and were refused by the other for
+ * arithmetic that is, character for character, the same multiplication.
+ *
+ * The domain is `(0, 1]`, the stricter of the two guards that existed before
+ * this. Theta is a value ratio — what one option is worth divided by what one
+ * share is worth — and section 2 says it "approaches 1 as the strike
+ * approaches zero", which only reads as a ceiling if 1 is the top of the
+ * range theta can take. A ratio at or below zero prices an option at nothing
+ * or less, which is not a fair value Ind AS 102 lets a company book, so zero
+ * is excluded along with everything negative. Both callers now reject the
+ * same values with the same code, because both call this function rather than
+ * repeating its arithmetic or its guard.
+ */
+export function thetaScaledFairValue(args: {
+  readonly theta: number;
+  readonly pricePerShare: number;
+}): number {
+  const { theta, pricePerShare } = args;
+
+  if (!Number.isFinite(theta) || theta <= 0 || theta > 1) {
+    throw new EsopEngineError(
+      'thetaOutOfRange',
+      'Theta is the value ratio of an option to a share and must sit in (0, 1]. It approaches 1 as the strike approaches zero.',
+      { theta },
+    );
+  }
+
+  return theta * pricePerShare;
+}
+
+/**
  * X_t, the exercise price for options granted in year t.
  *
  * `lastRoundPrice` uses the modelled PPS_t for that year, which is the price of
@@ -127,16 +167,8 @@ export function denominatorFor(args: {
       return spread;
     }
 
-    case 'fairValue': {
-      if (!Number.isFinite(theta) || theta <= 0 || theta > 1) {
-        throw new EsopEngineError(
-          'thetaOutOfRange',
-          'Theta is the value ratio of an option to a share and must sit in (0, 1]. It approaches 1 as the strike approaches zero.',
-          { theta },
-        );
-      }
-      return theta * pricePerShare;
-    }
+    case 'fairValue':
+      return thetaScaledFairValue({ theta, pricePerShare });
   }
 }
 

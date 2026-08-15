@@ -291,7 +291,7 @@ Decisions:
 Open items:
 - Closed: item 4(b) is off the [012]-raised list, and the wording there for the remaining two items now says explicitly they are blocked on the P6 assembler.
 
-[018] 2026-08-15 | prompt P9 | branch main | commit 0000000 (sha backfilled by the follow-up commit, also covered by this entry)
+[018] 2026-08-15 | prompt P9 | branch main | commit 45756d1 (sha backfilled by the follow-up commit, also covered by this entry)
 Changed: AUDIT_P4 P5 open item, item 4(c), verification only. Confirmed spec output items 3, 6, 10 and 11 and the `EsopOutputs` producer remain in Open items, and made the marking explicit: both remaining [012]-raised bullets now say **Blocked on the P6 assembler.** in PROJECT.md rather than leaving the dependency to be inferred.
 Changed: Corrected a stale cross-reference found in the same pass: the no-coverage-threshold line still said "before P5 ships", though [015] already deferred that decision to P9 explicitly and tested its absence. Fixed to match [015].
 Tests: 322 passed / 322 total, tsc pass, build pass (documentation only)

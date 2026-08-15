@@ -238,7 +238,7 @@ Open items:
 - Nothing wires the compliance checks to the roll forward. `runComplianceChecks` takes an `AuthorisedCapitalHeadroom` and nothing yet hands it the roll forward's own. That join belongs to whatever assembles `EsopOutputs`, which still has no producer.
 - Defect 5 is now permanently unobservable rather than merely unobservable today, because an unlawful cliff can no longer reach the engine. Still worth correcting for what the code says.
 
-[013] 2026-08-15 | prompt P9 | branch main | commit 0000000 (sha backfilled by the follow-up commit, also covered by this entry)
+[013] 2026-08-15 | prompt P9 | branch main | commit 3b4d05a (sha backfilled by the follow-up commit, also covered by this entry)
 Changed: Appended a single `Superseded in part by [008]` pointer line to entry [004], and recorded the exception it relies on in the LOG preamble.
 Tests: 312 passed / 312 total, tsc pass, build pass (documentation only)
 Decisions:

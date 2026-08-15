@@ -36,6 +36,16 @@ export const ESOP_ERROR_CODES = [
   'invalidMoneyAmount',
   /** A refresh rate or refresh size outside the range a percentage can take. */
   'invalidRefreshPolicy',
+  /** A negative holding on the cap table. */
+  'negativeShareCount',
+  /** A round that raises nothing is not a round. */
+  'nonPositiveRaiseAmount',
+  /** The investor-required pool percentage is outside [0, 100). */
+  'poolPctOutOfRange',
+  /** pi + R/(Vpre+R) at or above 1, so the existing holders are left nothing. */
+  'roundLeavesNoRoomForExistingHolders',
+  /** A round schedule whose years do not strictly increase. */
+  'roundsOutOfOrder',
 ] as const;
 
 export type EsopErrorCode = (typeof ESOP_ERROR_CODES)[number];

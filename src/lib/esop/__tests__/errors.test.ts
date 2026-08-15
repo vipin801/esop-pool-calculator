@@ -21,7 +21,13 @@ import {
   splitHiresByBand,
   type ByBand,
 } from '../grants';
-import type { GrantBasis, RefreshPolicy } from '../types';
+import {
+  investorFractionOfPostMoney,
+  runRoundSchedule,
+  sharesExcludingPool,
+  shuffleRound,
+} from '../rounds';
+import type { FundingRound, GrantBasis, PreRoundHoldings, RefreshPolicy } from '../types';
 import { pricePerShare, valuationAtYear } from '../valuation';
 
 const ONE_LEADER: ByBand = { leadership: 1, senior: 0, mid: 0, junior: 0 };
@@ -39,6 +45,23 @@ const BASIS_A: GrantBasis = {
 const REFRESH: RefreshPolicy = { ratePct: 25, sizePct: 40, eligibilityMonths: 24 };
 
 const GRANT_YEAR = { year: 0, fullyDilutedShares: 10_000_000, compInflationPctPerYear: 8 };
+
+const HOLDINGS: PreRoundHoldings = {
+  founderShares: 6_500_000,
+  investorShares: 1_000_000,
+  grantedOptions: 500_000,
+  unallocatedPool: 1_000_000,
+};
+
+const ROUND: FundingRound = {
+  id: 'seriesA',
+  label: 'Series A',
+  year: 1,
+  preMoneyValuation: 400_000_000,
+  raiseAmount: 100_000_000,
+  investorRequiredPostRoundPoolPct: 15,
+  poolCreation: 'preMoney',
+};
 
 /** One real engine call per code. */
 const REACHES: Readonly<Record<EsopErrorCode, () => unknown>> = {
@@ -77,6 +100,23 @@ const REACHES: Readonly<Record<EsopErrorCode, () => unknown>> = {
       eligibleByBand: ONE_LEADER,
       refresh: { ...REFRESH, ratePct: -1 },
       grantYear: GRANT_YEAR,
+    }),
+  negativeShareCount: () => sharesExcludingPool({ ...HOLDINGS, founderShares: -1 }),
+  nonPositiveRaiseAmount: () => investorFractionOfPostMoney({ ...ROUND, raiseAmount: 0 }),
+  poolPctOutOfRange: () =>
+    shuffleRound({
+      round: { ...ROUND, investorRequiredPostRoundPoolPct: 100 },
+      holdings: HOLDINGS,
+    }),
+  roundLeavesNoRoomForExistingHolders: () =>
+    shuffleRound({
+      round: { ...ROUND, investorRequiredPostRoundPoolPct: 80 },
+      holdings: HOLDINGS,
+    }),
+  roundsOutOfOrder: () =>
+    runRoundSchedule({
+      rounds: [ROUND, { ...ROUND, id: 'earlier', year: 0 }],
+      openingHoldings: HOLDINGS,
     }),
 };
 

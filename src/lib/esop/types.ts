@@ -256,6 +256,26 @@ export interface ComplianceInputs {
 /** Whether the new pool is cut before or after the investor's money. Spec section 4.6. */
 export type PoolCreationTiming = 'preMoney' | 'postMoney';
 
+/**
+ * The cap table going into a round. Spec section 4.6 asks only for `S_ex` and
+ * `U`, but a cap table has to name who holds `S_ex`, so it is carried split.
+ *
+ *   S_ex = founderShares + investorShares + grantedOptions
+ *   U    = unallocatedPool
+ *
+ * Exercised options become issued shares and will join `S_ex` as a fifth line
+ * when section 4.3 lands. `CapTableHolder` already has the row for them.
+ */
+export interface PreRoundHoldings {
+  readonly founderShares: number;
+  /** Every investor from earlier rounds, before this round's investor. */
+  readonly investorShares: number;
+  /** Granted and outstanding. Allocated, so inside S_ex and not inside U. */
+  readonly grantedOptions: number;
+  /** U. */
+  readonly unallocatedPool: number;
+}
+
 /** Spec section 4.6. The pool shuffle is the highest value output in the tool. */
 export interface FundingRound {
   readonly id: string;
@@ -330,25 +350,62 @@ export interface TopUpRequirement {
 
 /** Spec section 4.6, one arm of the pre-money versus post-money comparison. */
 export interface PoolShuffleOutcome {
+  readonly poolCreation: PoolCreationTiming;
   /** T, post-round fully diluted. */
   readonly postRoundFullyDiluted: number;
-  /** I. */
+  /** I. This round's investor only, not the investors already on the register. */
   readonly investorShares: number;
-  /** dP. */
+  /** dP. Negative when the required pool is smaller than the pool already reserved. */
   readonly newPoolShares: number;
+  /** pi * T. The whole pool post-round, old and new. */
+  readonly postRoundPoolShares: number;
+  /**
+   * What this round's investor paid. Under `preMoney` the new pool sits inside
+   * the pre-money share count, so this is lower than under `postMoney`.
+   */
   readonly investorPricePerShare: number;
-  /** dP / T. */
+  /**
+   * (Vpre + R) / T. What a share is marked at once both events are done.
+   * Identical to `investorPricePerShare` under `preMoney`; lower under
+   * `postMoney`, where the pool is cut after the investor bought.
+   */
+  readonly postRoundPricePerShare: number;
+  /** I / T. Equals R/(Vpre+R) exactly under `preMoney`, and less under `postMoney`. */
+  readonly investorPctOfFullyDiluted: number;
+  readonly founderPctOfFullyDiluted: number;
+  /**
+   * dP / T, as spec section 4.6 defines it: the new pool's share of the
+   * post-round company. Read it as the pool's footprint, not as the founders'
+   * own percentage loss, which is smaller because the existing pool and the
+   * granted options are diluted too.
+   */
   readonly founderDilutionFromPoolPctPoints: number;
+  /** That footprint valued at `postRoundPricePerShare`. */
   readonly founderDilutionCostRupees: number;
+  readonly capTables: PoolShuffleCapTables;
 }
 
 /** Item 4. The delta is the number the founder is actually buying the tool for. */
 export interface PoolCostToFounders {
   readonly roundId: string;
+  /** Which convention this round is actually being offered on. */
+  readonly asOffered: PoolCreationTiming;
   readonly preMoneyPool: PoolShuffleOutcome;
   readonly postMoneyPool: PoolShuffleOutcome;
-  readonly deltaRupees: number;
+  /** Spec measure: pre-money `dP/T` minus post-money `dP/T`. */
   readonly deltaPctPoints: number;
+  readonly deltaRupees: number;
+  /**
+   * What the founders keep by moving the pool into the post-money: their
+   * post-round percentage under `postMoney` minus the same under `preMoney`.
+   *
+   * This is a different and larger number than `deltaPctPoints`, because part
+   * of a post-money pool is borne by the incoming investor rather than by the
+   * founders. Both are reported; neither is a substitute for the other.
+   */
+  readonly founderOwnershipDeltaPctPoints: number;
+  /** That percentage difference valued at the round's post-money valuation. */
+  readonly founderOwnershipDeltaRupees: number;
 }
 
 /** Item 5. Spec section 4.4, plus the exercised leg that v1 ignored. */
@@ -388,9 +445,20 @@ export interface CapTableRow {
   readonly pctOfFullyDiluted: number;
 }
 
+/**
+ * The total line. Not a `CapTableRow`, because "total" is not a holder and
+ * putting it in `rows` would let it be summed with the rows it totals.
+ */
+export interface CapTableTotal {
+  readonly shares: number;
+  readonly pctOfFullyDiluted: number;
+}
+
 export interface CapTable {
   readonly label: string;
   readonly rows: readonly CapTableRow[];
+  /** Always equals the row sums. A test asserts it on every table the engine emits. */
+  readonly total: CapTableTotal;
   readonly fullyDilutedShares: number;
 }
 
@@ -399,6 +467,26 @@ export interface CapTableSet {
   readonly before: CapTable;
   readonly after: CapTable;
   readonly afterModelledRound: CapTable | null;
+}
+
+/**
+ * The three states of a round, spec section 4.6.
+ *
+ * The field names describe states, not order, because the order is what the two
+ * conventions disagree about. Under `preMoney` the pool is cut first, so
+ * `afterRound` is the last state; under `postMoney` the money lands first, so
+ * `afterPoolCreated` is. `final` points at whichever it is, so nothing has to
+ * infer it.
+ */
+export interface PoolShuffleCapTables {
+  /** Pre-round. Identical under both conventions. */
+  readonly before: CapTable;
+  /** The pool at its post-round size. Under `preMoney` the money is not in yet. */
+  readonly afterPoolCreated: CapTable;
+  /** The investor's money in. Under `postMoney` the new pool is not cut yet. */
+  readonly afterRound: CapTable;
+  /** Whichever of the two above happened last. Both events done. */
+  readonly final: CapTable;
 }
 
 /**

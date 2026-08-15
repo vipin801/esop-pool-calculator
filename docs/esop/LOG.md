@@ -190,7 +190,7 @@ Decisions:
 Open items:
 - `.gitignore` still has no `~$*` rule, so the Word lock file noted in [004] will reappear in `git status` whenever the root copy of the spec is opened. Carried from [004].
 
-[010] 2026-08-15 | prompt P7 | branch main | commit 0000000 (sha backfilled by the follow-up commit, also covered by this entry)
+[010] 2026-08-15 | prompt P7 | branch main | commit cf3f799 (sha backfilled by the follow-up commit, also covered by this entry)
 Changed: AUDIT_P4 chore 2. Coverage is a standing check. Added @vitest/coverage-v8 3.2.7 as a devDependency, a `coverage` script, and a coverage block in vitest.config.ts scoped to src/lib/esop.
 Changed: Set `testTimeout: 30_000` in vitest.config.ts, closing AUDIT_P4 defect 6.
 Tests: 271 passed / 271 total, tsc pass, build pass. Engine line coverage 97.43%.

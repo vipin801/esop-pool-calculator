@@ -247,7 +247,7 @@ Decisions:
 Open items:
 - None from this item.
 
-[014] 2026-08-15 | prompt P9 | branch main | commit 0000000 (sha backfilled by the follow-up commit, also covered by this entry)
+[014] 2026-08-15 | prompt P9 | branch main | commit 5667929 (sha backfilled by the follow-up commit, also covered by this entry)
 Changed: Recorded M27 in PROJECT.md: the `instrument` compliance row is deliberate and must not be removed as noise in a later cleanup.
 Tests: 312 passed / 312 total, tsc pass, build pass (documentation only)
 Decisions:

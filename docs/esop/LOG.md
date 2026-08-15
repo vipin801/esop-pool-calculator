@@ -131,3 +131,13 @@ Open items:
 - `recommendedPoolUnderBothBases` needs the comparison grant table passed in, because `GrantBasis` is a union and the selected arm carries only its own. The form will have to hold both tables to satisfy output item 1.
 - Still open from [000] and [002]: `esop-engine-spec-v2.md` sits at the repo root beside the canonical copy at docs/esop/ENGINE_SPEC.md, and there is no CLAUDE.md pointing a session at PROJECT.md.
 - An untracked `~$op-engine-spec-v2.md` appeared at the repo root this session. It is the lock file Word writes while `esop-engine-spec-v2.md` is open. Deliberately not committed and not deleted, since the file is presumably still open. The repo has no .gitignore rule for `~$*`, so it will keep showing up in `git status` until one is added or the root copy of the spec is removed.
+
+[005] 2026-08-15 | prompt P6 | branch main | commit 0000000 (sha backfilled by the follow-up commit, also covered by this entry)
+Changed: Added docs/esop/AUDIT_P4.md, the adversarial audit of everything built in [000] to [004]. No source and no test was changed by that session; the audit ran seven deliberate mutations and reverted every one.
+Tests: 253 passed / 253 total, tsc pass, build pass (unchanged from [004]; this commit carries documentation only)
+Decisions:
+- None. The audit records findings; the decisions they force are taken in [006] onward.
+Open items:
+- **The audit's headline: mutation (e) survived.** Removing the unallocated pool from FD_t in the price-per-share denominator left all 253 tests green while moving the Basis B recommendation from 15% to 12.5%. Fixed in [006].
+- The audit's defect 2 (PoolSizing disagrees with itself) is fixed in [007], defect 3 (the runaway contract, and this log describing behaviour that was never built) in [008].
+- The audit's remaining defects 4 to 13 are **not** addressed this session and stay open: the statutory 12-month cliff is not blocked; the mid-year exposure factor is applied to continuing-employee exercises against M17; DEFAULTS.horizonYears and DEFAULTS.hiresPerYear disagree in length; exerciseWindowDays is never read; recycleForfeited is tagged `estimate` where M2 argues for `provisional`; the LOG template promises two shas per entry and every entry carries one; rounds.ts has no fuzz coverage in the repo; and several exported helpers sit at 0% coverage. Each is written up with a file and line reference in AUDIT_P4.md.

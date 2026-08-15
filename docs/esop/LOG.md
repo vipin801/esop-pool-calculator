@@ -64,7 +64,7 @@ Open items:
 - There is no assembled `DEFAULT_INPUTS: EsopInputs`. defaults.ts holds assumptions only; valuation, share count and existing pool are founder-entered, not defaults. Whoever builds the form or the engine will need a seed-input builder.
 - No engine and no UI, per prompt scope. `EsopOutputs` is a shape with no producer yet.
 
-[002] 2026-08-15 | prompt P3 | branch main | commit pending (sha backfilled by the follow-up commit, also covered by this entry)
+[002] 2026-08-15 | prompt P3 | branch main | commit 4ce9980 (sha backfilled by the follow-up commit, also covered by this entry)
 Changed: Added the first engine math at src/lib/esop, covering ENGINE_SPEC.md sections 1, 2, 4.1 and 4.2. errors.ts (`EsopEngineError` with a closed 12-code union, plus input guards), valuation.ts (V_t, PPS_t and the market path), denominator.ts (X_t by strike policy and all three section 2 value bases), grants.ts (new hire demand and refresh demand under both bases).
 Changed: Added 74 tests across seven files. Recorded M7 to M10 in PROJECT.md. No React anywhere, enforced by a test rather than by convention.
 Tests: 113 passed / 113 total, tsc pass, build pass

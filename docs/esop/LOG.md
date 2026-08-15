@@ -142,7 +142,7 @@ Open items:
 - The audit's defect 2 (PoolSizing disagrees with itself) is fixed in [007], defect 3 (the runaway contract, and this log describing behaviour that was never built) in [008].
 - The audit's remaining defects 4 to 13 are **not** addressed in [005] to [010] and stay open: the statutory 12-month cliff is not blocked; the mid-year exposure factor is applied to continuing-employee exercises against M17; DEFAULTS.horizonYears and DEFAULTS.hiresPerYear disagree in length; exerciseWindowDays is never read; recycleForfeited is tagged `estimate` where M2 argues for `provisional`; the LOG template promises two shas per entry and every entry carries one; rounds.ts has no fuzz coverage in the repo; and several exported helpers sit at 0% coverage. Each is written up with a file and line reference in AUDIT_P4.md.
 
-[006] 2026-08-15 | prompt P7 | branch main | commit 0000000 (sha backfilled by the follow-up commit, also covered by this entry)
+[006] 2026-08-15 | prompt P7 | branch main | commit 22b250b (sha backfilled by the follow-up commit, also covered by this entry)
 Changed: AUDIT_P4 defect 1. valuation.ts gains `fullyDilutedShares`, the single composition of FD_t from issued shares, granted outstanding and the unallocated pool. roll-forward.ts builds the count that prices year t through it; rounds.ts builds its cap table total through it. Recorded M22.
 Changed: Added src/lib/esop/__tests__/price-per-share.test.ts, 14 tests. This is the file whose absence let mutation (e) survive the whole suite.
 Tests: 267 passed / 267 total, tsc pass, build pass

@@ -1,0 +1,21 @@
+# Line endings are LF in the repository and LF in the working tree, on every
+# platform.
+#
+# Without this, `core.autocrlf=true` on a Windows checkout writes CRLF into the
+# working tree while the blobs stay LF, so every `git checkout` silently
+# rewrites the files it restores. AUDIT_P4 hit exactly that: reverting a
+# mutation with `git checkout` flipped four engine files to CRLF, and
+# converting them back made `git status` report six modified files with an
+# empty content diff. Neither state is wrong and both look like a change, which
+# is the worst way for a tree to be clean.
+* text=auto eol=lf
+
+# Binary. Never normalised, never diffed as text.
+*.ico binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.woff binary
+*.woff2 binary
+*.pdf binary

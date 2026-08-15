@@ -179,3 +179,13 @@ Decisions:
 Open items:
 - The engine still raises no warning on a non-converged run. `EngineWarningId.solverDidNotConverge` has existed since [004] and nothing produces it, so the flag is only reachable by a caller who reads `solver.converged` directly. The warning surface is P5 work.
 - Whether 97.8% is a *useful* thing to show a founder is a separate question from whether it is the contract, and this session only settled the second. A plan with no answer in range arguably deserves different copy entirely rather than a number with a caveat.
+
+[009] 2026-08-15 | prompt P7 | branch main | commit 0000000 (sha backfilled by the follow-up commit, also covered by this entry)
+Changed: AUDIT_P4 chore 1. Added .gitattributes with `* text=auto eol=lf`, plus binary rules for the image and font extensions, so `git checkout` stops rewriting the working tree under core.autocrlf=true.
+Tests: 271 passed / 271 total, tsc pass, build pass
+Decisions:
+- **Correction to entry [008]: its Tests line says 272 passed / 272 total. The figure is 271.** Defect 3 replaced one test with two, against 270 after [007]. The log is append-only, so [008] is corrected here rather than edited, the same way [008] corrects [004].
+- **There was nothing to renormalise in the index, which was worth finding out before writing the commit.** `git grep -I -l $'\r' HEAD` returns nothing: every tracked blob was already LF and always had been. Only the *working tree* was flipping, because autocrlf=true converts on checkout and back on staging, so `git status` stayed clean while the bytes on disk changed under it. `git add --renormalize .` produced no blob change; the six CRLF files on disk were rewritten to LF by hand and `git diff --cached --stat` then showed .gitattributes alone. So this commit adds one file and changes no content, and that is the correct outcome rather than a sign the chore did nothing.
+- Kept separate from the three defect commits, per the prompt, so a line-ending change can never be confused with a change to the engine.
+Open items:
+- `.gitignore` still has no `~$*` rule, so the Word lock file noted in [004] will reappear in `git status` whenever the root copy of the spec is opened. Carried from [004].

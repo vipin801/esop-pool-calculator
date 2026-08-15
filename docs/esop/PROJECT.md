@@ -45,6 +45,10 @@ This section records only decisions the spec leaves open, as they get made. Numb
 | M4 | The band vocabulary is leadership, senior, mid, junior, mapping to the spec's CXO-or-VP, senior IC, mid IC, junior. | 2026-08-15 |
 | M5 | `exerciseWindowDays` is a closed union of the four options the spec names: 30, 90, 365, 1825. A founder cannot enter an arbitrary window until we decide to open it. | 2026-08-15 |
 | M6 | Neither benchmark ladder is a partition, so overlapping bands are carried as data, not forbidden. Each track declares its stage trend and its known overlaps, and the tests assert the found overlaps equal the declared ones exactly. The advisory ladder overlaps at Series B against Series C+; the observed India ladder overlaps at three pairs, because "below 10%" is a ceiling and not a band. | 2026-08-15 |
+| M7 | Section 4.2 writes the refresh formula in Basis B terms, dividing by `D_t`. Applied literally under Basis A it would make Basis A demand move with the valuation and section 1 would be false. So refresh mirrors the fork: a percentage of `FD_t` under Basis A, rupees over `D_t` under Basis B. `Gbar` is the headcount-weighted mean grant across the eligible base, in whichever unit the basis uses. | 2026-08-15 |
+| M8 | The realisable spread is guarded at `1e-6` of `PPS_t`. At or below it the engine raises a typed error instead of returning a near-infinite option count. It is an algorithm constant, not an estimate, so it carries no provenance tag, per M3. It says nothing about whether a thin spread is sensible; it only refuses to divide by nothing. | 2026-08-15 |
+| M9 | `X_t` is the modelled `PPS_t` of the grant year under `lastRoundPrice`, and `PPS_t * (1 - discount)` under `discountToFMV`. Face value is applied as a floor to every policy, not just the discount case, because shares cannot be issued below par. | 2026-08-15 |
+| M10 | Year indices are zero-based. Year 0 is the first plan year, priced at today's post-money valuation, so `(1+i)^0` leaves the first year's grant values uninflated and `V_0` is the price the first hires are granted at. | 2026-08-15 |
 
 ## Compliance facts, current as at August 2026
 

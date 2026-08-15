@@ -63,3 +63,24 @@ Open items:
 - Ten defaults are `provisional`, meaning the spec sets no v2 value: refreshRatePct, refreshSizePct, bufferPct, valuationGrowthPctPerYear, horizonYears, hiresPerYear, seniorityMixPct, grantValueByBand, attritionByBandPct, accountingBasis. Each needs a market check before launch.
 - There is no assembled `DEFAULT_INPUTS: EsopInputs`. defaults.ts holds assumptions only; valuation, share count and existing pool are founder-entered, not defaults. Whoever builds the form or the engine will need a seed-input builder.
 - No engine and no UI, per prompt scope. `EsopOutputs` is a shape with no producer yet.
+
+[002] 2026-08-15 | prompt P3 | branch main | commit pending (sha backfilled by the follow-up commit, also covered by this entry)
+Changed: Added the first engine math at src/lib/esop, covering ENGINE_SPEC.md sections 1, 2, 4.1 and 4.2. errors.ts (`EsopEngineError` with a closed 12-code union, plus input guards), valuation.ts (V_t, PPS_t and the market path), denominator.ts (X_t by strike policy and all three section 2 value bases), grants.ts (new hire demand and refresh demand under both bases).
+Changed: Added 74 tests across seven files. Recorded M7 to M10 in PROJECT.md. No React anywhere, enforced by a test rather than by convention.
+Tests: 113 passed / 113 total, tsc pass, build pass
+Decisions:
+- M7 to M10 recorded in PROJECT.md. M7 is the one that changes an answer: section 4.2's refresh formula divides by `D_t`, which is Basis B's shape. Applied literally under Basis A it would drag the valuation into a percent-of-equity plan and section 1 would be false, so refresh mirrors the fork.
+- Basis A's independence from valuation is structural, not a promise kept by care. `GrantYear` carries no price per share, and `newHireGrantDemandBasisA` and `refreshGrantDemandBasisA` take no price, no denominator and no growth rate, so a valuation has no route into them. The dispatcher accepts a denominator under Basis A and never reads it; a test passes one and asserts the result reports `denominator: null`.
+- The headline test lives in its own file, `grant-basis-invariance.test.ts`, and asserts exact equality rather than closeness, because under Basis A both runs execute identical arithmetic on identical inputs. It also asserts the price per share moved 27-fold over the same path, so the test cannot pass by doing nothing.
+- The realisable denominator refuses a degenerate spread with a typed error rather than returning a number (M8). `allDenominatorsForYear` carries that refusal as data, so a UI can price notional and fair value and say why realisable is missing instead of catching an exception.
+- Every error code is reachable from a real engine call, asserted in errors.test.ts, so a code cannot rot into a comment that no path produces and no UI handles.
+Open items:
+- **"Fair value sits between notional and realisable" is not universal, and the UI must not assume it.** It holds only when `X_t > (1 - theta) * PPS_t`, that is, a near-the-money strike, which is the case the spec is talking about. At a face value strike against a high price per share, fair value demand exceeds realisable. Both directions are tested. Someone has to decide how the three lines are ordered on screen at a face value strike.
+- Spec section 8 wants a warning when the founder sets the strike at FMV and picks the notional basis. `EngineWarningId` has the id; nothing raises it yet, because no warning surface exists.
+- `theta` is an input defaulting to 0.55 and is not derived from `expectedLifeYears` and `volatilityPct`, which `FairValueAssumptions` carries and the engine does not read. Either wire a Black-Scholes to them or drop them.
+- `lastRoundPrice` takes `X_t` from the modelled `PPS_t` of the grant year, not from an actual round in `rounds`. When section 4.6 lands, the strike should come from the round schedule, not from the smooth growth path.
+- The refresh eligible base is an input, because section 4.3 cohort tracking is what produces it and that is not built. `eligibleByBandFromTenures` is a stopgap for callers holding a roster.
+- Hires stay fractional: 15 hires at a 5% leadership mix is 0.75 leadership hires. Correct for demand, wrong for any headcount readout, and rounding it would change the plan rather than describe it.
+- A mix that does not sum to 100 silently loses hires by design; `seniorityMixSumsTo100` exists for the caller to raise the existing warning. Nothing calls it yet.
+- No fixed point yet (4.5), so nothing closes the loop where `FD_t` contains the pool. valuation.ts takes `FD_t` per year rather than deriving it, for exactly that reason.
+- Still open from [000]: `esop-engine-spec-v2.md` sits at the repo root beside the canonical copy at docs/esop/ENGINE_SPEC.md, and there is no CLAUDE.md pointing a session at PROJECT.md.

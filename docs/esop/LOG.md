@@ -85,7 +85,7 @@ Open items:
 - No fixed point yet (4.5), so nothing closes the loop where `FD_t` contains the pool. valuation.ts takes `FD_t` per year rather than deriving it, for exactly that reason.
 - Still open from [000]: `esop-engine-spec-v2.md` sits at the repo root beside the canonical copy at docs/esop/ENGINE_SPEC.md, and there is no CLAUDE.md pointing a session at PROJECT.md.
 
-[003] 2026-08-15 | prompt P4 | branch main | commit pending (sha backfilled by the follow-up commit, also covered by this entry)
+[003] 2026-08-15 | prompt P4 | branch main | commit 31d126c (sha backfilled by the follow-up commit, also covered by this entry)
 Changed: Added src/lib/esop/rounds.ts, covering ENGINE_SPEC.md section 4.6: the closed form for T, I, dP and the investor's price; both pool conventions; the cap table at all three stages of a round; the delta between the conventions; and a round schedule that chains each round onto the cap table the last one closed with.
 Changed: Extended types.ts with `PreRoundHoldings`, `CapTableTotal`, `PoolShuffleCapTables`, and the fields section 4.6 needs on `PoolShuffleOutcome` and `PoolCostToFounders`. Added five error codes. Added 39 tests across two files plus a shared cap table balance assertion. Recorded M11 to M14.
 Tests: 152 passed / 152 total, tsc pass, build pass

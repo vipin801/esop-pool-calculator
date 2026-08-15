@@ -203,7 +203,7 @@ Open items:
 - Coverage is available on demand and is not part of the green gate. Standing rule 5 still names tests, tsc and build only.
 - Carried forward and untouched by this session, all with file and line references in AUDIT_P4.md: the statutory 12-month cliff is not blocked anywhere in the engine (defect 4); the mid-year exposure factor is applied to continuing-employee exercises against M17 (defect 5); DEFAULTS.horizonYears and DEFAULTS.hiresPerYear disagree in length (defect 7); exerciseWindowDays is carried and never read, so the spec's link between the exercise window and lambda does not exist (defect 8); recycleForfeited is tagged `estimate` where M2 argues for `provisional` (defect 9); the LOG template's "Both shas are listed" is unachievable as written and every entry carries one (defect 10); rounds.ts has no fuzz coverage in the repo (defect 11); and the untested exported surface above (defect 12).
 
-[011] 2026-08-15 | prompt P7 | branch main | commit 0000000 (sha backfilled by the follow-up commit, also covered by this entry)
+[011] 2026-08-15 | prompt P7 | branch main | commit 0178552 (sha backfilled by the follow-up commit, also covered by this entry)
 Changed: Replaced PROJECT.md's "Open items: None." with the nine AUDIT_P4 findings this session deliberately did not fix, each pointing at the audit for a file and line.
 Tests: 271 passed / 271 total, tsc pass, build pass
 Decisions:

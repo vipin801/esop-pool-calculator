@@ -154,7 +154,7 @@ Decisions:
 Open items:
 - The universal identity the new file adds, `PPS_t * FD_t = V_t` against the reported count, is checked on five named fixtures rather than across the 500 generated cases. It belongs in engine-invariants.test.ts as well; left out of this commit to keep the defect fix and the fuzz surface separate.
 
-[007] 2026-08-15 | prompt P7 | branch main | commit 0000000 (sha backfilled by the follow-up commit, also covered by this entry)
+[007] 2026-08-15 | prompt P7 | branch main | commit 31042b4 (sha backfilled by the follow-up commit, also covered by this entry)
 Changed: AUDIT_P4 defect 2. `PoolSizing.poolPctOfFullyDiluted` is no longer the last loop iterate. The option count comes off the single final run and the percentage is computed from it by section 4.5's own formula, so the two fields are one pool. `fullyDilutedSharesAtYear0` follows the reported pool; `existingPoolIsEnough` is claimable only on a converged run. Recorded M23.
 Changed: Added three property tests to pool-solver.test.ts, checked across the 500-case range. Rewrote the file-header promise that AUDIT_P4 caught overclaiming.
 Tests: 270 passed / 270 total, tsc pass, build pass

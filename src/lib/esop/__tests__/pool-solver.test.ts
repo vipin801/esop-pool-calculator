@@ -209,13 +209,52 @@ describe('a plan with no answer in range', () => {
     expect(solution.solver.iterations).toBeLessThanOrEqual(SOLVER.maxIterations);
   });
 
-  it('still returns a finite, in-range number: the last value it stood on', () => {
+  /**
+   * AUDIT_P4 defect 3. LOG [004] recorded this case as coming "back at 10%
+   * flagged rather than at 99.9% pretending". It does not: it comes back at
+   * 97.84%. The log went uncorrected for three sessions because the only
+   * assertion here was `< 100`, which is true of 10%, true of 97.84%, and true
+   * of every other number the contract could have picked.
+   *
+   * So the figure is pinned. M23 and M20 together say what it is: on a
+   * non-converged run the *level* leads, and the level is the last iterate that
+   * was finite and inside the cap — here the first step off the 10% start,
+   * because the second step ran past 99.9% and the loop stopped rather than
+   * report the cap as an answer.
+   */
+  it('returns the last pool level it stood on, and it is not 10% and not the cap', () => {
     const solution = solveRecommendedPool(runaway);
+
+    expect(solution.sizing.poolPctOfFullyDiluted).toBeCloseTo(97.8394077, 6);
+    expect(solution.sizing.poolPctOfFullyDiluted).not.toBeCloseTo(SOLVER.startPoolPct, 6);
+    expect(solution.sizing.poolPctOfFullyDiluted).toBeLessThan(99.9);
+    expect(solution.solver.iterations).toBe(2);
+  });
+
+  it('reports a real pool rather than a sentinel, in both units and consistently', () => {
+    // The contract is "the last stable iterate with a flag", not "a sentinel".
+    // A founder gets a figure and a warning, never a blank. That only means
+    // anything if the figure is internally coherent, so the same one-pool
+    // property the converged path has is asserted here too.
+    const solution = solveRecommendedPool(runaway);
+    const fd0 = runaway.company.fullyDilutedShares;
 
     expect(Number.isFinite(solution.sizing.poolPctOfFullyDiluted)).toBe(true);
     expect(solution.sizing.poolPctOfFullyDiluted).toBeGreaterThanOrEqual(0);
     expect(solution.sizing.poolPctOfFullyDiluted).toBeLessThan(100);
-    expect(solution.sizing.poolOptions).toBeGreaterThanOrEqual(0);
+    expect(solution.sizing.poolOptions).toBeGreaterThan(0);
+
+    expect(solution.sizing.poolOptions).toBeCloseTo(
+      poolOptionsForPct({
+        fullyDilutedSharesAtYear0: fd0,
+        poolPct: solution.sizing.poolPctOfFullyDiluted,
+      }),
+      6,
+    );
+    expect(solution.fullyDilutedSharesAtYear0).toBeCloseTo(fd0 + solution.sizing.poolOptions, 6);
+
+    // And it does not quietly claim the plan needs nothing.
+    expect(solution.existingPoolIsEnough).toBe(false);
   });
 });
 

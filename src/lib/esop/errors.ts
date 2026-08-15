@@ -36,6 +36,22 @@ export const ESOP_ERROR_CODES = [
   'invalidMoneyAmount',
   /** A refresh rate or refresh size outside the range a percentage can take. */
   'invalidRefreshPolicy',
+  /** A cliff after the end of vesting, a vesting period of zero, a negative cliff. */
+  'invalidVestingSchedule',
+  /** An annual attrition rate outside [0, 100]. Nobody leaves twice. */
+  'invalidAttritionRate',
+  /** lambda or the continuing-employee exercise rate outside [0, 100]. */
+  'invalidExercisePolicy',
+  /** A planning horizon that is not a whole number of years above zero. */
+  'invalidHorizon',
+  /**
+   * Options are already granted and outstanding, but no cohorts were given for
+   * them. Section 4.3 says do not approximate, so the engine will not invent a
+   * grant year and a band for them.
+   */
+  'missingOpeningCohorts',
+  /** The opening cohorts do not add up to the granted and outstanding options. */
+  'openingCohortsMismatch',
   /** A negative holding on the cap table. */
   'negativeShareCount',
   /** A round that raises nothing is not a round. */
@@ -99,6 +115,25 @@ export function requireNonNegative(
   detail: EsopErrorDetail = {},
 ): void {
   if (!Number.isFinite(value) || value < 0) {
+    throw new EsopEngineError(code, message, { ...detail, value });
+  }
+}
+
+/**
+ * Throws unless `value` is a finite number in [0, 100].
+ *
+ * Rates that are conceptually a share of something — attrition, lambda, the
+ * continuing-exercise rate — have a ceiling as well as a floor. An attrition
+ * rate of 140% is not a fast-churning company, it is a typo, and letting it
+ * through produces a cohort with a negative number of people in it.
+ */
+export function requirePercentage(
+  value: number,
+  code: EsopErrorCode,
+  message: string,
+  detail: EsopErrorDetail = {},
+): void {
+  if (!Number.isFinite(value) || value < 0 || value > 100) {
     throw new EsopEngineError(code, message, { ...detail, value });
   }
 }

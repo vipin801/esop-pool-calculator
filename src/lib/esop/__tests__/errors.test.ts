@@ -8,6 +8,12 @@
 
 import { describe, expect, it } from 'vitest';
 
+import {
+  attritionPctByBand,
+  cohortPolicy,
+  openingGrantCohorts,
+  vestedFraction,
+} from '../cohorts';
 import { denominatorFor, exercisePriceAtYear } from '../denominator';
 import {
   ESOP_ERROR_CODES,
@@ -27,8 +33,10 @@ import {
   sharesExcludingPool,
   shuffleRound,
 } from '../rounds';
+import { runRollForward } from '../roll-forward';
 import type { FundingRound, GrantBasis, PreRoundHoldings, RefreshPolicy } from '../types';
 import { pricePerShare, valuationAtYear } from '../valuation';
+import { ATTRITION, EXERCISE, VESTING, withArgs } from './fixtures';
 
 const ONE_LEADER: ByBand = { leadership: 1, senior: 0, mid: 0, junior: 0 };
 
@@ -118,6 +126,27 @@ const REACHES: Readonly<Record<EsopErrorCode, () => unknown>> = {
       rounds: [ROUND, { ...ROUND, id: 'earlier', year: 0 }],
       openingHoldings: HOLDINGS,
     }),
+  invalidVestingSchedule: () => vestedFraction({ ageYears: 1, cliffMonths: 60, vestYears: 4 }),
+  invalidAttritionRate: () =>
+    attritionPctByBand({ baseAnnualPct: 140, byBand: {}, sector: 'general' }),
+  invalidExercisePolicy: () =>
+    cohortPolicy({
+      vesting: VESTING,
+      attrition: ATTRITION,
+      exercise: { ...EXERCISE, vestedNeverExercisedPct: 120 },
+    }),
+  invalidHorizon: () => runRollForward(withArgs({ hiring: { horizonYears: 0 } })),
+  missingOpeningCohorts: () =>
+    runRollForward(withArgs({ company: { grantedOutstandingOptions: 500_000 } })),
+  openingCohortsMismatch: () =>
+    runRollForward(
+      withArgs({
+        company: { grantedOutstandingOptions: 500_000 },
+        openingCohorts: openingGrantCohorts([
+          { band: 'mid', outstandingOptions: 1, ageYearsAtPlanStart: 2 },
+        ]),
+      }),
+    ),
 };
 
 describe('EsopEngineError', () => {

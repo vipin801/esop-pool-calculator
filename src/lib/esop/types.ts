@@ -193,6 +193,15 @@ export interface RefreshPolicy {
 export interface GrantPolicyInputs {
   readonly grantBasis: GrantBasis;
   readonly strikePolicy: StrikePolicy;
+  /**
+   * Which of section 2's three denominators converts a rupee grant into options.
+   *
+   * It sits here, beside the other two forks, because it decides the answer as
+   * much as they do: the same ₹25 lakh promise buys one option count against
+   * PPS_t and a very different one against PPS_t - X_t. Inert under Basis A,
+   * which has no denominator at all — model decision M15.
+   */
+  readonly valueBasis: ValueBasis;
   /** i. Comp inflation applied to grant values. */
   readonly compInflationPctPerYear: number;
   readonly refresh: RefreshPolicy;
@@ -324,8 +333,12 @@ export interface EsopInputs {
 export interface PoolSizing {
   readonly grantBasisKind: GrantBasisKind;
   readonly strikePolicyKind: StrikePolicyKind;
+  /** Null under Basis A, which never divides by a denominator. */
+  readonly valueBasis: ValueBasis | null;
   readonly poolPctOfFullyDiluted: number;
   readonly poolOptions: number;
+  /** The figure to print: `poolPctOfFullyDiluted` rounded up to the nearest 0.5%. */
+  readonly displayPoolPctOfFullyDiluted: number;
 }
 
 /** Item 1. The selected basis, plus the same figure under the other basis. */
@@ -337,8 +350,17 @@ export interface RecommendedPool {
 /** Item 2. Spec section 4.4, interpolated to a month on that year's run rate. */
 export interface PoolExhaustion {
   readonly exhausted: boolean;
+  /**
+   * Months from the start of year 0. Zero is a real answer, not a missing one:
+   * a pool with nothing in it and a hiring plan is exhausted before it starts.
+   */
   readonly monthIndex: number | null;
   readonly yearIndex: number | null;
+  /**
+   * How many hires the pool covers before it runs out, whole years plus the
+   * part-year the interpolation lands in. The whole plan when it never runs out.
+   */
+  readonly hiresSupported: number;
 }
 
 /** Item 3. */
@@ -408,11 +430,19 @@ export interface PoolCostToFounders {
   readonly founderOwnershipDeltaRupees: number;
 }
 
-/** Item 5. Spec section 4.4, plus the exercised leg that v1 ignored. */
+/**
+ * Item 5. Spec section 4.4, plus the exercised leg that v1 ignored.
+ *
+ * `openingAvailable` and `closingAvailable` are the only signed fields on this
+ * shape. Section 4.4 defines exhaustion as the first year where `Available_t`
+ * goes below zero, so the negative *is* the signal and clamping it would delete
+ * the thing the exhaustion month is read off. Every other field is a count and
+ * cannot be negative.
+ */
 export interface RollForwardYear {
   readonly year: number;
   readonly openingAvailable: number;
-  /** TopUp_t. */
+  /** TopUp_t, and the options it adds to the fully diluted count. */
   readonly topUp: number;
   /** N_t. */
   readonly newHireGrants: number;
@@ -424,12 +454,41 @@ export interface RollForwardYear {
   readonly vestedLapsed: number;
   /** Leaves the pool permanently and becomes issued shares. */
   readonly vestedExercised: number;
+  /** Exercises by employees still in service. Zero pre-liquidity by default. */
+  readonly continuingEmployeeExercised: number;
+  /** vestedExercised + continuingEmployeeExercised. Issued this year. */
+  readonly exercisedShares: number;
+  /**
+   * Forfeited and lapsed options when recycling is off. They can never be
+   * granted again, so they leave the fully diluted count rather than sitting in
+   * it as potential shares that cannot happen.
+   */
+  readonly cancelledNotRecycled: number;
   readonly closingAvailable: number;
-  /** FD_t. */
+  /** FD_t at the end of year t: the opening count less anything cancelled. */
   readonly fullyDilutedShares: number;
-  /** PPS_t. */
+  /**
+   * FD after this year's top-up and before this year's cancellations. This is
+   * the count that prices year t's grants and PPS_t, because a grant made in
+   * March cannot be priced off a December share count that its own forfeitures
+   * helped set. Identical to `fullyDilutedShares` whenever recycling is on.
+   */
+  readonly openingFullyDilutedShares: number;
+  /** V_t. */
+  readonly valuation: number;
+  /** PPS_t = V_t / openingFullyDilutedShares. */
   readonly pricePerShare: number;
+  /** D_t. Null under Basis A, which has no denominator. */
+  readonly denominator: number | null;
+  readonly closingGrantedOutstanding: number;
+  readonly closingVestedOutstanding: number;
   readonly closingIssuedShares: number;
+  /** Issued shares at face value. What exercises actually put into share capital. */
+  readonly closingPaidUpCapitalRupees: number;
+  readonly hires: number;
+  readonly closingHeadcount: number;
+  /** Eligible_t. The base the refresh grant was computed on. */
+  readonly refreshEligibleHeadcount: number;
 }
 
 export type CapTableHolder =

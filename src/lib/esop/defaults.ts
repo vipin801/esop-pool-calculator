@@ -14,7 +14,14 @@
  *               Every `provisional` entry is a to-do before launch.
  */
 
-import type { Band, DefaultEntry, GrantBasisKind, Stage, StrikePolicyKind } from './types';
+import type {
+  Band,
+  DefaultEntry,
+  GrantBasisKind,
+  Sector,
+  Stage,
+  StrikePolicyKind,
+} from './types';
 
 /** When every value below was last checked. The spec is current as at 14 August 2026. */
 const AS_OF = '2026-08';
@@ -136,6 +143,12 @@ export const DEFAULTS = {
     },
     provenance: 'estimate',
     what: 'Which grant basis to preselect. Percent of equity is common at pre-seed and seed; rupee value at Series A and beyond. Never silently pick one, always show the other as a comparison.',
+    asOf: AS_OF,
+  },
+  valueBasis: {
+    value: 'notional',
+    provenance: 'estimate',
+    what: 'Which of section 2\'s three denominators converts a rupee grant into options. Notional is what most Indian offer letters mean by "your grant is worth X", which is exactly why the engine computes the other two alongside it.',
     asOf: AS_OF,
   },
   strikePolicyByStage: {
@@ -300,3 +313,15 @@ export const DEFAULT_GRANT_PCT_BY_BAND: Readonly<Record<Band, number>> =
 
 export const DEFAULT_GRANT_VALUE_BY_BAND: Readonly<Record<Band, number>> =
   DEFAULTS.grantValueByBand.value;
+
+/**
+ * The sector prefills the *base* attrition rate; it does not scale it. A founder
+ * who picks e-commerce and then types 20% means 20%, and multiplying the two
+ * would silently overrule them. Model decision M16.
+ */
+export const DEFAULT_ATTRITION_BY_SECTOR_PCT: Readonly<Record<Sector, number>> =
+  DEFAULTS.attritionBySectorPct.value;
+
+export function baseAttritionPctForSector(sector: Sector): number {
+  return DEFAULT_ATTRITION_BY_SECTOR_PCT[sector];
+}

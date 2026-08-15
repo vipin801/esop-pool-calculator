@@ -14,6 +14,7 @@ import {
   openingGrantCohorts,
   vestedFraction,
 } from '../cohorts';
+import { dpiitExemptionExpiry } from '../compliance';
 import { denominatorFor, exercisePriceAtYear } from '../denominator';
 import {
   ESOP_ERROR_CODES,
@@ -127,6 +128,13 @@ const REACHES: Readonly<Record<EsopErrorCode, () => unknown>> = {
       openingHoldings: HOLDINGS,
     }),
   invalidVestingSchedule: () => vestedFraction({ ageYears: 1, cliffMonths: 60, vestYears: 4 }),
+  cliffBelowStatutoryMinimum: () =>
+    cohortPolicy({
+      vesting: { ...VESTING, cliffMonths: 6 },
+      attrition: ATTRITION,
+      exercise: EXERCISE,
+    }),
+  invalidDate: () => dpiitExemptionExpiry('the spring of 2019'),
   invalidAttritionRate: () =>
     attritionPctByBand({ baseAnnualPct: 140, byBand: {}, sector: 'general' }),
   invalidExercisePolicy: () =>

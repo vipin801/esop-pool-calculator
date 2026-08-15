@@ -6,7 +6,7 @@ import {
   EXERCISE_WINDOW_DAYS_OPTIONS,
   EXPOSED_INSTRUMENTS,
   type Band,
-  type ComplianceFlag,
+  type ComplianceCheck,
   type ComplianceInputs,
   type EsopInputs,
   type ExerciseWindowDays,
@@ -43,7 +43,7 @@ type _imbIsItsOwnToggle = Expect<Equal<ComplianceInputs['imbCertified80IAC'], bo
 
 /** Every compliance row carries the exact disclaimer, enforced by a literal type. */
 type _disclaimerIsALiteral = Expect<
-  Equal<ComplianceFlag['disclaimer'], 'General information, not legal advice.'>
+  Equal<ComplianceCheck['disclaimer'], 'General information, not legal advice.'>
 >;
 
 /** Spec section 6 names exactly four exercise windows. */

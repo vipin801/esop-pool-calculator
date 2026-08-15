@@ -38,6 +38,14 @@ export const ESOP_ERROR_CODES = [
   'invalidRefreshPolicy',
   /** A cliff after the end of vesting, a vesting period of zero, a negative cliff. */
   'invalidVestingSchedule',
+  /**
+   * A cliff below the twelve months Rule 12(6)(a) requires between grant and
+   * vesting. Distinct from `invalidVestingSchedule`: that one is a schedule the
+   * maths cannot evaluate, this one is a schedule the maths evaluates fine and
+   * the Companies Act does not permit. A UI needs to say different things about
+   * them, so they carry different codes.
+   */
+  'cliffBelowStatutoryMinimum',
   /** An annual attrition rate outside [0, 100]. Nobody leaves twice. */
   'invalidAttritionRate',
   /** lambda or the continuing-employee exercise rate outside [0, 100]. */
@@ -62,6 +70,11 @@ export const ESOP_ERROR_CODES = [
   'roundLeavesNoRoomForExistingHolders',
   /** A round schedule whose years do not strictly increase. */
   'roundsOutOfOrder',
+  /**
+   * A date that does not parse as ISO. A statutory window measured from NaN is
+   * worse than one that refuses to be measured, because it still renders.
+   */
+  'invalidDate',
 ] as const;
 
 export type EsopErrorCode = (typeof ESOP_ERROR_CODES)[number];

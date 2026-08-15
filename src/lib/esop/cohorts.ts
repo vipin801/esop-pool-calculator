@@ -42,6 +42,7 @@
  * its opening state and returns its closing state alongside the flows.
  */
 
+import { STATUTORY } from './defaults';
 import {
   EsopEngineError,
   requireFinite,
@@ -91,14 +92,12 @@ function nonNegative(value: number): number {
  * does not step to 25% on the first anniversary. That is the spec's model, and
  * the spec wins over both the code and the market convention it differs from.
  */
-export function vestedFraction(args: {
-  readonly ageYears: number;
-  readonly cliffMonths: number;
-  readonly vestYears: number;
-}): number {
-  const { ageYears, cliffMonths, vestYears } = args;
-
-  requireFinite(ageYears, 'invalidVestingSchedule', 'A cohort age in years must be finite.');
+/**
+ * The constraints the *curve* has: a schedule outside these cannot be evaluated
+ * at all. Shared by `vestedFraction` and by the boundary guard below, so the
+ * two cannot drift apart about what a well-formed schedule is.
+ */
+function requireVestingShape(cliffMonths: number, vestYears: number): void {
   requireNonNegative(
     cliffMonths,
     'invalidVestingSchedule',
@@ -110,14 +109,55 @@ export function vestedFraction(args: {
     'The vesting period in years must be above zero.',
   );
 
-  const cliffYears = cliffMonths / 12;
-  if (cliffYears > vestYears) {
+  if (cliffMonths / 12 > vestYears) {
     throw new EsopEngineError(
       'invalidVestingSchedule',
       'The cliff cannot fall after the end of the vesting period. Nothing would ever vest.',
       { cliffMonths, vestYears },
     );
   }
+}
+
+/**
+ * Rule 12(6)(a): a minimum of one year between grant and vesting.
+ *
+ * ENGINE_SPEC.md section 5 says to block any input below twelve months, and
+ * this is where that happens — at the boundary a founder's `VestingSchedule`
+ * crosses into the engine, as a typed refusal rather than a warning printed
+ * next to a number that was computed anyway. A scheme with a shorter cliff
+ * cannot lawfully be adopted, so pricing one produces a pool size for a plan
+ * that does not exist.
+ *
+ * Deliberately not inside `vestedFraction`. That function is the spec's vesting
+ * curve, and its guards are the mathematical ones. Twelve months is law, not
+ * maths, and the two carry different error codes because a UI has to say
+ * different things about them.
+ *
+ * General information, not legal advice.
+ */
+export function requireLawfulVestingSchedule(vesting: VestingSchedule): void {
+  requireVestingShape(vesting.cliffMonths, vesting.vestYears);
+
+  if (vesting.cliffMonths < STATUTORY.minVestingMonths) {
+    throw new EsopEngineError(
+      'cliffBelowStatutoryMinimum',
+      `Rule 12(6)(a) requires at least ${STATUTORY.minVestingMonths} months between grant and vesting. A scheme with a shorter cliff cannot lawfully be adopted, so the engine will not price one.`,
+      { cliffMonths: vesting.cliffMonths, minimumMonths: STATUTORY.minVestingMonths },
+    );
+  }
+}
+
+export function vestedFraction(args: {
+  readonly ageYears: number;
+  readonly cliffMonths: number;
+  readonly vestYears: number;
+}): number {
+  const { ageYears, cliffMonths, vestYears } = args;
+
+  requireFinite(ageYears, 'invalidVestingSchedule', 'A cohort age in years must be finite.');
+  requireVestingShape(cliffMonths, vestYears);
+
+  const cliffYears = cliffMonths / 12;
 
   if (ageYears < cliffYears) return 0;
   /** Cliff exactly at the end of vesting: the whole grant vests in one step. */
@@ -265,6 +305,9 @@ export function cohortPolicy(args: {
   readonly exercise: ExerciseInputs;
 }): CohortPolicy {
   const { vesting, attrition, exercise } = args;
+
+  /** Every path into section 4.3 comes through here, so the floor is checked once. */
+  requireLawfulVestingSchedule(vesting);
 
   requirePercentage(
     exercise.vestedNeverExercisedPct,

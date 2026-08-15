@@ -25,8 +25,11 @@ import {
   type CohortPolicy,
   type GrantCohort,
 } from '../cohorts';
+import { DEFAULTS, STATUTORY } from '../defaults';
 import { isEsopEngineError } from '../errors';
-import { ATTRITION, EXERCISE, VESTING } from './fixtures';
+import { solveRecommendedPool } from '../pool-solver';
+import { runRollForward } from '../roll-forward';
+import { ATTRITION, EXERCISE, VESTING, withArgs } from './fixtures';
 
 const POLICY: CohortPolicy = cohortPolicy({
   vesting: VESTING,
@@ -99,6 +102,63 @@ describe('vestedFraction, spec section 4.3', () => {
     expect(codeOf(() => vestedFraction({ ageYears: 1, cliffMonths: 60, vestYears: 4 }))).toBe(
       'invalidVestingSchedule',
     );
+  });
+});
+
+describe('the statutory vesting floor, Rule 12(6)(a)', () => {
+  /**
+   * AUDIT_P4 defect 4. "Minimum one year between grant and vesting. Block any
+   * input below 12 months" is in ENGINE_SPEC.md section 5 and in PROJECT.md,
+   * and until now the engine blocked nothing: a cliff of 0 ran end to end and
+   * produced a pool number for a scheme that cannot lawfully be adopted.
+   *
+   * The floor is enforced where a `VestingSchedule` enters the engine, not
+   * inside `vestedFraction`. That function is the spec's vesting curve and its
+   * guards are the mathematical ones — a negative cliff, a vesting period of
+   * zero, a cliff past the end of vesting. The twelve months are law, not maths,
+   * and law belongs at the boundary the founder's input crosses.
+   */
+  const lawful = { vesting: VESTING, attrition: ATTRITION, exercise: EXERCISE };
+
+  it('refuses a cliff below twelve months at the policy boundary', () => {
+    for (const cliffMonths of [0, 1, 6, 11, 11.9]) {
+      expect(
+        codeOf(() => cohortPolicy({ ...lawful, vesting: { ...VESTING, cliffMonths } })),
+        `a ${cliffMonths} month cliff was accepted`,
+      ).toBe('cliffBelowStatutoryMinimum');
+    }
+  });
+
+  it('accepts exactly twelve months, which is the floor and the market default', () => {
+    expect(STATUTORY.minVestingMonths).toBe(12);
+    expect(DEFAULTS.cliffMonths.value).toBe(12);
+    expect(cohortPolicy({ ...lawful, vesting: { ...VESTING, cliffMonths: 12 } }).vesting.cliffMonths)
+      .toBe(12);
+  });
+
+  it('accepts a longer cliff, because the rule is a floor and not a fixed term', () => {
+    for (const cliffMonths of [12, 18, 24, 36]) {
+      expect(
+        cohortPolicy({ ...lawful, vesting: { ...VESTING, cliffMonths } }).vesting.cliffMonths,
+      ).toBe(cliffMonths);
+    }
+  });
+
+  it('refuses it through the roll forward and through the solver, not just the policy', () => {
+    const illegal = withArgs({ vesting: { cliffMonths: 6 } });
+
+    expect(codeOf(() => runRollForward(illegal))).toBe('cliffBelowStatutoryMinimum');
+    expect(codeOf(() => solveRecommendedPool(illegal))).toBe('cliffBelowStatutoryMinimum');
+  });
+
+  it('still refuses a cliff that falls after vesting ends, which is a different failure', () => {
+    // A 60 month cliff is lawful and still impossible against a 4 year vest.
+    // The two guards answer different questions and carry different codes.
+    expect(
+      codeOf(() =>
+        cohortPolicy({ ...lawful, vesting: { ...VESTING, cliffMonths: 60, vestYears: 4 } }),
+      ),
+    ).toBe('invalidVestingSchedule');
   });
 });
 

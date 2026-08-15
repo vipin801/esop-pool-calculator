@@ -565,29 +565,93 @@ export interface AuthorisedCapitalHeadroom {
 /** Item 8. Spec section 5. Surfaces in diligence and blindsides founders. */
 export interface EsopExpenseYear {
   readonly year: number;
+  /**
+   * The net charge for the period, and the only signed field here. A year in
+   * which a lot of unvested options are forfeited credits P&L, because the
+   * expense already taken on options that will now never vest has to come back.
+   */
   readonly expenseRupees: number;
+  /** Straight-line charge on the options still expected to vest. Never negative. */
+  readonly amortisationChargeRupees: number;
+  /**
+   * Expense reversed this year on options forfeited before they vested. Never
+   * positive. Vested-but-lapsed options are absent from this figure on purpose:
+   * they vested, so their expense stands and is not reversed through P&L.
+   */
+  readonly forfeitureReversalRupees: number;
+  readonly cumulativeExpenseRupees: number;
   readonly basis: AccountingBasis;
 }
 
-export type ComplianceSeverity = 'info' | 'action' | 'blocker';
+export interface EsopExpenseSchedule {
+  readonly basis: AccountingBasis;
+  readonly years: readonly EsopExpenseYear[];
+  readonly totalExpenseRupees: number;
+  /**
+   * Options granted before year 0. Their grant-date fair value depends on a
+   * price per share from before the plan starts, which the engine does not
+   * hold, so they are excluded from the schedule rather than valued at a price
+   * they were not granted at. Reported so the omission is a number and not a
+   * silence.
+   */
+  readonly excludedOpeningOptions: number;
+}
+
+/**
+ * `pass` nothing to correct. `warn` something to act on or check that a founder
+ * will not otherwise expect. `blocked` the scheme cannot lawfully proceed in
+ * this state.
+ */
+export type ComplianceStatus = 'pass' | 'warn' | 'blocked';
 
 /** The exact string PROJECT.md requires on every compliance row. */
 export const COMPLIANCE_DISCLAIMER = 'General information, not legal advice.' as const;
 export type ComplianceDisclaimer = typeof COMPLIANCE_DISCLAIMER;
 
+/** Every rule ENGINE_SPEC.md section 5 states. A closed set, so none can be dropped. */
+export const COMPLIANCE_CHECK_IDS = [
+  'schemeApproval',
+  'separateResolution',
+  'vestingFloor',
+  'eligibility',
+  'authorisedCapital',
+  'allotmentFilings',
+  'taxDeferral',
+  'instrument',
+] as const;
+export type ComplianceCheckId = (typeof COMPLIANCE_CHECK_IDS)[number];
+
 /**
  * Item 9. `disclaimer` is a literal type, not a free string, so a compliance
  * row without the required wording will not compile.
+ *
+ * `finding` and `action` are separate fields rather than one paragraph, because
+ * what is true of this company and what the founder should do about it are
+ * different sentences and a report has to be able to lay them out apart.
  */
-export interface ComplianceFlag {
-  readonly id: string;
-  readonly severity: ComplianceSeverity;
+export interface ComplianceCheck {
+  readonly id: ComplianceCheckId;
   readonly title: string;
-  readonly detail: string;
+  readonly status: ComplianceStatus;
+  /** One line: what is true of this company. */
+  readonly finding: string;
+  /** One line: what to do about it. */
+  readonly action: string;
   /** e.g. "Section 62(1)(b), Companies Act 2013, with Rule 12". */
   readonly statutoryReference: string;
   readonly disclaimer: ComplianceDisclaimer;
 }
+
+/**
+ * Spec section 5 and PROJECT.md D4. Three states, never two.
+ *
+ * `dpiitOnly` is the one that matters: DPIIT recognition carries the Rule 12
+ * eligibility exemption and does *not* carry the perquisite tax deferral, which
+ * additionally needs an Inter-Ministerial Board certificate. Roughly 4,000 of
+ * about 1.97 lakh DPIIT-recognised startups hold one. Collapsing this into a
+ * boolean is the error PROJECT.md prohibits.
+ */
+export type TaxDeferralStatus = 'notEligible' | 'dpiitOnly' | 'dpiitAndImb';
 
 export type BenchmarkTrackId = 'advisory' | 'observed';
 
@@ -660,8 +724,8 @@ export interface EsopOutputs {
   readonly rollForward: readonly RollForwardYear[];
   readonly capTables: CapTableSet;
   readonly authorisedCapital: AuthorisedCapitalHeadroom;
-  readonly esopExpenseByYear: readonly EsopExpenseYear[];
-  readonly complianceFlags: readonly ComplianceFlag[];
+  readonly esopExpense: EsopExpenseSchedule;
+  readonly complianceChecks: readonly ComplianceCheck[];
   readonly benchmarkComparison: BenchmarkComparison;
   readonly medianEmployeeValue: MedianEmployeeValue;
   readonly grantValueBreakdown: readonly GrantValueBreakdown[];

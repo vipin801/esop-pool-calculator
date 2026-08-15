@@ -255,3 +255,15 @@ Decisions:
 - **No new test, because the decision already has teeth.** `COMPLIANCE_CHECK_IDS` includes `instrument`, `runComplianceChecks` builds a `Record<ComplianceCheckId, ComplianceCheck>`, and compliance.test.ts asserts the produced ids equal the declared ids exactly. Dropping the row fails `tsc` and fails the suite. Adding a test that asserts the row exists would restate what the type already enforces, which AUDIT_P4 section 5 lists as a category of weak test.
 Open items:
 - None from this item.
+
+[015] 2026-08-15 | prompt P9 | branch main | commit 0000000 (sha backfilled by the follow-up commit, also covered by this entry)
+Changed: Scoped the long test timeout to the coverage run. vitest.config.ts exports `TEST_TIMEOUT_MS` (15s), `COVERAGE_TEST_TIMEOUT_MS` (30s) and `testTimeoutFor(argv)`; the standard suite no longer inherits the coverage budget.
+Changed: Added src/__tests__/vitest-config.test.ts, 5 tests, asserting the scoping and the absence of a coverage threshold.
+Tests: 317 passed / 317 total, tsc pass, build pass
+Decisions:
+- **[010] raised `testTimeout` globally, which traded one problem for a smaller one.** A 30 second default hides a hang in day-to-day runs. The flag is read from `process.argv` because Vitest exposes Vite's `mode` and `command` to a config function and neither knows about `--coverage`; `--coverage.enabled` and `--coverage=` forms count too.
+- **The first cut at 10,000 ms was wrong and the suite said so on the second run.** One warm sample put the slowest test at 3,087 ms. Repeated full-suite runs put the same test between 3,700 and 8,800 ms, because 19 files across 12 workers contend; in isolation it is about 900 ms. The bound was corrected to 15,000 ms and the measurement written into both the config and the test. The expectation was changed because the measurement behind it was wrong, not to make a failing thing pass — the code under it never moved.
+- No coverage threshold, still deliberately, and now asserted: a test fails if a `thresholds` key appears. That is the difference between "we decided not to" and "we forgot to". P9 takes the decision.
+- The harness test lives at `src/__tests__/` rather than in the engine's folder, because it is about the harness. `purity.test.ts` scans `src/lib/esop` and the coverage `include` is scoped there too, so neither picks it up.
+Open items:
+- The 500-case property tests are the whole timeout problem: they take about 900 ms alone and up to 8,800 ms under contention. If the suite grows much past 19 files the budget needs re-measuring rather than raising.

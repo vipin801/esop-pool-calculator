@@ -1,19 +1,49 @@
 import { defineConfig } from 'vitest/config';
 
+/**
+ * The standard suite's budget. Measured across repeated full-suite runs rather
+ * than from one warm sample: in isolation the slowest test (the 500-case roll
+ * forward property) takes about 900 ms, but the full suite runs 19 files across
+ * 12 workers and contention pushes that same test to between 3,700 and 8,800 ms.
+ * A first cut at 10,000 ms went red on the second run. Fifteen seconds is a
+ * little under twice the observed worst, which still turns a hung test into a
+ * fifteen second wait instead of the thirty the coverage run needs.
+ */
+export const TEST_TIMEOUT_MS = 15_000;
+
+/**
+ * The coverage run's budget, and only the coverage run's.
+ *
+ * V8 instrumentation roughly halves throughput: the same slowest test takes
+ * about 4,900 ms under it, against vitest's 5,000 ms default. That margin is
+ * what AUDIT_P4 defect 6 tripped over the first time coverage was switched on,
+ * and it is why the long budget exists at all — but applying it to every run
+ * would hide a hang in day-to-day work, which is a worse trade than the one it
+ * was fixing.
+ */
+export const COVERAGE_TEST_TIMEOUT_MS = 30_000;
+
+/**
+ * Which budget applies, from the command line that started the run.
+ *
+ * Vitest exposes the mode to a config *function* through Vite's `mode` and
+ * `command`, neither of which knows about `--coverage`, so the flag is read
+ * from argv directly. `--coverage.enabled` and friends count too, because that
+ * is the form the audit used and the form CI is likely to.
+ */
+export function testTimeoutFor(argv: readonly string[]): number {
+  const coverage = argv.some(
+    (arg) => arg === '--coverage' || arg.startsWith('--coverage.') || arg.startsWith('--coverage='),
+  );
+
+  return coverage ? COVERAGE_TEST_TIMEOUT_MS : TEST_TIMEOUT_MS;
+}
+
 export default defineConfig({
   test: {
     environment: 'node',
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
-    /**
-     * The 500-case property runs take about 3 seconds clean and about 6 under
-     * V8 coverage instrumentation, against vitest's 5 second default. AUDIT_P4
-     * defect 6: the suite went red the first time coverage was switched on, for
-     * a reason that had nothing to do with the engine. Raised far enough that a
-     * slower machine cannot flip it, and not so far that a genuine hang would
-     * sit unnoticed — the engine has no unbounded loop by construction, so a
-     * test that runs for thirty seconds is a bug rather than a slow day.
-     */
-    testTimeout: 30_000,
+    testTimeout: testTimeoutFor(process.argv),
     coverage: {
       provider: 'v8',
       /**
@@ -23,6 +53,13 @@ export default defineConfig({
       include: ['src/lib/esop/**/*.ts'],
       exclude: ['src/lib/esop/__tests__/**'],
       reporter: ['text', 'json-summary'],
+      /**
+       * No `thresholds` key, deliberately. A threshold that fails the build is a
+       * policy decision to take once and on purpose, not a side effect of
+       * installing the tool, and it stays unset until P9 takes it. A test
+       * asserts its absence so that "we decided not to" cannot decay into "we
+       * forgot to".
+       */
     },
   },
 });

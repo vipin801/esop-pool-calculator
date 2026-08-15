@@ -300,7 +300,7 @@ Decisions:
 Open items:
 - None from this item.
 
-[019] 2026-08-15 | prompt P9 | branch main | commit 0000000 (sha backfilled by the follow-up commit, also covered by this entry)
+[019] 2026-08-15 | prompt P9 | branch main | commit 805d8c8 (sha backfilled by the follow-up commit, also covered by this entry)
 Changed: Closed the one divergence-map item that had to close before P6: theta-scaled fair value (`theta * PPS_t`), previously written independently in denominator.ts (`denominatorFor`'s `fairValue` case) and compliance.ts (`perOptionValue`'s `indAS102` branch) with guards that disagreed. Added `thetaScaledFairValue` to denominator.ts, the single implementation and the single guard; both call sites now call it and neither reimplements the expression. Recorded M30.
 Changed: Removed the standalone top-level theta guard from `esopExpenseSchedule` — it fired unconditionally regardless of `accountingBasis`, which falsely refused an `icaiGuidanceNote` company for a theta value the intrinsic-value calculation never reads. The guard now fires only where theta is actually multiplied.
 Changed: Added src/lib/esop/__tests__/theta-fair-value.test.ts, 6 tests. Persisted the P9 divergence-risk map into PROJECT.md Open items — it previously lived only in that session's reply and was not written down anywhere durable.

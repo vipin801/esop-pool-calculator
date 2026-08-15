@@ -268,7 +268,7 @@ Decisions:
 Open items:
 - The 500-case property tests are the whole timeout problem: they take about 900 ms alone and up to 8,800 ms under contention. If the suite grows much past 19 files the budget needs re-measuring rather than raising.
 
-[016] 2026-08-15 | prompt P9 | branch main | commit 0000000 (sha backfilled by the follow-up commit, also covered by this entry)
+[016] 2026-08-15 | prompt P9 | branch main | commit 1652c29 (sha backfilled by the follow-up commit, also covered by this entry)
 Changed: AUDIT_P4 P5 open item, item 4(a). Removed `cliffBelowStatutoryMinimum` from `EngineWarningId`, dead since [012] enforces the floor with an `EsopErrorCode` of the same name instead. `EngineWarningId` is now derived from a new `ENGINE_WARNING_IDS` const array, mirroring `ESOP_ERROR_CODES` and `COMPLIANCE_CHECK_IDS`. Recorded M28.
 Changed: Added two tests to types.test.ts, plus a type-level equality assertion that the union and the array agree.
 Tests: 317 passed / 317 total, tsc pass, build pass

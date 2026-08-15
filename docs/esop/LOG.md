@@ -211,7 +211,7 @@ Decisions:
 Open items:
 - None beyond the list now in PROJECT.md.
 
-[012] 2026-08-15 | prompt P8 | branch main | commit 0000000 (sha backfilled by the follow-up commit, also covered by this entry)
+[012] 2026-08-15 | prompt P8 | branch main | commit 9b722e8 (sha backfilled by the follow-up commit, also covered by this entry)
 Changed: AUDIT_P4 defect 4. `requireLawfulVestingSchedule` in cohorts.ts refuses a cliff under twelve months with a new typed `cliffBelowStatutoryMinimum`, at every boundary a founder's VestingSchedule crosses. Recorded M24.
 Changed: Added src/lib/esop/compliance.ts, covering ENGINE_SPEC.md section 5 rule by rule plus the Ind AS 102 estimate. Replaced the unused `ComplianceFlag`/`ComplianceSeverity` shapes in types.ts with `ComplianceCheck`/`ComplianceStatus`, a closed `ComplianceCheckId` union, `TaxDeferralStatus` and `EsopExpenseSchedule`. Recorded M25 and M26.
 Changed: Added src/lib/esop/__tests__/compliance.test.ts, 36 tests, and five to cohorts.test.ts for the vesting floor. Two new error codes, `cliffBelowStatutoryMinimum` and `invalidDate`, both wired into the reachability map.

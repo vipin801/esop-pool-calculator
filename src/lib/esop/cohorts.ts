@@ -51,7 +51,17 @@ import {
   requirePositive,
 } from './errors';
 import { mapBands, type ByBand } from './grants';
-import { BANDS, type AttritionInputs, type Band, type ExerciseInputs, type VestingSchedule } from './types';
+import {
+  BANDS,
+  type AttritionInputs,
+  type Band,
+  type ExerciseInputs,
+  type OpeningGrantCohortInput,
+  type OpeningHeadcountInput,
+  type VestingSchedule,
+} from './types';
+
+export type { OpeningGrantCohortInput, OpeningHeadcountInput };
 
 /* ------------------------------------------------------------------------- *
  * Conventions
@@ -513,37 +523,10 @@ export function newGrantCohort(args: {
 }
 
 /**
- * Options already granted and outstanding when the plan starts.
- *
- * `ageYearsAtPlanStart` is how long ago they were granted, measured at the start
- * of year 0. It is the one thing a founder has to tell us that a total on its
- * own cannot: an option granted three years ago and one granted last month
- * behave nothing alike when their holder resigns.
+ * `OpeningGrantCohortInput` is declared in types.ts with the rest of the input
+ * contract and re-exported above, so a caller assembling `EsopInputs` and a
+ * caller calling this function are reading the same shape.
  */
-export interface OpeningGrantCohortInput {
-  readonly band: Band;
-  readonly outstandingOptions: number;
-  readonly ageYearsAtPlanStart: number;
-  /** Optional: what was originally granted, if some has already gone. */
-  readonly grantedOptions?: number;
-  /**
-   * Fair value per option at this cohort's original grant date, for the Ind AS
-   * 102 estimate in compliance.ts. Optional, and `undefined` is not the same
-   * input as `0`.
-   *
-   * Leave it unsupplied and the cohort is excluded from the expense estimate,
-   * because the engine holds no price per share from before the plan started
-   * to value it at and would otherwise have to guess one. Supply it — including
-   * as exactly `0`, a scheme adopted at a price equal to par, say — and the
-   * cohort is amortised over its remaining vesting like any other, at the value
-   * given. The two states report differently: `EsopExpenseSchedule` keeps
-   * `excludedOpeningOptions` and `includedOpeningOptions` apart rather than
-   * merging them, because "we don't know" and "we know, and it was nothing"
-   * are different facts that happen to net to the same rupee total.
-   */
-  readonly grantDateValuePerOption?: number;
-}
-
 export function openingGrantCohorts(
   inputs: readonly OpeningGrantCohortInput[],
 ): readonly GrantCohort[] {
@@ -645,13 +628,7 @@ export function newHireCohort(args: {
   };
 }
 
-/** Staff already employed when the plan starts, with their tenure at that point. */
-export interface OpeningHeadcountInput {
-  readonly band: Band;
-  readonly headcount: number;
-  readonly tenureYearsAtPlanStart: number;
-}
-
+/** `OpeningHeadcountInput` is declared in types.ts, beside the rest of the contract. */
 export function openingHeadcountCohorts(
   inputs: readonly OpeningHeadcountInput[],
 ): readonly HeadcountCohort[] {

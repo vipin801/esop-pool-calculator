@@ -12,7 +12,15 @@
  * is tagged `estimate` and says so in its own caveat.
  */
 
-import type { BenchmarkTrack } from './types';
+import type {
+  BenchmarkBand,
+  BenchmarkComparison,
+  BenchmarkPosition,
+  BenchmarkTrack,
+  BenchmarkTrackComparison,
+  Geography,
+  Stage,
+} from './types';
 
 const AS_OF = '2026-08';
 
@@ -141,3 +149,80 @@ export const BENCHMARK_TRACKS: readonly [BenchmarkTrack, BenchmarkTrack] = [
   ADVISORY_TRACK,
   OBSERVED_TRACK,
 ];
+
+/* ------------------------------------------------------------------------- *
+ * Comparison — spec output item 10
+ * ------------------------------------------------------------------------- */
+
+/**
+ * The band a track states for one stage in one geography, or null if it states
+ * none.
+ *
+ * The observed track has no pre-seed or seed band at all, and that absence is a
+ * finding rather than a gap to be filled by borrowing the nearest neighbour.
+ * Interpolating between "most Series A companies are below 10%" and nothing
+ * would manufacture a number the study never reported.
+ */
+export function bandForStage(args: {
+  readonly track: BenchmarkTrack;
+  readonly stage: Stage;
+  readonly geography: Geography;
+}): BenchmarkBand | null {
+  const { track, stage, geography } = args;
+
+  return (
+    track.bands.find((band) => band.stage === stage && band.geography === geography) ?? null
+  );
+}
+
+/**
+ * Where a pool percentage sits against one band.
+ *
+ * `upperBoundOnly` has no floor — "most below 10%" says nothing about how low
+ * is too low — so a pool under the ceiling is `within` and never `below`.
+ * Reading a missing floor as zero would let the tool tell a founder their pool
+ * is beneath a bound the study never drew.
+ */
+export function positionAgainstBand(
+  poolPctOfFullyDiluted: number,
+  band: BenchmarkBand | null,
+): BenchmarkPosition {
+  if (band === null) return 'noBandForStage';
+  if (poolPctOfFullyDiluted > band.highPct) return 'above';
+  if (band.lowPct !== null && poolPctOfFullyDiluted < band.lowPct) return 'below';
+
+  return 'within';
+}
+
+/**
+ * Item 10. Both tracks, in one array, neither ranked.
+ *
+ * D5: neither track is presented as the truth, so this returns both every time
+ * and has no argument that could ask for one. A caller that wants a single
+ * number is asking the wrong question, and the shape does not answer it.
+ *
+ * The geography is fixed at India: the observed track's US band is a comparison
+ * the study itself draws, not a benchmark for an Indian founder's own pool, and
+ * scoring an Indian company against it would be the mistake D5 exists to stop.
+ */
+export function compareToBenchmarks(args: {
+  readonly poolPctOfFullyDiluted: number;
+  readonly stage: Stage;
+  readonly geography?: Geography;
+}): BenchmarkComparison {
+  const { poolPctOfFullyDiluted, stage, geography = 'IN' } = args;
+
+  const tracks: readonly BenchmarkTrackComparison[] = BENCHMARK_TRACKS.map((track) => {
+    const band = bandForStage({ track, stage, geography });
+
+    return {
+      trackId: track.id,
+      trackLabel: track.label,
+      provenance: track.provenance,
+      band,
+      position: positionAgainstBand(poolPctOfFullyDiluted, band),
+    };
+  });
+
+  return { poolPctOfFullyDiluted, tracks };
+}

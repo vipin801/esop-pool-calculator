@@ -8,6 +8,8 @@
  * illegal combination cannot be constructed.
  */
 
+import type { EsopErrorCode } from './errors';
+
 /* ------------------------------------------------------------------------- *
  * Provenance (PROJECT.md D6)
  * ------------------------------------------------------------------------- */
@@ -153,6 +155,15 @@ export interface CompanyInputs {
    * estimate, because stamp duty varies by state.
    */
   readonly authorisedCapitalShares: number;
+  /**
+   * The founders' share of FD_0, including the unallocated pool in the base.
+   *
+   * Needed because spec output items 4 and 6 are about the founders and the
+   * roll forward only ever knows the issued total. Investor shares are the
+   * remainder — `issued - founders` — rather than a second input, so the two
+   * cannot be entered in a way that does not add up.
+   */
+  readonly founderOwnershipPctOfFullyDiluted: number;
 }
 
 /** Spec section 3. H_t,b is derived from the yearly total and the mix. */
@@ -192,6 +203,18 @@ export interface RefreshPolicy {
 
 export interface GrantPolicyInputs {
   readonly grantBasis: GrantBasis;
+  /**
+   * The other basis, for spec output item 1's "the same figure under the other
+   * basis".
+   *
+   * It has to be supplied rather than derived, because `GrantBasis` is a union
+   * and the selected arm carries only its own grant table: a percent-of-equity
+   * plan simply does not hold the rupee figures the comparison needs. That is
+   * the union doing its job rather than a gap, and D6 forbids the engine
+   * quietly filling it from `DEFAULTS` where the founder cannot see or edit it.
+   * Its `kind` must differ from `grantBasis.kind` or the engine refuses.
+   */
+  readonly comparisonGrantBasis: GrantBasis;
   readonly strikePolicy: StrikePolicy;
   /**
    * Which of section 2's three denominators converts a rupee grant into options.
@@ -237,6 +260,61 @@ export interface VestingSchedule {
    * frequency. Carried because founders enter it and the report shows it.
    */
   readonly frequency: VestFrequency;
+}
+
+/* ------------------------------------------------------------------------- *
+ * Opening state — what the company already holds when the plan starts
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Options already granted and outstanding when the plan starts.
+ *
+ * `ageYearsAtPlanStart` is how long ago they were granted, measured at the start
+ * of year 0. It is the one thing a founder has to tell us that a total on its
+ * own cannot: an option granted three years ago and one granted last month
+ * behave nothing alike when their holder resigns. Spec section 4.3 is headed
+ * "required, do not approximate", and model decision M21 is why the engine
+ * raises rather than inventing a grant year on the founder's behalf.
+ */
+export interface OpeningGrantCohortInput {
+  readonly band: Band;
+  readonly outstandingOptions: number;
+  readonly ageYearsAtPlanStart: number;
+  /** Optional: what was originally granted, if some has already gone. */
+  readonly grantedOptions?: number;
+  /**
+   * Fair value per option at this cohort's original grant date, for the Ind AS
+   * 102 estimate. Optional, and `undefined` is not the same input as `0` — M29.
+   *
+   * Leave it unsupplied and the cohort is excluded from the expense estimate,
+   * because the engine holds no price per share from before the plan started
+   * to value it at and would otherwise have to guess one. Supply it — including
+   * as exactly `0`, a scheme adopted at a price equal to par, say — and the
+   * cohort is amortised over its remaining vesting like any other, at the value
+   * given. The two states report differently: `EsopExpenseSchedule` keeps
+   * `excludedOpeningOptions` and `includedOpeningOptions` apart rather than
+   * merging them, because "we don't know" and "we know, and it was nothing"
+   * are different facts that happen to net to the same rupee total.
+   */
+  readonly grantDateValuePerOption?: number;
+}
+
+/** Staff already employed when the plan starts, with their tenure at that point. */
+export interface OpeningHeadcountInput {
+  readonly band: Band;
+  readonly headcount: number;
+  readonly tenureYearsAtPlanStart: number;
+}
+
+/**
+ * Spec output item 11. What a median employee's grant is worth at the horizon.
+ *
+ * The marginal rate is an input rather than a constant because the spec says
+ * only "taxed at slab" and D6 makes every assumption editable. It is the
+ * employee's rate, not the company's.
+ */
+export interface EmployeeValueInputs {
+  readonly marginalTaxRatePct: number;
 }
 
 /** Spec section 5. */
@@ -306,6 +384,15 @@ export interface PoolTopUp {
   readonly options: number;
 }
 
+/**
+ * Everything `calculateEsopPool` needs, and nothing it does not.
+ *
+ * There is no optional field on this shape and no default applied inside the
+ * engine: a caller who leaves something out gets a `tsc` error rather than a
+ * number computed against an assumption they never saw. `DEFAULTS` in
+ * defaults.ts is what a form seeds itself from, in the form, where the founder
+ * can see and edit each value — D6.
+ */
 export interface EsopInputs {
   readonly company: CompanyInputs;
   readonly hiring: HiringPlan;
@@ -315,8 +402,29 @@ export interface EsopInputs {
   readonly exercise: ExerciseInputs;
   readonly vesting: VestingSchedule;
   readonly compliance: ComplianceInputs;
+  readonly employeeValue: EmployeeValueInputs;
   readonly rounds: readonly FundingRound[];
   readonly topUps: readonly PoolTopUp[];
+  /**
+   * The cohorts behind `company.grantedOutstandingOptions`. Required whenever
+   * that figure is above zero; an empty array is the correct input for a
+   * company that has granted nothing.
+   */
+  readonly openingGrants: readonly OpeningGrantCohortInput[];
+  /**
+   * Staff already employed at the start of year 0. Left empty, refresh demand
+   * in the early years comes only from the hires in the plan, which understates
+   * it for any company that already has people.
+   */
+  readonly openingHeadcount: readonly OpeningHeadcountInput[];
+  /**
+   * ISO date the answer is struck as at, YYYY-MM-DD.
+   *
+   * Taken as an input and never read from a clock, because the DPIIT Rule 12
+   * exemption expires on a specific day and an engine that reads the system
+   * clock cannot be tested at that boundary.
+   */
+  readonly asOfDate: string;
 }
 
 /* ------------------------------------------------------------------------- *
@@ -363,11 +471,27 @@ export interface PoolExhaustion {
   readonly hiresSupported: number;
 }
 
-/** Item 3. */
+/**
+ * Item 3. How much new pool the next round requires, measured against the
+ * post-round company.
+ *
+ * `topUpPctPoints` is `dP / T`, section 4.6's own measure: the new pool's
+ * footprint on the post-round company. `existingPoolPostRoundPct` is the
+ * comparison an investor's demand should actually be read against, per M13 —
+ * a pool sitting at 11.1% before a 20% round lands at 8.9% after it without a
+ * single new option being reserved, so comparing `pi` against the pre-round
+ * percentage overstates the top-up.
+ */
 export interface TopUpRequirement {
   readonly roundId: string;
   readonly topUpPctPoints: number;
   readonly topUpOptions: number;
+  /** pi. What the investor is asking for, post-round. */
+  readonly investorRequiredPostRoundPoolPct: number;
+  /** Where the pool already lands after this round with nothing new reserved. M13. */
+  readonly existingPoolPostRoundPct: number;
+  /** Which convention this top-up is measured under. */
+  readonly poolCreation: PoolCreationTiming;
 }
 
 /** Spec section 4.6, one arm of the pre-money versus post-money comparison. */
@@ -698,12 +822,47 @@ export interface MedianEmployeeValue {
   readonly taxDeferralAvailable: boolean;
 }
 
-/** Spec section 2. All three bases, computed, never just notional. */
-export interface GrantValueBreakdown {
-  readonly band: Band;
-  readonly year: number;
-  readonly optionsByValueBasis: Readonly<Record<ValueBasis, number>>;
-}
+/**
+ * One of section 2's three value bases, either priced or refused with a reason.
+ *
+ * The refusal is real and is carried as data rather than thrown: set the strike
+ * at the last round price and the realisable spread is zero, which is exactly
+ * the case the spec calls out when it says fair value is "the only honest basis
+ * when the strike is set at the last round price". A UI has to be able to show
+ * notional and fair value and say why realisable is missing.
+ */
+export type ValueBasisOutcome =
+  | { readonly ok: true; readonly optionsPerHire: number; readonly denominator: number }
+  | { readonly ok: false; readonly reason: EsopErrorCode; readonly message: string };
+
+/**
+ * Spec section 2, per band and per year: what one hire's grant buys.
+ *
+ * A union on the grant basis, because section 2 is a Basis B question. Under
+ * Basis A a grant is a percentage of FD_t and there is no denominator to pick,
+ * so reporting three identical value bases there would invent a choice the
+ * founder does not have — M15's "inert under Basis A", made structural.
+ */
+export type GrantValueBreakdown =
+  | {
+      readonly basisKind: 'percentOfEquity';
+      readonly band: Band;
+      readonly year: number;
+      /** pct_b * FD_t / 100. One number; section 2's value bases do not apply. */
+      readonly optionsPerHire: number;
+      readonly grantPctOfFullyDiluted: number;
+    }
+  | {
+      readonly basisKind: 'rupeeValue';
+      readonly band: Band;
+      readonly year: number;
+      /** G_b * (1+i)^t. The promise, in rupees, made in year t. */
+      readonly grantValueRupees: number;
+      /** X_t, the exercise price these options would carry. */
+      readonly exercisePrice: number;
+      /** All three of section 2, each priced or refused. */
+      readonly optionsPerHireByValueBasis: Readonly<Record<ValueBasis, ValueBasisOutcome>>;
+    };
 
 /** Spec section 4.5 requires the iteration count to come back out. */
 export interface SolverDiagnostics {
@@ -746,21 +905,122 @@ export interface EngineWarning {
   readonly message: string;
 }
 
-export interface EsopOutputs {
-  readonly recommendedPool: RecommendedPool;
+/**
+ * Which pool a roll forward was run against.
+ *
+ * `recommended` is the plan run at the pool section 4.5 solves for. `current` is
+ * the same plan run at the pool the founder holds today, and nothing else about
+ * the two runs differs.
+ */
+export type PoolSeriesLabel = 'recommended' | 'current';
+
+/**
+ * One plan, run against one pool, with everything that falls out of that run.
+ *
+ * **The engine returns two of these and never merges them.** They answer
+ * different questions — "how big should the pool be" and "how long does what I
+ * hold last" — and their year rows disagree by construction: a plan run at the
+ * recommended pool closes every year with options left, and the same plan run
+ * at an empty pool is overdrawn from month zero. Reporting a figure from one
+ * beside a table from the other is the single most misleading thing this tool
+ * can do, so there is no top-level `rollForward` or `exhaustion` on the result
+ * for a caller to reach for without naming which series they mean.
+ */
+export interface PoolPlanSeries {
+  readonly label: PoolSeriesLabel;
+  /** One line a UI can print above the table, so the two are never confused. */
+  readonly description: string;
+  /** Available_(-1): the options this run started year 0 with. */
+  readonly openingPoolOptions: number;
+  /**
+   * The opening pool as a share of FD_0 for this run.
+   *
+   * A measured fact about the company under `current` and a consequence of the
+   * recommendation under `recommended`. Not a substitute for `sizing`: the
+   * PROJECT.md prohibition on a naked pool percentage is about a percentage the
+   * *model* produced, which is what `PoolSizing` welds to its two controls.
+   */
+  readonly openingPoolPctOfFullyDiluted: number;
+  /**
+   * The section 4.5 answer, on the `recommended` series only. Null on `current`,
+   * because the pool a founder already holds is a fact and not a recommendation,
+   * and giving it a `PoolSizing` would imply a grant basis produced it.
+   */
+  readonly sizing: PoolSizing | null;
+  /** Item 5. */
+  readonly years: readonly RollForwardYear[];
+  /** Item 2. Read this off the `current` series; that is the question the spec asks. */
   readonly exhaustion: PoolExhaustion;
-  readonly topUpAtNextRound: TopUpRequirement | null;
-  readonly poolCostToFounders: PoolCostToFounders | null;
-  readonly rollForward: readonly RollForwardYear[];
-  readonly capTables: CapTableSet;
+  /** Item 7. */
   readonly authorisedCapital: AuthorisedCapitalHeadroom;
+  /** FD_0 for this run, including its opening pool. */
+  readonly fullyDilutedSharesAtYear0: number;
+  readonly closingAvailable: number;
+  readonly closingIssuedShares: number;
+  readonly closingGrantedOutstanding: number;
+  readonly closingFullyDilutedShares: number;
+  /** sum_t (N_t + R_t). */
+  readonly totalGrossConsumptionOptions: number;
+  /** sum_t Returned_t. Zero when recycling is off. */
+  readonly totalReturnedToPool: number;
+  readonly totalExercisedShares: number;
+  readonly totalCancelledNotRecycled: number;
+}
+
+/** One modelled funding round, with both pool conventions priced. Spec section 4.6. */
+export interface ModelledRound {
+  readonly roundId: string;
+  readonly label: string;
+  readonly year: number;
+  /** The round as the term sheet actually offers it, per `round.poolCreation`. */
+  readonly asOffered: PoolShuffleOutcome;
+  /** Item 3. */
+  readonly topUp: TopUpRequirement;
+  /** Item 4. Both conventions and the delta between them. */
+  readonly cost: PoolCostToFounders;
+}
+
+/**
+ * Everything ENGINE_SPEC.md section 7 asks for, from one call.
+ *
+ * Item 1 is `recommendedPool`. Items 2, 5 and 7 live on the two series, because
+ * they are properties of a run and not of the company. Items 3 and 4 are on
+ * `rounds`, with the next round lifted out for convenience. Items 6 and 8 to 11
+ * are their own fields.
+ */
+export interface EsopResult {
+  /** Item 1. The selected basis, and the same figure under the other one. */
+  readonly recommendedPool: RecommendedPool;
+  /** The plan at the pool section 4.5 solves for. */
+  readonly recommended: PoolPlanSeries;
+  /** The same plan at the pool the founder holds today. */
+  readonly current: PoolPlanSeries;
+  /** Every round the founder modelled, in order. Nothing is silently truncated. */
+  readonly rounds: readonly ModelledRound[];
+  /** Item 3. `rounds[0].topUp`, or null when no round was modelled. */
+  readonly topUpAtNextRound: TopUpRequirement | null;
+  /** Item 4. `rounds[0].cost`, or null when no round was modelled. */
+  readonly poolCostToFounders: PoolCostToFounders | null;
+  /** Item 6. */
+  readonly capTables: CapTableSet;
+  /** Item 8. */
   readonly esopExpense: EsopExpenseSchedule;
+  /** Item 9. */
   readonly complianceChecks: readonly ComplianceCheck[];
+  /** Item 10. Both tracks, always. */
   readonly benchmarkComparison: BenchmarkComparison;
-  readonly medianEmployeeValue: MedianEmployeeValue;
+  /**
+   * Item 11. Null only when the seniority mix is entirely zero, which is a plan
+   * that hires nobody and therefore has no median employee to value.
+   */
+  readonly medianEmployeeValue: MedianEmployeeValue | null;
+  /** Section 2, per band and per year, on the recommended run. */
   readonly grantValueBreakdown: readonly GrantValueBreakdown[];
+  /** Section 4.5 requires the iteration count to come back out. */
   readonly solver: SolverDiagnostics;
   readonly warnings: readonly EngineWarning[];
+  /** The date the answer was struck as at. Echoed so a report can print it. */
+  readonly asOfDate: string;
 }
 
 /* ------------------------------------------------------------------------- *

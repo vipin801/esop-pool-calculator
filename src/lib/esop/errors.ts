@@ -75,6 +75,17 @@ export const ESOP_ERROR_CODES = [
    * worse than one that refuses to be measured, because it still renders.
    */
   'invalidDate',
+  /**
+   * `comparisonGrantBasis` has the same kind as `grantBasis`. Spec output item 1
+   * asks for the recommendation "under the selected grant basis, plus the same
+   * figure under the other basis", and there is no other basis to run.
+   */
+  'comparisonBasisSameAsSelected',
+  /**
+   * The founders hold more of the fully diluted count than there are issued
+   * shares, which would leave the investors on a negative holding.
+   */
+  'founderOwnershipExceedsIssuedShares',
 ] as const;
 
 export type EsopErrorCode = (typeof ESOP_ERROR_CODES)[number];

@@ -22,7 +22,19 @@ function sourceFiles(directory: string): readonly string[] {
   });
 }
 
-const FILES = sourceFiles(ENGINE_DIR);
+const ALL_FILES = sourceFiles(ENGINE_DIR);
+
+/**
+ * Prose is not source and is not scanned for imports.
+ *
+ * This exception was added when README.md landed in the engine directory. The
+ * check it narrows was never about file extensions for their own sake — the
+ * test's own sentence says "so nothing here can render", and it is a `.tsx`
+ * that renders, not a `.md`. Narrowing it to source files keeps the ban on
+ * component files exactly as strong and stops the documentation from being
+ * treated as a component.
+ */
+const FILES = ALL_FILES.filter((file) => !file.endsWith('.md'));
 
 const IMPORT_PATTERN = /\b(?:from|import)\s*\(?\s*['"]([^'"]+)['"]/g;
 
@@ -33,9 +45,19 @@ describe('the engine is a pure library', () => {
     expect(FILES.length).toBeGreaterThan(5);
   });
 
-  it('holds only .ts files, so nothing here can render', () => {
+  it('holds only .ts source, so nothing here can render', () => {
     for (const file of FILES) {
       expect(file.endsWith('.ts'), `${relative(ENGINE_DIR, file)} is not a .ts file`).toBe(true);
+    }
+  });
+
+  it('admits documentation, and nothing else that is not TypeScript', () => {
+    const notSource = ALL_FILES.filter((file) => !file.endsWith('.ts'));
+
+    for (const file of notSource) {
+      expect(file.endsWith('.md'), `${relative(ENGINE_DIR, file)} is neither .ts nor .md`).toBe(
+        true,
+      );
     }
   });
 

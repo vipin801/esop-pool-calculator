@@ -11,6 +11,7 @@ import {
   type ComplianceInputs,
   type EngineWarningId,
   type EsopInputs,
+  type EsopResult,
   type ExerciseWindowDays,
   type FundingRound,
   type GrantBasis,
@@ -78,6 +79,25 @@ type _roundsAreOnTheInput = Expect<Equal<EsopInputs['rounds'], readonly FundingR
  */
 type _engineWarningIdIsEnumerable = Expect<
   Equal<EngineWarningId, (typeof ENGINE_WARNING_IDS)[number]>
+>;
+
+/**
+ * M31. The result has no unlabelled roll forward, exhaustion or authorised
+ * capital: those are properties of *a run*, and the engine makes two.
+ *
+ * This is the type-level half of the fix LOG [020] describes. A component
+ * cannot write `result.exhaustion` beside `result.recommendedPool` and print a
+ * runway from one state under a headline from another, because the field does
+ * not exist. It has to say `result.current.exhaustion` — and the moment it does,
+ * it has decided which question it is answering.
+ */
+type _resultCarriesNoUnlabelledSeries = Expect<
+  Equal<Extract<keyof EsopResult, 'rollForward' | 'exhaustion' | 'authorisedCapital'>, never>
+>;
+
+/** Both series are always present. Neither is optional and neither is nullable. */
+type _bothSeriesAreAlwaysReturned = Expect<
+  Equal<EsopResult['recommended']['label'] | EsopResult['current']['label'], 'recommended' | 'current'>
 >;
 
 /* The directives below must sit on the line immediately above the offending

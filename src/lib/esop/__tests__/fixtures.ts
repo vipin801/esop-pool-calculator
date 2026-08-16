@@ -14,6 +14,9 @@ import type { RollForwardArgs } from '../roll-forward';
 import type {
   AttritionInputs,
   CompanyInputs,
+  ComplianceInputs,
+  EmployeeValueInputs,
+  EsopInputs,
   ExerciseInputs,
   GrantBasis,
   GrantPolicyInputs,
@@ -44,6 +47,7 @@ export const COMPANY: CompanyInputs = {
   grantedOutstandingOptions: 0,
   faceValuePerShare: 10,
   authorisedCapitalShares: 12_000_000,
+  founderOwnershipPctOfFullyDiluted: 75,
 };
 
 export const HIRING: HiringPlan = {
@@ -78,6 +82,7 @@ export const EXERCISE: ExerciseInputs = {
 
 export const GRANT_POLICY: GrantPolicyInputs = {
   grantBasis: BASIS_A,
+  comparisonGrantBasis: BASIS_B,
   strikePolicy: { kind: 'faceValue' },
   valueBasis: DEFAULTS.valueBasis.value,
   compInflationPctPerYear: DEFAULTS.compInflationPctPerYear.value,
@@ -93,6 +98,18 @@ export const GRANT_POLICY: GrantPolicyInputs = {
     volatilityPct: DEFAULTS.volatilityPct.value,
   },
 };
+
+export const COMPLIANCE: ComplianceInputs = {
+  dpiitRecognised: false,
+  imbCertified80IAC: false,
+  incorporationDate: '2022-04-01',
+  grantsToGroupCompanyEmployees: false,
+  anyIndividualGrantAtOrAbove1Pct: false,
+  accountingBasis: DEFAULTS.accountingBasis.value,
+  instrument: 'ESOP',
+};
+
+export const EMPLOYEE_VALUE: EmployeeValueInputs = { marginalTaxRatePct: 30 };
 
 export const BASE_ARGS: RollForwardArgs = {
   company: COMPANY,
@@ -139,5 +156,72 @@ export function withArgs(
     fullyDilutedSharesAtStart:
       overrides.fullyDilutedSharesAtStart ?? base.fullyDilutedSharesAtStart,
     openingAvailableOptions: overrides.openingAvailableOptions ?? base.openingAvailableOptions,
+  };
+}
+
+/* ------------------------------------------------------------------------- *
+ * The whole input contract, for anything that calls `calculateEsopPool`
+ * ------------------------------------------------------------------------- */
+
+/** The same company as `BASE_ARGS`, with the fields only the assembler reads. */
+export const BASE_INPUTS: EsopInputs = {
+  company: COMPANY,
+  hiring: HIRING,
+  growth: GROWTH,
+  grantPolicy: GRANT_POLICY,
+  attrition: ATTRITION,
+  exercise: EXERCISE,
+  vesting: VESTING,
+  compliance: COMPLIANCE,
+  employeeValue: EMPLOYEE_VALUE,
+  rounds: [],
+  topUps: [],
+  openingGrants: [],
+  openingHeadcount: [],
+  asOfDate: '2026-08-16',
+};
+
+/**
+ * Not an extension of `ArgOverrides`: the roll forward takes `GrantCohort` and
+ * `HeadcountCohort`, already built, while `EsopInputs` takes the raw
+ * `OpeningGrantCohortInput` and `OpeningHeadcountInput` the assembler builds
+ * them from. Same two fields, two different types, deliberately.
+ */
+export interface InputOverrides {
+  readonly company?: Partial<CompanyInputs>;
+  readonly hiring?: Partial<HiringPlan>;
+  readonly growth?: Partial<GrowthInputs>;
+  readonly grantPolicy?: Partial<GrantPolicyInputs>;
+  readonly attrition?: Partial<AttritionInputs>;
+  readonly exercise?: Partial<ExerciseInputs>;
+  readonly vesting?: Partial<VestingSchedule>;
+  readonly compliance?: Partial<ComplianceInputs>;
+  readonly employeeValue?: Partial<EmployeeValueInputs>;
+  readonly rounds?: EsopInputs['rounds'];
+  readonly topUps?: EsopInputs['topUps'];
+  readonly openingGrants?: EsopInputs['openingGrants'];
+  readonly openingHeadcount?: EsopInputs['openingHeadcount'];
+  readonly asOfDate?: string;
+}
+
+export function withInputs(
+  overrides: InputOverrides,
+  base: EsopInputs = BASE_INPUTS,
+): EsopInputs {
+  return {
+    company: { ...base.company, ...overrides.company },
+    hiring: { ...base.hiring, ...overrides.hiring },
+    growth: { ...base.growth, ...overrides.growth },
+    grantPolicy: { ...base.grantPolicy, ...overrides.grantPolicy },
+    attrition: { ...base.attrition, ...overrides.attrition },
+    exercise: { ...base.exercise, ...overrides.exercise },
+    vesting: { ...base.vesting, ...overrides.vesting },
+    compliance: { ...base.compliance, ...overrides.compliance },
+    employeeValue: { ...base.employeeValue, ...overrides.employeeValue },
+    rounds: overrides.rounds ?? base.rounds,
+    topUps: overrides.topUps ?? base.topUps,
+    openingGrants: overrides.openingGrants ?? base.openingGrants,
+    openingHeadcount: overrides.openingHeadcount ?? base.openingHeadcount,
+    asOfDate: overrides.asOfDate ?? base.asOfDate,
   };
 }

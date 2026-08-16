@@ -15,6 +15,7 @@
  * company, which is where a founder using this tool actually lives.
  */
 
+import { DEFAULT_GRANT_PCT_BY_BAND, DEFAULT_GRANT_VALUE_BY_BAND } from '../defaults';
 import type { RollForwardArgs } from '../roll-forward';
 import type {
   AttritionInputs,
@@ -164,6 +165,14 @@ export function randomArgs(seed: number): RandomCase {
     grantedOutstandingOptions,
     faceValuePerShare: draw.pick([1, 10] as const),
     authorisedCapitalShares: fullyDilutedShares * draw.between(0.5, 2),
+    /**
+     * Derived, not drawn, for two reasons. It has to leave the investors a
+     * non-negative holding — the founders cannot hold more of the fully diluted
+     * count than the company has issued — and the generator's seeded draw
+     * sequence must not move, or every pinned figure in the property tests
+     * shifts for a field the roll forward never reads.
+     */
+    founderOwnershipPctOfFullyDiluted: 100 - unallocatedPct - grantedPct,
   };
 
   const horizonYears = draw.intBetween(1, 5);
@@ -176,6 +185,16 @@ export function randomArgs(seed: number): RandomCase {
 
   const grantPolicy: GrantPolicyInputs = {
     grantBasis,
+    /**
+     * The other kind, from the defaults table rather than from the generator,
+     * for the same reason as founder ownership above: drawing it would consume
+     * from the seeded sequence and move every case. Nothing in `runRollForward`
+     * reads it — only the assembler does, for output item 1.
+     */
+    comparisonGrantBasis:
+      grantBasis.kind === 'percentOfEquity'
+        ? { kind: 'rupeeValue', grantValueByBand: DEFAULT_GRANT_VALUE_BY_BAND }
+        : { kind: 'percentOfEquity', grantPctByBand: DEFAULT_GRANT_PCT_BY_BAND },
     strikePolicy: strikePolicyFor(draw, valueBasis),
     valueBasis,
     compInflationPctPerYear: draw.between(0, 12),

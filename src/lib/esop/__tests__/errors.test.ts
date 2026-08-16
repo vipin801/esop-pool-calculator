@@ -8,6 +8,7 @@
 
 import { describe, expect, it } from 'vitest';
 
+import { calculateEsopPool } from '../calculate';
 import {
   attritionPctByBand,
   cohortPolicy,
@@ -37,7 +38,7 @@ import {
 import { runRollForward } from '../roll-forward';
 import type { FundingRound, GrantBasis, PreRoundHoldings, RefreshPolicy } from '../types';
 import { pricePerShare, valuationAtYear } from '../valuation';
-import { ATTRITION, EXERCISE, VESTING, withArgs } from './fixtures';
+import { ATTRITION, EXERCISE, VESTING, withArgs, withInputs } from './fixtures';
 
 const ONE_LEADER: ByBand = { leadership: 1, senior: 0, mid: 0, junior: 0 };
 
@@ -155,6 +156,11 @@ const REACHES: Readonly<Record<EsopErrorCode, () => unknown>> = {
         ]),
       }),
     ),
+  /** `BASE_INPUTS` selects a percent-of-equity basis, so this is the same kind. */
+  comparisonBasisSameAsSelected: () =>
+    calculateEsopPool(withInputs({ grantPolicy: { comparisonGrantBasis: BASIS_A } })),
+  founderOwnershipExceedsIssuedShares: () =>
+    calculateEsopPool(withInputs({ company: { founderOwnershipPctOfFullyDiluted: 100 } })),
 };
 
 describe('EsopEngineError', () => {

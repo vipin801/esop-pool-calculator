@@ -417,7 +417,7 @@ Open items:
 - Carried from [000]: `esop-engine-spec-v2.md` still sits at the repo root beside the canonical copy, and there is still no CLAUDE.md pointing a session at PROJECT.md.
 - All AUDIT_P4-carried engine defects (5, 7, 8, 9, 10, 11, 13) are untouched, per scope — this session did not open `src/lib/esop`.
 
-[022] 2026-08-17 | prompt P12 | branch main | commit <sha> (sha backfilled by the follow-up commit, also covered by this entry)
+[022] 2026-08-17 | prompt P12 | branch main | commit fbfcd86 (sha backfilled by the follow-up commit, also covered by this entry)
 Changed: The gated report and the lead path. Results stay ungated (D3) — this session gates one thing, the download.
 Changed: `lib/leadValidation.ts`, pure and testable: full name, work email, company, consent, each with a message that says what to fix. Free consumer domains are flagged **gently and never block** — `freeEmailDomainNotice` is a separate function from `validateLead` precisely so the nudge has no route into the disabled state on the submit button. `results/LeadModal.tsx` rewritten on it: stage prefilled from `inputs.company.stage` and re-synced if it changes behind the modal, submit disabled until valid, errors shown per field on blur, and a summary line under the disabled button so "why can't I click this" is answerable.
 Changed: `src/app/api/leads/route.ts`, the endpoint. Validates again server-side with the same module (a client check is a convenience, not a control), bounds every string at 200 characters, and logs the email **domain** rather than the address. Not persisted: there is no store wired to this project and the route exists so there is one place to post to when there is.

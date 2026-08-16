@@ -1,17 +1,11 @@
+# pnpm settings. In pnpm 10+ these live here rather than in package.json.
+#
+# Which dependencies may run an install script, decided explicitly rather than
+# left as a warning every install repeats. A new dependency that wants one has
+# to be added here on purpose, in a diff, instead of being trusted silently.
 allowBuilds:
+  # Places its platform-native binary on install. Vitest does not run without it.
   esbuild: true
-  sharp: false
-  unrs-resolver: false
-minimumReleaseAgeExclude:
-  - '@next/env@16.3.1'
-  - '@next/eslint-plugin-next@16.3.1'
-  - '@next/swc-darwin-arm64@16.3.1'
-  - '@next/swc-darwin-x64@16.3.1'
-  - '@next/swc-linux-arm64-gnu@16.3.1'
-  - '@next/swc-linux-arm64-musl@16.3.1'
-  - '@next/swc-linux-x64-gnu@16.3.1'
-  - '@next/swc-linux-x64-musl@16.3.1'
-  - '@next/swc-win32-arm64-msvc@16.3.1'
-  - '@next/swc-win32-x64-msvc@16.3.1'
-  - eslint-config-next@16.3.1
-  - next@16.3.1
+  # Transitive dependency of jspdf. Its postinstall prints a funding notice and
+  # builds nothing, so it has no reason to execute.
+  core-js: false

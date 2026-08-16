@@ -17,7 +17,7 @@ import { InputRail } from './inputs/InputRail';
 import type { EsopGroupKey } from './inputs/InputCard';
 import { LeadModal, type Lead } from './results/LeadModal';
 import { ResultsPanel } from './results/ResultsPanel';
-import { buildReportText, downloadTextFile } from './lib/report';
+import { generateAndDownloadReport, postLead } from './lib/downloadReport';
 import { buildSeedInputs } from './lib/seedInputs';
 import { ThemeProvider } from './lib/theme';
 
@@ -29,6 +29,7 @@ function EsopPoolSizeApp() {
   const [modalOpen, setModalOpen] = useState(false);
   const [lead, setLead] = useState<Lead | null>(null);
   const [busy, setBusy] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
   const setGroup = useCallback(<K extends EsopGroupKey>(key: K, patch: Partial<EsopInputs[K]>) => {
@@ -54,26 +55,52 @@ function EsopPoolSizeApp() {
     }
   }, [inputs]);
 
-  function runDownload(forLead: Lead) {
-    if (!outcome.ok) return;
+  /**
+   * The lead goes first, and its failure cannot reach the founder: `postLead`
+   * swallows errors and gives up after a timeout, so a blocked, down or
+   * hanging endpoint costs a lead record and never the report.
+   *
+   * The report's own failure is different and must be shown. Without the catch
+   * the promise rejects into nothing — `void` at both call sites — and the
+   * founder watches the button settle back to "Download report" with no file
+   * and no reason.
+   */
+  async function runDownload(forLead: Lead, isNewLead: boolean) {
+    if (!outcome.ok || busy) return;
+
     setBusy(true);
-    const text = buildReportText({ inputs, result: outcome.result, lead: forLead });
-    downloadTextFile(`esop-pool-sizing-${forLead.company.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.txt`, text);
-    setBusy(false);
-    setModalOpen(false);
+    setDownloadError(null);
+    try {
+      if (isNewLead) await postLead(forLead);
+
+      await generateAndDownloadReport({
+        inputs,
+        result: outcome.result,
+        lead: forLead,
+        chartsRoot: resultsRef.current,
+      });
+      setLead(forLead);
+      setModalOpen(false);
+    } catch {
+      setDownloadError('The PDF could not be generated. Your results on screen are unaffected — try again.');
+    } finally {
+      setBusy(false);
+    }
   }
 
   function onDownload() {
     if (lead) {
-      runDownload(lead);
+      void runDownload(lead, false);
       return;
     }
     setModalOpen(true);
   }
 
+  /** `setLead` moved into `runDownload`, on success only: committing it here
+   * made a failed download look like a captured lead, so the retry silently
+   * skipped both the modal and the POST. */
   function onSubmitLead(submitted: Lead) {
-    setLead(submitted);
-    runDownload(submitted);
+    void runDownload(submitted, true);
   }
 
   return (
@@ -103,6 +130,7 @@ function EsopPoolSizeApp() {
                 onLoadScenario={setInputs}
                 onDownload={onDownload}
                 reportReady={!busy}
+                downloadError={downloadError}
               />
             ) : (
               <div className="rounded-lg border border-warn bg-warn-soft p-4 text-[13px] text-warn">
@@ -116,7 +144,7 @@ function EsopPoolSizeApp() {
       <Footer />
       {outcome.ok ? (
         <MobileSummaryBar
-          recommendedPoolPct={outcome.result.recommendedPool.selected.displayPoolPctOfFullyDiluted}
+          recommendedPoolPct={outcome.result.recommended.openingPoolPctOfFullyDiluted}
           exhaustion={outcome.result.current.exhaustion}
           hasExistingPool={outcome.result.current.openingPoolOptions > 0}
         />

@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
 /**
@@ -40,6 +41,15 @@ export function testTimeoutFor(argv: readonly string[]): number {
 }
 
 export default defineConfig({
+  /**
+   * The same `@/*` alias tsconfig.json gives the app. The engine's own tests
+   * import relatively and never needed it; the route's code does not, so
+   * without this a test that reaches any component or route-local module fails
+   * to resolve `@/lib/esop` two or three imports deep.
+   */
+  resolve: {
+    alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
+  },
   test: {
     environment: 'node',
     include: ['src/**/*.{test,spec}.{ts,tsx}'],

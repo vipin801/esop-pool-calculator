@@ -1,6 +1,6 @@
 import type { EsopResult, GrantBasisKind, StrikePolicyKind } from '@/lib/esop';
 import { EstimateMarker } from '../ui/EstimateMarker';
-import { formatPct, formatShares, lakhCrore, monthLabel } from '../lib/format';
+import { displayPoolPct, formatPct, formatShares, lakhCrore, monthLabel } from '../lib/format';
 
 const GRANT_BASIS_LABEL: Record<GrantBasisKind, string> = {
   percentOfEquity: 'percent-of-equity',
@@ -66,12 +66,19 @@ export function Headline({ result }: HeadlineProps) {
         ) : null}
       </div>
 
+      {/*
+        The percentage and the option count must describe one pool. Both come
+        off `recommended`, the run's own opening pool. `PoolSizing`'s figures
+        are the *top-up* (section 4.5 nets the existing pool off K), so pairing
+        that percentage with this count reads 3.0% beside 6,72,995 options for
+        a company already holding 4,00,000 — AUDIT_P4 defect 2, in the UI.
+      */}
       <p className="tnum mt-1 text-[40px] font-semibold leading-none tracking-tight text-ink">
-        {formatPct(recommendedPool.selected.displayPoolPctOfFullyDiluted)}
+        {formatPct(displayPoolPct(recommended.openingPoolPctOfFullyDiluted))}
         <span className="ml-2 text-[15px] font-normal text-sub">of fully diluted</span>
       </p>
       <p className="tnum mt-2 text-[13px] text-sub">
-        {formatShares(recommended.openingPoolOptions)} options reserved, under{' '}
+        {formatShares(recommended.openingPoolOptions)} options in the pool, under{' '}
         {GRANT_BASIS_LABEL[recommendedPool.selected.grantBasisKind]} grants struck at{' '}
         {STRIKE_LABEL[recommendedPool.selected.strikePolicyKind]}.
       </p>
@@ -91,6 +98,9 @@ export function Headline({ result }: HeadlineProps) {
           <dt className="text-2xs text-faint">{topUpLabel}</dt>
           <dd className="tnum mt-1 text-[17px] font-semibold leading-6 text-ink">
             {formatShares(recommendedPool.selected.poolOptions)}
+            <span className="ml-1.5 text-2xs font-normal text-faint">
+              {formatPct(recommendedPool.selected.displayPoolPctOfFullyDiluted)} of FD
+            </span>
           </dd>
           <p className="mt-1 text-2xs leading-4 text-faint">
             {hasExistingPool

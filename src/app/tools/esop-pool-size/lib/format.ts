@@ -3,6 +3,8 @@
  * logic lives here, per PROJECT.md's ban on locally computed engine numbers.
  */
 
+import { SOLVER } from '@/lib/esop';
+
 const CRORE = 10_000_000;
 const LAKH = 100_000;
 
@@ -47,6 +49,22 @@ export function toCrores(n: number): number {
 
 export function formatPct(n: number, digits = 1): string {
   return `${formatIndian(safe(n), digits)}%`;
+}
+
+/**
+ * ENGINE_SPEC.md section 4.5: "Round the displayed figure up to the nearest
+ * 0.5%." The engine applies it to `PoolSizing.displayPoolPctOfFullyDiluted`
+ * for the figure section 4.5 solves for — the top-up. The headline shows the
+ * *whole* pool, a different quantity, and showing it unrounded beside a
+ * rounded top-up prints one pool as 6.6% and 7.0% at once.
+ *
+ * The step is read from the engine's exported `SOLVER` rather than written
+ * here, so there is one rounding rule and not two.
+ */
+export function displayPoolPct(pct: number): number {
+  const step = SOLVER.displayRoundingPctPoints;
+
+  return Math.ceil(safe(pct) / step) * step;
 }
 
 export function formatShares(n: number): string {

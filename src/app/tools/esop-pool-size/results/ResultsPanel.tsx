@@ -19,9 +19,17 @@ interface ResultsPanelProps {
   readonly onLoadScenario: (inputs: EsopInputs) => void;
   readonly onDownload: () => void;
   readonly reportReady: boolean;
+  readonly downloadError: string | null;
 }
 
-export function ResultsPanel({ inputs, result, onLoadScenario, onDownload, reportReady }: ResultsPanelProps) {
+export function ResultsPanel({
+  inputs,
+  result,
+  onLoadScenario,
+  onDownload,
+  reportReady,
+  downloadError,
+}: ResultsPanelProps) {
   return (
     <div className="space-y-3 rounded-lg border border-border bg-surface p-4 shadow-panel sm:p-5">
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
@@ -54,6 +62,11 @@ export function ResultsPanel({ inputs, result, onLoadScenario, onDownload, repor
         <div>
           <h3 className="text-[13px] font-semibold text-ink">Download the detailed report</h3>
           <p className="mt-0.5 text-2xs text-faint">Your inputs, the recommendation, the roll forward and the compliance checklist.</p>
+          {downloadError ? (
+            <p role="alert" className="mt-1 text-2xs leading-4 text-danger">
+              {downloadError}
+            </p>
+          ) : null}
         </div>
         <Button onClick={onDownload} disabled={!reportReady}>
           {reportReady ? 'Download report' : 'Preparing report…'}

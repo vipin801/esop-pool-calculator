@@ -1,0 +1,91 @@
+'use client';
+
+import { useMemo } from 'react';
+import { calculateEsopPool, isEsopEngineError, type EsopInputs, type EsopResult } from '@/lib/esop';
+import { currentPoolRunwayLabel } from '../lib/describe';
+import { formatPct, lakhCrore } from '../lib/format';
+import { applyScenario, SCENARIOS, type ScenarioKey } from '../lib/scenarios';
+
+interface ScenarioStripProps {
+  readonly inputs: EsopInputs;
+  readonly baseResult: EsopResult;
+  readonly onLoad: (inputs: EsopInputs) => void;
+}
+
+function poolCostFor(result: EsopResult): string {
+  if (result.poolCostToFounders) {
+    const outcome =
+      result.poolCostToFounders.asOffered === 'preMoney'
+        ? result.poolCostToFounders.preMoneyPool
+        : result.poolCostToFounders.postMoneyPool;
+    return lakhCrore(outcome.founderDilutionCostRupees);
+  }
+  return lakhCrore(result.recommendedPool.selected.poolOptions * (result.recommended.years[0]?.pricePerShare ?? 0));
+}
+
+function runScenario(inputs: EsopInputs, key: ScenarioKey, baseResult: EsopResult): EsopResult | 'error' {
+  if (key === 'base') return baseResult;
+  try {
+    return calculateEsopPool(applyScenario(inputs, key));
+  } catch (error) {
+    if (isEsopEngineError(error)) return 'error';
+    throw error;
+  }
+}
+
+export function ScenarioStrip({ inputs, baseResult, onLoad }: ScenarioStripProps) {
+  const results = useMemo(
+    () => SCENARIOS.map((s) => ({ ...s, result: runScenario(inputs, s.key, baseResult) })),
+    [inputs, baseResult],
+  );
+
+  return (
+    <section className="rounded-lg border border-border bg-raised">
+      <div className="flex items-baseline justify-between gap-3 border-b border-border px-4 py-2.5">
+        <h3 className="text-[13px] font-semibold text-ink">Scenarios</h3>
+      </div>
+      <div className="grid grid-cols-1 gap-px bg-border sm:grid-cols-3">
+        {results.map(({ key, label, note, result }) => (
+          <div key={key} className="bg-raised px-4 py-3">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[13px] font-semibold text-ink">{label}</span>
+              {key === 'base' ? (
+                <span className="text-2xs text-accent">Current</span>
+              ) : result === 'error' ? null : (
+                <button
+                  type="button"
+                  onClick={() => onLoad(applyScenario(inputs, key))}
+                  className="text-2xs text-faint hover:text-sub"
+                >
+                  Load
+                </button>
+              )}
+            </div>
+            {result === 'error' ? (
+              <p className="mt-2 text-2xs leading-4 text-warn">
+                This scenario pushes the plan out of the range the model can solve for.
+              </p>
+            ) : (
+              <>
+                <p className="tnum mt-2 text-[22px] font-semibold leading-7 text-ink">
+                  {formatPct(result.recommendedPool.selected.displayPoolPctOfFullyDiluted)}
+                </p>
+                <dl className="mt-2 space-y-1">
+                  <div className="flex justify-between gap-2">
+                    <dt className="text-2xs text-faint">Current pool</dt>
+                    <dd className="tnum text-2xs text-sub">{currentPoolRunwayLabel(result.current)}</dd>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <dt className="text-2xs text-faint">Founder cost</dt>
+                    <dd className="tnum text-2xs text-sub">{poolCostFor(result)}</dd>
+                  </div>
+                </dl>
+              </>
+            )}
+            <p className="mt-2 text-2xs leading-4 text-faint">{note}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}

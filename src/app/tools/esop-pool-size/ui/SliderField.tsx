@@ -14,6 +14,14 @@ interface SliderFieldProps {
   readonly presets?: readonly SliderPreset[];
   readonly ariaLabel?: string;
   readonly disabled?: boolean;
+  /**
+   * The founder has not dragged this yet. A range input always needs *a*
+   * handle position — there is no native blank state — so `value` still
+   * positions it, but faded, and the readout says so instead of a number
+   * that was never chosen. Any drag or preset click reports a real value
+   * and the caller stops passing `blank`.
+   */
+  readonly blank?: boolean;
 }
 
 export function SliderField({
@@ -27,6 +35,7 @@ export function SliderField({
   presets,
   ariaLabel,
   disabled,
+  blank = false,
 }: SliderFieldProps) {
   return (
     <div className="space-y-2">
@@ -39,17 +48,16 @@ export function SliderField({
           step={step}
           value={value}
           disabled={disabled}
-          aria-label={ariaLabel}
+          aria-label={blank ? `${ariaLabel ?? ''} (not set)`.trim() : ariaLabel}
           onChange={(e) => onChange(Number(e.target.value))}
-          className="w-full"
+          className={`w-full ${blank ? 'opacity-40' : ''}`}
         />
         <span
           className={`tnum w-14 shrink-0 rounded border border-strong px-1.5 py-1 text-right text-eyebrow ${
-            disabled ? 'bg-disabled text-quiet' : 'bg-raised text-ink'
+            disabled ? 'bg-disabled text-quiet' : blank ? 'bg-raised text-faint' : 'bg-raised text-ink'
           }`}
         >
-          {value}
-          {suffix}
+          {blank ? 'Not set' : `${value}${suffix}`}
         </span>
       </div>
       {presets ? (
@@ -61,7 +69,7 @@ export function SliderField({
               disabled={disabled}
               onClick={() => onChange(preset.value)}
               className={`rounded border px-1.5 py-0.5 text-2xs font-medium transition-colors duration-150 disabled:cursor-not-allowed disabled:text-quiet ${
-                preset.value === value ? 'border-accent text-accent' : 'border-strong text-sub hover:text-ink'
+                !blank && preset.value === value ? 'border-accent text-accent' : 'border-strong text-sub hover:text-ink'
               }`}
             >
               {preset.label}

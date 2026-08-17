@@ -1,16 +1,13 @@
 import type { EsopInputs, FundingRound, OpeningGrantCohortInput } from '@/lib/esop';
 import { Button } from '../ui/Button';
-import { SegmentedControl } from '../ui/SegmentedControl';
-import { AttritionCard } from './AttritionCard';
-import { CompanyCard } from './CompanyCard';
-import { ComplianceCard } from './ComplianceCard';
+import { CompanyTodayCard } from './CompanyTodayCard';
+import { FundingRoundCard } from './FundingRoundCard';
+import { GrantBasisCard } from './GrantBasisCard';
 import type { EsopGroupKey } from './InputCard';
 import { GrantPolicyCard } from './GrantPolicyCard';
-import { GrowthCard } from './GrowthCard';
 import { HiringCard } from './HiringCard';
-import { VestingCard } from './VestingCard';
-
-type Mode = 'simple' | 'advanced';
+import { LeaversAndRecyclingCard } from './LeaversAndRecyclingCard';
+import { ReportOnlyCard } from './ReportOnlyCard';
 
 interface InputRailProps {
   readonly inputs: EsopInputs;
@@ -19,11 +16,20 @@ interface InputRailProps {
   readonly setOpeningGrants: (grants: readonly OpeningGrantCohortInput[]) => void;
   readonly rounds: readonly FundingRound[];
   readonly setRounds: (rounds: readonly FundingRound[]) => void;
-  readonly mode: Mode;
-  readonly onModeChange: (mode: Mode) => void;
+  readonly touched: ReadonlySet<string>;
+  readonly markTouched: (path: string) => void;
+  readonly requiredPaths: ReadonlySet<string>;
   readonly onReset: () => void;
 }
 
+/**
+ * One form, ordered by impact (brief §3). No Simple/Advanced toggle, and
+ * fields never move position when a founder's choice changes a tier — see
+ * lib/visibility.ts for what changes instead. Section order is fixed:
+ * 01 how you grant, 02 your company today, 03 your hiring plan, 04 grant
+ * policy, 05 leavers and recycling, 06 next funding round, 07 the fields
+ * that only affect the report.
+ */
 export function InputRail({
   inputs,
   setGroup,
@@ -31,12 +37,12 @@ export function InputRail({
   setOpeningGrants,
   rounds,
   setRounds,
-  mode,
-  onModeChange,
+  touched,
+  markTouched,
+  requiredPaths,
   onReset,
 }: InputRailProps) {
-  const advanced = mode === 'advanced';
-  const cardProps = { inputs, setGroup, advanced };
+  const cardProps = { inputs, setGroup, touched, markTouched, requiredPaths };
 
   return (
     <div className="space-y-3">
@@ -61,30 +67,13 @@ export function InputRail({
         Jump to your result ↓
       </a>
 
-      <SegmentedControl<Mode>
-        value={mode}
-        onChange={onModeChange}
-        ariaLabel="Input detail level"
-        size="md"
-        options={[
-          { value: 'simple', label: 'Simple' },
-          { value: 'advanced', label: 'Advanced' },
-        ]}
-      />
-
-      <CompanyCard
-        {...cardProps}
-        openingGrants={openingGrants}
-        setOpeningGrants={setOpeningGrants}
-        rounds={rounds}
-        setRounds={setRounds}
-      />
+      <GrantBasisCard {...cardProps} />
+      <CompanyTodayCard {...cardProps} openingGrants={openingGrants} setOpeningGrants={setOpeningGrants} />
       <HiringCard {...cardProps} />
       <GrantPolicyCard {...cardProps} />
-      <GrowthCard {...cardProps} />
-      {advanced ? <AttritionCard {...cardProps} /> : null}
-      {advanced ? <VestingCard {...cardProps} /> : null}
-      <ComplianceCard {...cardProps} />
+      <LeaversAndRecyclingCard {...cardProps} />
+      <FundingRoundCard {...cardProps} rounds={rounds} setRounds={setRounds} />
+      <ReportOnlyCard {...cardProps} />
     </div>
   );
 }

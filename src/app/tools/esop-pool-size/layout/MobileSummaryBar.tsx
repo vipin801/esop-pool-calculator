@@ -31,10 +31,20 @@ interface MobileSummaryBarProps {
  * a pool percentage appearing without them on the same screen; on a phone the
  * headline scrolls away and this bar does not, so the bar was the one surface
  * where the prohibition could actually be broken.
+ *
+ * A `<button>`, not an `<a href="#result">`: a hash link jumps instantly and
+ * changes the URL, `scrollIntoView` animates (or snaps, under reduced
+ * motion, since the browser itself honours that preference) without one.
+ * Left unstyled by `ui/Button.tsx` on purpose — `ui-quality.test.ts` asserts
+ * exactly one primary-styled button in the whole route, the download button.
  */
 export function MobileSummaryBar({ recommended, current, selected }: MobileSummaryBarProps) {
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-30 flex items-center justify-between gap-3 border-t border-strong bg-surface px-5 py-2 lg:hidden">
+    <button
+      type="button"
+      onClick={() => document.getElementById('result')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+      className="fixed bottom-0 left-0 right-0 z-30 flex w-full items-center justify-between gap-3 border-t border-strong bg-surface px-5 py-2 text-left lg:hidden"
+    >
       <div className="min-w-0">
         <p className="tnum text-body font-semibold leading-6 text-ink">
           {formatPct(displayPoolPct(recommended.openingPoolPctOfFullyDiluted))}{' '}
@@ -49,6 +59,6 @@ export function MobileSummaryBar({ recommended, current, selected }: MobileSumma
       <p className="tnum max-w-[45%] shrink-0 text-right text-2xs leading-4 text-sub">
         Current pool: {currentPoolRunwayLabel(current)}
       </p>
-    </div>
+    </button>
   );
 }

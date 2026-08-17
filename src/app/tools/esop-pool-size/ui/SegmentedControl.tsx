@@ -4,7 +4,8 @@ interface SegmentedOption<T extends string> {
 }
 
 interface SegmentedControlProps<T extends string> {
-  readonly value: T;
+  /** `null` before the founder has chosen — every field starts blank. */
+  readonly value: T | null;
   readonly options: readonly SegmentedOption<T>[];
   readonly onChange: (value: T) => void;
   readonly ariaLabel: string;

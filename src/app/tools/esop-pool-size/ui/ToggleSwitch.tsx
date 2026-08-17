@@ -1,6 +1,7 @@
 interface ToggleSwitchProps {
   readonly id: string;
-  readonly checked: boolean;
+  /** `null` before the founder has answered — every field starts blank. */
+  readonly checked: boolean | null;
   readonly onChange: (checked: boolean) => void;
   readonly label: string;
   readonly offLabel?: string;
@@ -17,6 +18,8 @@ export function ToggleSwitch({
   onLabel = 'Yes',
   disabled,
 }: ToggleSwitchProps) {
+  const unanswered = checked === null;
+
   return (
     <label
       htmlFor={id}
@@ -26,25 +29,32 @@ export function ToggleSwitch({
         id={id}
         type="button"
         role="switch"
-        aria-checked={checked}
+        aria-checked={unanswered ? 'mixed' : checked}
         disabled={disabled}
+        // `!null === true`: the first click on an unanswered toggle turns it
+        // on, the same gesture as turning on any other toggle. A founder
+        // whose real answer is "no" clicks once to reach it explicitly — the
+        // point of every field starting blank is that "no" is chosen, not
+        // defaulted to.
         onClick={() => onChange(!checked)}
         className={`relative h-5 w-9 shrink-0 rounded-full border transition-colors duration-150 disabled:cursor-not-allowed ${
           disabled
             ? 'border-strong bg-disabled'
-            : checked
-              ? 'border-accent bg-accent'
-              : 'border-strong bg-muted'
+            : unanswered
+              ? 'border-dashed border-strong bg-muted'
+              : checked
+                ? 'border-accent bg-accent'
+                : 'border-strong bg-muted'
         }`}
       >
         <span
           className={`absolute top-0.5 h-3.5 w-3.5 rounded-full transition-transform duration-150 ${
-            disabled ? 'bg-quiet' : checked ? 'bg-accent-ink' : 'bg-strong'
-          } ${checked ? 'translate-x-[18px]' : 'translate-x-0.5'}`}
+            disabled ? 'bg-quiet' : unanswered ? 'bg-faint' : checked ? 'bg-accent-ink' : 'bg-strong'
+          } ${unanswered ? 'translate-x-[9px]' : checked ? 'translate-x-[18px]' : 'translate-x-0.5'}`}
         />
       </button>
       <span className={`text-eyebrow ${disabled ? 'text-quiet' : 'text-sub'}`}>{label}</span>
-      <span className="sr-only">{checked ? onLabel : offLabel}</span>
+      <span className="sr-only">{unanswered ? 'Not answered' : checked ? onLabel : offLabel}</span>
     </label>
   );
 }

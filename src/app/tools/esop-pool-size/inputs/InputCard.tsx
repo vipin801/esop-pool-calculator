@@ -20,7 +20,11 @@ export type EsopGroupKey =
 export interface CardProps {
   readonly inputs: EsopInputs;
   readonly setGroup: <K extends EsopGroupKey>(key: K, patch: Partial<EsopInputs[K]>) => void;
-  readonly advanced: boolean;
+  /** Dot paths the founder has entered a value for. See lib/touched.ts. */
+  readonly touched: ReadonlySet<string>;
+  readonly markTouched: (path: string) => void;
+  /** Dot paths withholding the result until entered. See lib/completeness.ts. */
+  readonly requiredPaths: ReadonlySet<string>;
 }
 
 interface InputCardProps {

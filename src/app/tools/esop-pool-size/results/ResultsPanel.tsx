@@ -21,6 +21,15 @@ interface ResultsPanelProps {
   readonly onDownload: () => void;
   readonly reportReady: boolean;
   readonly downloadError: string | null;
+  /**
+   * Set once a result has been shown and a later choice reopens a
+   * requirement (recycling turned on after the form was already complete,
+   * say). The panel stays mounted rather than reverting to the empty state —
+   * this is the note that tells the founder the number below no longer
+   * reflects everything they've selected. Omit or pass `0` for the ordinary
+   * case.
+   */
+  readonly incompleteCount?: number;
 }
 
 /**
@@ -38,6 +47,7 @@ export function ResultsPanel({
   onDownload,
   reportReady,
   downloadError,
+  incompleteCount = 0,
 }: ResultsPanelProps) {
   const tabs: readonly ResultTab[] = [
     {
@@ -126,6 +136,13 @@ export function ResultsPanel({
         {downloadError ? (
           <p role="alert" className="text-2xs leading-4 text-danger">
             {downloadError}
+          </p>
+        ) : null}
+
+        {incompleteCount > 0 ? (
+          <p role="status" className="text-2xs leading-4 text-warn">
+            {incompleteCount} field{incompleteCount === 1 ? '' : 's'} still need
+            {incompleteCount === 1 ? 's' : ''} entering below for this number to reflect your latest choices.
           </p>
         ) : null}
       </div>

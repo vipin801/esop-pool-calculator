@@ -1,5 +1,6 @@
 import { useId, type ReactNode } from 'react';
 import { EstimateMarker } from './EstimateMarker';
+import { RequiredMarker } from './RequiredMarker';
 
 interface FieldProps {
   readonly label: string;
@@ -19,6 +20,8 @@ interface FieldProps {
   readonly helper?: ReactNode;
   readonly readout?: ReactNode;
   readonly estimate?: boolean;
+  /** Whether the founder must fill this in before a result can show. See lib/completeness.ts. */
+  readonly required?: boolean;
   readonly error?: string;
   readonly note?: string;
   readonly action?: ReactNode;
@@ -32,6 +35,7 @@ export function Field({
   helper,
   readout,
   estimate,
+  required,
   error,
   note,
   action,
@@ -44,11 +48,13 @@ export function Field({
   const heading = asGroup ? (
     <span id={labelId} className="text-eyebrow font-medium text-ink">
       {label}
+      {required ? <RequiredMarker /> : null}
       {estimate ? <EstimateMarker /> : null}
     </span>
   ) : (
     <label htmlFor={htmlFor} className="text-eyebrow font-medium text-ink">
       {label}
+      {required ? <RequiredMarker /> : null}
       {estimate ? <EstimateMarker /> : null}
     </label>
   );

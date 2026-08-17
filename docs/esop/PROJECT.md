@@ -30,6 +30,14 @@ Numbered D1, D2, D3… Never renumber. Never delete. If a decision is reversed, 
 | D4 | Two separate compliance toggles: DPIIT recognition and IMB certification under Section 80-IAC. Never one. | 2026-08-15 |
 | D5 | Two benchmark tracks are always shown together: advisory consensus and observed India data. Neither is presented as the truth. | 2026-08-15 |
 | D6 | Every default is an editable estimate, marked as such in the UI, and never presented as sourced data. | 2026-08-15 |
+| D7 | The form starts with every field blank, in both Simple and Advanced mode. No result — recommendation, headline, tabs, mobile summary bar — renders until every field currently on screen has been entered. **This supersedes "The one job"'s under-12-interactions figure**, which described a form pre-seeded from `DEFAULTS`; Simple mode alone is 25 required fields blank-to-result, not 10. `inputs` itself is never actually blank — the engine still takes a total `EsopInputs` (M33) — only the *display* is; see `lib/touched.ts` and `lib/completeness.ts` in the route. **Its "Simple and Advanced mode" wording is superseded by D8**; the blank-to-result requirement itself is unchanged. | 2026-08-17 |
+| D8 | There is one form, never a Simple/Advanced toggle or a renamed variant of one. Every field is always on screen or absent based on the founder's own choices — grant basis, strike policy, a modelled round, recycling, refresh — never behind a mode switch, per the pasted build brief's §3. Fields resolve to one of four tiers, computed by pure functions in `lib/visibility.ts`: `drivesPool`, `minor`, `reportOnly`, `hidden`. Only `drivesPool` is required under D7 — a `minor` or `reportOnly` field stays visible and editable but falls back to its own seeded default (D6) if the founder never touches it, the same way a `hidden` field's default already does; the brief's own worked example ("a Basis A founder with recycling off sees 12 fields") only holds under this reading. Fields never physically reorder when a tier changes — only the badge does. Superseded, in wording only, D7's "Simple and Advanced mode" framing. | 2026-08-17 |
+
+**D8's visibility table is not the brief's table verbatim.** The brief that prompted D8 gives its own field-by-field visibility rules, and three of its rows were traced against the shipped engine rather than trusted by inspection — each is a correction, not a restatement, and each is written down in `lib/visibility.ts` at the point it applies:
+
+- **Lambda and the exercise window are never `hidden`, only `minor`, when recycling is off.** The brief's table hides them there. `src/lib/esop/cohorts.ts` shows `lambda` (`exercise.vestedNeverExercisedPct`) splitting a leaver's vested options into `vestedLapsed` and `vestedExercised` regardless of `recycleForfeited` — recycling only decides where a lapsed option goes, not whether lambda has an effect — and per M18, a cancelled-not-recycled option leaves `FD_t` while an exercised one does not. With recycling off, lambda is exactly what decides how much of `FD_t` departs the plan each year. Hiding it would remove a field still setting the answer.
+- **Strike policy is live only under Basis B plus the realisable value basis, not fair value too.** The brief's table lives it under realisable *or* fair value. `src/lib/esop/denominator.ts`'s `fairValue` arm is `theta * pricePerShare` and never reads the exercise price; only the `realisable` arm (`pricePerShare - exercisePrice`) does. Under fair value, changing the strike changes the reported exercise price, never the option count. Fair value's real live control is theta, which the brief's table does not otherwise get a field for — the theta control D8 adds is gated on this instead.
+- **Valuation growth does not go `hidden` just because a round is modelled.** The brief's table adds "and no rounds modelled" to growth's live condition. `src/lib/esop/roll-forward.ts` and `valuation.ts` show `growth.valuationGrowthPctPerYear` pricing every year of the roll forward unconditionally; `rounds.ts` is a separate, additional one-time dilution report layered on top, not a replacement of the year-by-year path. A modelled round does not stop growth from pricing every grant.
 
 ## Locked model decisions
 
@@ -199,12 +207,17 @@ was not opened.
   where focus order would then run right-to-left across the two columns. One of the two has to give
   and the desktop focus order was judged the more valuable. Revisit if the tool's traffic turns out
   to be mostly phones.
-- **The interaction count is 10 at the default horizon and 11 at any other.** Stage, valuation,
-  fully diluted shares, existing pool, four hires-per-year fields, grant basis, strike policy —
-  everything else is a seeded estimate under D6. Changing the horizon costs one more interaction
-  and no more, because `HiringCard` fills the added years from the founder's own last entry rather
-  than from the defaults table. Under the 12 the one job names, with one to spare. It has no test:
-  counting interactions needs a rendered tree and this suite runs in `node`.
+- **Superseded by D8: the "10 to 11 interactions in Simple mode" count no longer describes the
+  form.** There is one form now, not a mode split, and required fields are `requiredFieldPaths`
+  (lib/completeness.ts) — every `drivesPool`-tier field — which moves with the founder's own
+  choices rather than a toggle. Measured on `buildSeedInputs()` directly: **35 required fields**
+  at the Series A seed (rupee-value grants, recycling and refresh both already on by default) and
+  **21** at the minimal state the brief itself illustrates — percent-of-equity, no recycling, no
+  refresh, no round. Both are well past the one job's original 12, which D7 already superseded
+  once; D8 does not reopen that, it only replaces the mode-shaped count with a tier-shaped one.
+  Still has no test for the same reason as before: this is a straightforward function call, not a
+  rendered-tree count, so a future session could pin it in `visibility.test.ts` or
+  `completeness.ts`'s own tests if the number is worth guarding.
 - **`prefers-reduced-motion` is verified from the source, not from a run.** `usePrefersReducedMotion`
   reads the query through `useSyncExternalStore` and every Recharts series binds
   `isAnimationActive`, both asserted in `ui-quality.test.ts`. Nothing exercises the reduced-motion
@@ -282,3 +295,27 @@ seam is `src/app/globals.css`, aliasing onto the tokens vendored at `src/app/tok
 - **`src/app/page.module.css`, the create-next-app boilerplate at `/`, was not touched.** It carries
   its own hard-coded palette and its own `prefers-color-scheme` block, and it is not this tool's
   route.
+
+Raised in [025], deleting Simple/Advanced (D8) and, in the same entry, the form-first layout pass
+that followed it in the same session. No engine change either half; `src/lib/esop` was not opened,
+`grantPolicy.fairValue.theta` gained its first form control but the value and its two engine
+consumers already existed.
+
+- **Brief §6.4's collapsed per-year seniority-mix override was not built.** `HiringPlan.seniorityMix`
+  (`src/lib/esop/types.ts`) is one value for the whole horizon, not one per year. A real per-year
+  override needs an engine type change — touches M33's "total, no optional field" and every consumer
+  of `SeniorityMix` — which is outside a UI-only session. One mix across all years remains the
+  default, per M-decision precedent; the collapsed override itself is still to build.
+- **Brief §6.3's "λ derived from the exercise window, overridable" was not built.** Carried Defect 8
+  already names `exerciseWindowDays` as read nowhere in the engine; there is no computed relationship
+  to `exercise.vestedNeverExercisedPct` for a form to derive from. Deriving one is new engine
+  behaviour, not a visibility change, and Defect 8 itself is still open.
+- **The theta field is the first form control `grantPolicy.fairValue.theta` has ever had.** Domain
+  `(0, 1]` per M30, `estimate` per D6, visible only under Basis B plus the fair value basis. No
+  engine change — `denominator.ts` and `compliance.ts` already read this value; it was simply fixed
+  at `DEFAULTS.theta.value` with no way for a founder to see or move it before this.
+- **Section 07 ("Doesn't change your pool, changes your report") is a pure disclosure, not a
+  toggle.** Unlike sections 05 and 06, none of its fields is ever `drivesPool`, so it never gates
+  D7's result regardless of whether the founder opens it. If a future session finds a field in that
+  section that does move the recommended pool, it belongs in a different section, not an exception
+  carved into this one.

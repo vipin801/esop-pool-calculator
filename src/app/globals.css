@@ -313,6 +313,26 @@ input[type='range']:focus-visible::-moz-range-thumb {
   overflow: visible;
 }
 
+/*
+ * The results column's one-time fade-in, on reaching the resolved layout
+ * (EsopPoolSizeClient.tsx's `showResults`). It only ever mounts once — the
+ * layout latches there — so this plays on mount with no JS-driven timing.
+ * The reduced-motion block below already flattens its duration to ~0, so
+ * there is nothing to gate here.
+ */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 200ms ease-out;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

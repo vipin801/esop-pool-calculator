@@ -13,7 +13,15 @@ interface SelectFieldProps<T extends string> {
   readonly disabled?: boolean;
   /** Only where no `Field` label points at this id — a control inside a group. */
   readonly ariaLabel?: string;
+  /**
+   * The founder has not yet chosen. `value` still holds the real seed, but
+   * an empty placeholder option is shown selected instead of it, and picking
+   * it back is impossible — it exists only to render "nothing chosen yet".
+   */
+  readonly blank?: boolean;
 }
+
+const BLANK_OPTION_VALUE = '__blank__';
 
 export function SelectField<T extends string>({
   id,
@@ -22,17 +30,26 @@ export function SelectField<T extends string>({
   onChange,
   disabled,
   ariaLabel,
+  blank = false,
 }: SelectFieldProps<T>) {
   return (
     <div className="relative">
       <select
         id={id}
-        value={value}
+        value={blank ? BLANK_OPTION_VALUE : value}
         aria-label={ariaLabel}
         disabled={disabled}
-        onChange={(e) => onChange(e.target.value as T)}
+        onChange={(e) => {
+          if (e.target.value === BLANK_OPTION_VALUE) return;
+          onChange(e.target.value as T);
+        }}
         className="w-full appearance-none rounded border border-strong bg-raised px-2.5 py-2 pr-8 text-eyebrow text-ink disabled:cursor-not-allowed disabled:bg-disabled disabled:text-quiet"
       >
+        {blank ? (
+          <option value={BLANK_OPTION_VALUE} disabled hidden>
+            Select…
+          </option>
+        ) : null}
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}

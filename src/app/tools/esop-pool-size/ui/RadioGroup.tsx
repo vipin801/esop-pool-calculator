@@ -8,7 +8,8 @@ interface RadioOption<T extends string> {
 
 interface RadioGroupProps<T extends string> {
   readonly name: string;
-  readonly value: T;
+  /** `null` before the founder has chosen — every field starts blank. */
+  readonly value: T | null;
   readonly options: readonly RadioOption<T>[];
   readonly onChange: (value: T) => void;
   readonly ariaLabel: string;

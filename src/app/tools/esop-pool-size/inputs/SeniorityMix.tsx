@@ -3,8 +3,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { BANDS, type SeniorityMix as SeniorityMixValue } from '@/lib/esop';
 import { NumberField } from '../ui/NumberField';
+import { RequiredMarker } from '../ui/RequiredMarker';
 import { BAND_LABEL } from '../lib/labels';
 import { isMixValid, mixTotal, normaliseMix } from '../lib/seniorityMix';
+import { makeTouchHelpers } from '../lib/touched';
 
 /** A shade per band, derived from the theme tokens rather than a fresh palette. */
 const BAND_SHADE: Record<(typeof BANDS)[number], string> = {
@@ -17,6 +19,9 @@ const BAND_SHADE: Record<(typeof BANDS)[number], string> = {
 interface SeniorityMixProps {
   readonly mix: SeniorityMixValue;
   readonly onChange: (mix: SeniorityMixValue) => void;
+  readonly touched: ReadonlySet<string>;
+  readonly markTouched: (path: string) => void;
+  readonly requiredPaths: ReadonlySet<string>;
 }
 
 /**
@@ -30,9 +35,10 @@ interface SeniorityMixProps {
  * cursor — typing 40 into a field on the way to 40/30/20/10 must not be
  * corrected mid-edit.
  */
-export function SeniorityMix({ mix, onChange }: SeniorityMixProps) {
+export function SeniorityMix({ mix, onChange, touched, markTouched, requiredPaths }: SeniorityMixProps) {
   const [announcement, setAnnouncement] = useState('');
   const groupRef = useRef<HTMLDivElement>(null);
+  const { isBlank, isRequired } = makeTouchHelpers(touched, markTouched, requiredPaths);
 
   /**
    * The field's own blur commit and the group's blur both fire inside one
@@ -88,12 +94,17 @@ export function SeniorityMix({ mix, onChange }: SeniorityMixProps) {
             <span className="flex items-center gap-1.5 text-2xs text-faint">
               <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: BAND_SHADE[band] }} />
               {BAND_LABEL[band]}
+              {isRequired(`hiring.seniorityMix.${band}`) ? <RequiredMarker /> : null}
             </span>
             <NumberField
               id={`mix-${band}`}
               ariaLabel={`${BAND_LABEL[band]} share of hires, percent`}
               value={mix[band]}
-              onChange={(value) => setBand(band, value)}
+              blank={isBlank(`hiring.seniorityMix.${band}`)}
+              onChange={(value) => {
+                setBand(band, value);
+                markTouched(`hiring.seniorityMix.${band}`);
+              }}
               max={100}
               suffix="%"
             />

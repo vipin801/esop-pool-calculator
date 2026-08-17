@@ -444,7 +444,7 @@ Open items:
 - Carried from [000]: `esop-engine-spec-v2.md` still sits at the repo root beside the canonical copy, and there is still no CLAUDE.md pointing a session at PROJECT.md.
 - All AUDIT_P4-carried engine defects (5, 7, 8, 9, 10, 11, 13) are untouched, per scope — this session did not open `src/lib/esop`.
 
-[023] 2026-08-17 | prompt P13 | branch main | commit <pending> (sha backfilled by the follow-up commit, also covered by this entry)
+[023] 2026-08-17 | prompt P13 | branch main | commit bdb4589 (sha backfilled by the follow-up commit, also covered by this entry)
 Changed: Information architecture. Eight stacked cards became **one result object with six tabs** — Overview, Runway, Hiring cost, Year by year, Cap table, Compliance. `results/ResultTabs.tsx` implements the WAI-ARIA tabs pattern with a roving tabindex, arrow/Home/End navigation and a focusable panel. The pinned zone above the strip carries the pool percentage, the option count, the grant basis, the strike policy and both exhaustion lines, and never scrolls out from under a tab.
 Changed: `results/ReportCharts.tsx`, the off-screen chart tree the PDF now scrapes, because tabs unmount three of the four charts. `ui/Abbr.tsx`, `lib/useReducedMotion.ts`, `lib/seniorityMix.ts`, `results/charts/tooltip.ts`. Deleted `ui/Collapsible.tsx`, dead once the tabs replaced it.
 Changed: Two new test files, 139 tests. `__tests__/ui-quality.test.ts` is the quality floor as checks; `__tests__/prohibitions.test.ts` is the PROJECT.md prohibition sweep, static across every source file plus live against real engine runs. `__tests__/ui-source.ts` is the shared source reader.

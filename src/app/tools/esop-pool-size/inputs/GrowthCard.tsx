@@ -14,7 +14,7 @@ export function GrowthCard({ inputs, setGroup }: CardProps) {
   return (
     <InputCard index="04" title="Growth">
       <Field
-        label="Valuation growth per year"
+        label="Valuation growth per year" htmlFor="growth-valuation"
         note={
           disabled
             ? 'Grants are a percentage of equity, so valuation growth cannot change the pool. Switch the grant basis above to rupee value to make this matter.'

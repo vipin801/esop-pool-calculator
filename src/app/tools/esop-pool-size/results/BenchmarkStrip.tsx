@@ -20,13 +20,13 @@ function bandExtent(band: BenchmarkBand): { readonly low: number; readonly high:
 function positionCopy(position: BenchmarkPosition, trackLabel: string, band: BenchmarkBand | null): string {
   switch (position) {
     case 'below':
-      return `Below the ${trackLabel.toLowerCase()} range. Bottom-up sizing from a hiring plan lands below top-down benchmarks systematically, because rupee-denominated grants buy fewer options as the price per share compounds.`;
+      return `Below the ${trackLabel} range. Sizing up from a hiring plan lands below top-down benchmarks: rupee grants buy fewer options as the price compounds.`;
     case 'above':
-      return `Above the ${trackLabel.toLowerCase()} range.`;
+      return `Above the ${trackLabel} range.`;
     case 'within':
-      return `Within the ${trackLabel.toLowerCase()} range${band ? `, ${band.label.toLowerCase()}` : ''}.`;
+      return `Within the ${trackLabel} range${band ? `, ${band.label}` : ''}.`;
     case 'noBandForStage':
-      return `No ${trackLabel.toLowerCase()} band published for this stage.`;
+      return `No ${trackLabel} band published for this stage.`;
   }
 }
 

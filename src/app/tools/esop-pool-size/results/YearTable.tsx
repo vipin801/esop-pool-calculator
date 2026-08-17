@@ -1,5 +1,4 @@
 import type { PoolPlanSeries, RollForwardYear } from '@/lib/esop';
-import { Collapsible } from '../ui/Collapsible';
 import { CopyCsvButton } from './CopyCsvButton';
 import { crores, formatIndian, formatPct, formatShares, formatSignedShares } from '../lib/format';
 
@@ -12,7 +11,7 @@ const HEADERS = [
   'Refresh grants',
   'Returned',
   'Closing available',
-  'Pool % of FD',
+  'Pool, % of fully diluted',
 ];
 
 function rowsFor(years: readonly RollForwardYear[]): (string | number)[][] {
@@ -33,22 +32,23 @@ function SeriesTable({ series }: { readonly series: PoolPlanSeries }) {
   const rows = rowsFor(series.years);
 
   return (
-    <div>
-      <div className="flex items-center justify-between gap-2 px-4 pt-3">
-        <p className="text-[13px] font-semibold text-ink">
+    <div className="rounded-lg border border-border bg-raised">
+      <div className="flex items-center justify-between gap-2 px-3 pt-3">
+        <h3 className="text-[13px] font-semibold text-ink">
           {series.label === 'recommended' ? 'Recommended pool' : 'Your current pool'}
-        </p>
+        </h3>
         <CopyCsvButton headers={HEADERS} rows={rows} />
       </div>
-      <p className="px-4 pb-2 text-2xs leading-4 text-faint">{series.description}</p>
-      <div className="max-h-[280px] overflow-auto px-4 pb-3">
+      <p className="px-3 pb-2 text-2xs leading-4 text-faint">{series.description}</p>
+      <div className="overflow-auto px-3 pb-3">
         <table className="w-full border-collapse text-2xs">
           <thead className="sticky top-0 z-10 bg-muted">
             <tr>
               {HEADERS.map((h, i) => (
                 <th
                   key={h}
-                  className={`whitespace-nowrap border-b border-border px-3 py-2 font-medium text-sub ${
+                  scope="col"
+                  className={`border-b border-border px-3 py-2 font-medium text-sub ${
                     i === 0 ? 'text-left' : 'text-right'
                   }`}
                 >
@@ -86,11 +86,9 @@ interface YearTableProps {
 
 export function YearTable({ recommended, current }: YearTableProps) {
   return (
-    <Collapsible title="Year-by-year roll-forward" defaultOpen>
-      <div className="divide-y divide-border">
-        <SeriesTable series={recommended} />
-        <SeriesTable series={current} />
-      </div>
-    </Collapsible>
+    <div className="space-y-3">
+      <SeriesTable series={recommended} />
+      <SeriesTable series={current} />
+    </div>
   );
 }

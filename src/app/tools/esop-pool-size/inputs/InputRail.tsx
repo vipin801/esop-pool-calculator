@@ -42,13 +42,24 @@ export function InputRail({
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-raised p-3">
         <div>
-          <p className="text-[13px] font-medium text-ink">Every field below is a starting estimate.</p>
+          <h2 className="text-[13px] font-medium text-ink">Every field below is a starting estimate.</h2>
           <p className="text-2xs leading-4 text-faint">Edit anything — nothing here is measured data on your company.</p>
         </div>
         <Button size="sm" variant="ghost" onClick={onReset}>
           Reset
         </Button>
       </div>
+
+      {/* Below lg the rail stacks above the result, so the answer is a scroll
+          away. The pinned summary bar carries the number; this carries the
+          founder. DOM order is unchanged, so focus order still matches the
+          reading order at every width. */}
+      <a
+        href="#result"
+        className="block rounded-lg border border-strong bg-raised px-3 py-2 text-[13px] font-medium text-ink lg:hidden"
+      >
+        Jump to your result ↓
+      </a>
 
       <SegmentedControl<Mode>
         value={mode}

@@ -24,7 +24,7 @@ export function SegmentedControl<T extends string>({
     <div
       role="radiogroup"
       aria-label={ariaLabel}
-      className={`grid gap-1 rounded border border-border bg-muted p-1 ${disabled ? 'opacity-50' : ''}`}
+      className={`grid gap-1 rounded border border-strong p-1 ${disabled ? 'bg-disabled' : 'bg-muted'}`}
       style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}
     >
       {options.map((option) => {
@@ -37,13 +37,13 @@ export function SegmentedControl<T extends string>({
             aria-checked={active}
             disabled={disabled}
             onClick={() => onChange(option.value)}
-            className={`rounded px-2 font-medium transition-colors duration-150 ${
+            className={`rounded px-2 font-medium transition-colors duration-150 disabled:cursor-not-allowed ${
               size === 'sm' ? 'py-1 text-2xs' : 'py-1.5 text-[13px]'
             } ${
               active
-                ? 'bg-raised text-ink shadow-[0_1px_1px_rgba(11,13,14,0.06)] ring-1 ring-border'
+                ? 'bg-raised text-ink shadow-[0_1px_1px_rgba(11,13,14,0.06)] ring-1 ring-strong'
                 : 'text-sub hover:text-ink'
-            }`}
+            } ${disabled ? 'text-quiet' : ''}`}
           >
             {option.label}
           </button>

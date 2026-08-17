@@ -186,3 +186,39 @@ Raised in [020], the assembler session:
   assumptions that difference is part of what moves year 1 returns from 22,627 to 12,128. It still
   needs the decision [004] asked for: restate section 4.3's formula, or accept it and say so in the
   report. Nothing was changed — the spec is the model source of truth and it was followed.
+
+Raised in [023], the information-architecture and QA session. No engine change; `src/lib/esop`
+was not opened.
+
+- **The result object fits a 1440px and a 1024px viewport, and does not fit 768 or 375.** Measured:
+  the card runs 138→862 at 1440 and 138→894 at 1024, against a 900px viewport. Below `lg` the grid
+  collapses to one column and the input rail stacks *above* the result, so the answer is a scroll
+  away — the pinned `MobileSummaryBar` carries the pool percentage, the grant basis and the strike
+  policy, and a "Jump to your result" link sits at the top of the rail. **Reordering was considered
+  and rejected**: putting the result first in the DOM fixes the narrow case and breaks the wide one,
+  where focus order would then run right-to-left across the two columns. One of the two has to give
+  and the desktop focus order was judged the more valuable. Revisit if the tool's traffic turns out
+  to be mostly phones.
+- **The interaction count is 10 at the default horizon and 11 at any other.** Stage, valuation,
+  fully diluted shares, existing pool, four hires-per-year fields, grant basis, strike policy —
+  everything else is a seeded estimate under D6. Changing the horizon costs one more interaction
+  and no more, because `HiringCard` fills the added years from the founder's own last entry rather
+  than from the defaults table. Under the 12 the one job names, with one to spare. It has no test:
+  counting interactions needs a rendered tree and this suite runs in `node`.
+- **`prefers-reduced-motion` is verified from the source, not from a run.** `usePrefersReducedMotion`
+  reads the query through `useSyncExternalStore` and every Recharts series binds
+  `isAnimationActive`, both asserted in `ui-quality.test.ts`. Nothing exercises the reduced-motion
+  branch in a real browser, because the preview pane exposes no way to emulate the setting.
+- **Grid lines are deliberately below the 3:1 non-text contrast floor**, at 1.44:1 light and 1.58:1
+  dark. WCAG 1.4.11 covers graphics "required to understand the content" and a grid line is not:
+  the axis ticks carry the values and every chart ships a screen-reader data table. A 3:1 grid turns
+  a 284px chart into a cage. Written down because the contrast test excludes it by name and a later
+  reader should see the exclusion was a decision.
+- **The report's chart capture now depends on an off-screen tree.** Tabs unmount three of the four
+  charts, so `ReportCharts` mounts all four at a fixed 880px for the length of a download and
+  `captureChart` is pointed at that rather than at the screen. Verified end to end: the generated
+  PDF carries four `/Subtype /Image` objects. The cost is four extra Recharts trees during a
+  download and a 400ms paint race in `EsopPoolSizeClient`.
+- **`ScenarioStrip` still runs two live `calculateEsopPool` calls per render**, carried from [021].
+  It is now inside a tab, so it only runs while the Overview tab is open — cheaper by accident, not
+  by design, and it will cost again the moment the input rail grows slower fields.

@@ -38,15 +38,17 @@ export function MedianEmployeeValue({ value }: MedianEmployeeValueProps) {
           <dd className="tnum mt-1 text-[15px] font-semibold text-ink">{lakhCrore(value.realisableValueRupees)}</dd>
         </div>
         <div>
-          <dt className="text-2xs text-faint">Perquisite tax</dt>
+          <dt className="text-2xs text-faint">Tax at exercise</dt>
           <dd className="tnum mt-1 text-[15px] font-semibold text-ink">{lakhCrore(value.perquisiteTaxRupees)}</dd>
         </div>
       </div>
       <p className="mt-3 text-2xs leading-4 text-faint">
-        Exercise cost {lakhCrore(value.exerciseCostRupees)} at {formatPct(value.marginalTaxRatePct)} marginal tax.{' '}
+        Exercise cost {lakhCrore(value.exerciseCostRupees)}, at a {formatPct(value.marginalTaxRatePct)} marginal rate.
+      </p>
+      <p className="mt-1 text-2xs leading-4 text-faint">
         {value.taxDeferralAvailable
-          ? 'This company qualifies to defer when the tax falls — the rupee figures above are unchanged either way.'
-          : 'The perquisite tax above falls at exercise; it is not deferred without both compliance toggles on.'}
+          ? 'This company qualifies to defer when that tax falls. The rupee figures above do not move either way.'
+          : 'That tax falls at exercise. It is deferred only with both compliance toggles on.'}
       </p>
     </section>
   );

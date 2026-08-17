@@ -1,5 +1,4 @@
 import type { CapTable, CapTableRow, CapTableSet } from '@/lib/esop';
-import { Collapsible } from '../ui/Collapsible';
 import { CopyCsvButton } from './CopyCsvButton';
 import { formatPct, formatShares } from '../lib/format';
 
@@ -24,19 +23,20 @@ function OneCapTable({ table }: { readonly table: CapTable }) {
   ];
 
   return (
-    <div>
-      <div className="flex items-center justify-between gap-2 px-4 pt-3">
-        <p className="text-[13px] font-semibold text-ink">{table.label}</p>
+    <div className="rounded-lg border border-border bg-raised">
+      <div className="flex items-center justify-between gap-2 px-3 pt-3">
+        <h3 className="text-[13px] font-semibold text-ink">{table.label}</h3>
         <CopyCsvButton headers={HEADERS} rows={rows} />
       </div>
-      <div className="overflow-auto px-4 pb-3">
+      <div className="overflow-auto px-3 pb-3">
         <table className="w-full border-collapse text-2xs">
           <thead className="bg-muted">
             <tr>
               {HEADERS.map((h, i) => (
                 <th
                   key={h}
-                  className={`whitespace-nowrap border-b border-border px-3 py-2 font-medium text-sub ${
+                  scope="col"
+                  className={`border-b border-border px-3 py-2 font-medium text-sub ${
                     i === 0 ? 'text-left' : 'text-right'
                   }`}
                 >
@@ -71,21 +71,19 @@ interface CapTablePanelProps {
 
 export function CapTablePanel({ capTables }: CapTablePanelProps) {
   return (
-    <Collapsible title="Cap table, before and after">
-      <div className="divide-y divide-border">
-        <OneCapTable table={capTables.before} />
-        <OneCapTable table={capTables.after} />
-        {capTables.afterModelledRound ? (
-          <OneCapTable table={capTables.afterModelledRound} />
-        ) : (
-          <p className="px-4 py-3 text-2xs leading-4 text-faint">
-            Model a funding round in the company card to see the cap table after it closes.
-          </p>
-        )}
-      </div>
-      <p className="border-t border-border px-4 py-2 text-2xs leading-4 text-faint">
-        Founder and investor split is an editable estimate. All tables are struck as at today (year 0).
+    <div className="space-y-3">
+      <OneCapTable table={capTables.before} />
+      <OneCapTable table={capTables.after} />
+      {capTables.afterModelledRound ? (
+        <OneCapTable table={capTables.afterModelledRound} />
+      ) : (
+        <p className="rounded-lg border border-border bg-raised px-3 py-3 text-2xs leading-4 text-faint">
+          Model a funding round in the company card to see the cap table after it closes.
+        </p>
+      )}
+      <p className="text-2xs leading-4 text-faint">
+        Founder and investor split is an editable estimate. All tables are struck as at today.
       </p>
-    </Collapsible>
+    </div>
   );
 }

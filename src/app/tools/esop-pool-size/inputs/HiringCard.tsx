@@ -37,12 +37,13 @@ export function HiringCard({ inputs, setGroup }: CardProps) {
         />
       </Field>
 
-      <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+      <div role="group" aria-label="Hires per year" className="grid grid-cols-3 gap-2 sm:grid-cols-5">
         {years.map((i) => (
           <label key={i} className="space-y-1">
             <span className="text-2xs text-faint">{`Y${i + 1}`}</span>
             <NumberField
               id={`hires-y${i}`}
+              ariaLabel={`Hires in year ${i + 1}`}
               value={hiring.hiresPerYear[i] ?? 0}
               onChange={(v) => setHiresInYear(i, v)}
             />

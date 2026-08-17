@@ -12,7 +12,7 @@ export function ComplianceCard({ inputs, setGroup, advanced }: CardProps) {
 
   return (
     <InputCard index="07" title="Legal and compliance (India)">
-      <Field label="Face value per share">
+      <Field label="Face value per share" htmlFor="face-value">
         <NumberField
           id="face-value"
           value={company.faceValuePerShare}
@@ -23,7 +23,7 @@ export function ComplianceCard({ inputs, setGroup, advanced }: CardProps) {
       </Field>
 
       <Field
-        label="Authorised capital"
+        label="Authorised capital" htmlFor="authorised-capital-shares"
         readout={`${formatShares(company.authorisedCapitalShares)} shares · ${lakhCrore(authorisedRupees)}`}
         helper="Must cover issued capital plus the pool at scheme adoption."
       >
@@ -48,23 +48,26 @@ export function ComplianceCard({ inputs, setGroup, advanced }: CardProps) {
       </Field>
 
       <Field
-        label="IMB certified under Section 80-IAC"
-        helper="Drives the perquisite tax deferral. DPIIT recognition alone does not qualify — roughly 4,000 of about 1.97 lakh DPIIT-recognised startups hold this certificate."
+        label="Inter-Ministerial Board certified"
+        helper="Drives the deferral of the tax an employee owes at exercise. DPIIT recognition alone does not qualify."
       >
         <ToggleSwitch
           id="imb-certified"
           checked={compliance.imbCertified80IAC}
           onChange={(imbCertified80IAC) => setGroup('compliance', { imbCertified80IAC })}
-          label="IMB-certified under Section 80-IAC"
+          label="Inter-Ministerial Board certificate held"
         />
+        <p className="text-2xs leading-4 text-faint">
+          About 4,000 of roughly 1.97 lakh DPIIT-recognised startups hold one.
+        </p>
       </Field>
 
       {advanced ? (
         <>
           <Field
-            label="Employee marginal tax rate"
+            label="Employee marginal tax rate" htmlFor="employee-tax-rate"
             estimate
-            helper="Slab rate used to value a median employee's grant at horizon (output item 11)."
+            helper="Slab rate used to value what a median employee holds at the end of the horizon."
           >
             <NumberField
               id="employee-tax-rate"
@@ -75,13 +78,15 @@ export function ComplianceCard({ inputs, setGroup, advanced }: CardProps) {
             />
           </Field>
 
-          <Field label="Incorporation date" helper="The DPIIT Rule 12 exemption runs 10 years from this date.">
+          <Field label="Incorporation date" htmlFor="incorporation-date" helper="The DPIIT Rule 12 exemption runs 10 years from this date.">
             <input
               id="incorporation-date"
               type="date"
               value={compliance.incorporationDate}
               onChange={(e) => setGroup('compliance', { incorporationDate: e.target.value })}
-              className="w-full rounded border border-border bg-raised px-2.5 py-2 text-[13px] text-ink outline-none focus:border-strong"
+              // No `outline-none`: this control has no wrapper to hang a ring
+              // on, so it keeps the global :focus-visible outline.
+              className="w-full rounded border border-strong bg-raised px-2.5 py-2 text-[13px] text-ink"
             />
           </Field>
 

@@ -41,9 +41,13 @@ export function SliderField({
           disabled={disabled}
           aria-label={ariaLabel}
           onChange={(e) => onChange(Number(e.target.value))}
-          className="w-full disabled:opacity-50"
+          className="w-full"
         />
-        <span className="tnum w-14 shrink-0 rounded border border-border bg-raised px-1.5 py-1 text-right text-[13px] text-ink">
+        <span
+          className={`tnum w-14 shrink-0 rounded border border-strong px-1.5 py-1 text-right text-[13px] ${
+            disabled ? 'bg-disabled text-quiet' : 'bg-raised text-ink'
+          }`}
+        >
           {value}
           {suffix}
         </span>
@@ -56,8 +60,8 @@ export function SliderField({
               type="button"
               disabled={disabled}
               onClick={() => onChange(preset.value)}
-              className={`rounded border px-1.5 py-0.5 text-2xs font-medium transition-colors duration-150 ${
-                preset.value === value ? 'border-accent text-accent' : 'border-border text-sub hover:text-ink'
+              className={`rounded border px-1.5 py-0.5 text-2xs font-medium transition-colors duration-150 disabled:cursor-not-allowed disabled:text-quiet ${
+                preset.value === value ? 'border-accent text-accent' : 'border-strong text-sub hover:text-ink'
               }`}
             >
               {preset.label}

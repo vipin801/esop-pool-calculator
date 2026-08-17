@@ -27,7 +27,10 @@ interface LeadModalProps {
 }
 
 const INPUT_CLASSES =
-  'w-full rounded border border-border bg-surface px-2.5 py-2 text-[13px] text-ink outline-none focus:border-strong';
+  'focus-ring w-full rounded border border-strong bg-surface px-2.5 py-2 text-[13px] text-ink outline-none';
+
+const FOCUSABLE =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 export function LeadModal({ open, stage, busy, onClose, onSubmit }: LeadModalProps) {
   const [draft, setDraft] = useState<LeadDraft>(EMPTY_LEAD_DRAFT);
@@ -43,15 +46,50 @@ export function LeadModal({ open, stage, busy, onClose, onSubmit }: LeadModalPro
     setLeadStage(stage);
   }
 
+  /**
+   * Escape closed the dialog before this; nothing else about it was modal.
+   * Tab walked straight out of the box and into the page behind, which for a
+   * screen-reader or keyboard user means the dialog is a visual convention
+   * and nothing more. Focus now enters on the first field, cycles inside, and
+   * returns to whatever opened the dialog when it closes.
+   */
   useEffect(() => {
     if (!open) return;
 
+    const opener = document.activeElement as HTMLElement | null;
+    /** The first field, not the close button: the founder came here to fill
+     * the form, and landing on Close puts the exit under their first keystroke. */
+    const entry =
+      dialogRef.current?.querySelector<HTMLElement>('input, select') ??
+      dialogRef.current?.querySelector<HTMLElement>(FOCUSABLE);
+    entry?.focus();
+
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') onClose();
+      if (event.key === 'Escape') {
+        onClose();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+
+      const nodes = Array.from(dialogRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? []);
+      const first = nodes[0];
+      const last = nodes[nodes.length - 1];
+      if (!first || !last) return;
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     }
 
     document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      opener?.focus?.();
+    };
   }, [open, onClose]);
 
   if (!open) return null;
@@ -105,15 +143,15 @@ export function LeadModal({ open, stage, busy, onClose, onSubmit }: LeadModalPro
               Download the detailed report
             </h2>
             <p className="mt-1 text-2xs leading-4 text-faint">
-              An A4 PDF: your inputs and their provenance, the roll-forward, the charts, the cap table and the
-              compliance checklist. Your results on screen stay free.
+              An A4 PDF with your inputs, the year-by-year tables, the charts, the cap table and the compliance
+              checklist. Results on screen stay free.
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="rounded border border-border p-1 text-sub hover:text-ink"
+            className="rounded border border-strong p-1 text-sub hover:text-ink"
           >
             <X className="h-3.5 w-3.5" />
           </button>
@@ -219,7 +257,7 @@ export function LeadModal({ open, stage, busy, onClose, onSubmit }: LeadModalPro
           <button
             type="submit"
             disabled={!valid || busy}
-            className="w-full rounded border border-accent bg-accent px-3.5 py-2 text-[13px] font-medium text-white transition-colors duration-150 hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full rounded border border-accent bg-accent px-3.5 py-2 text-[13px] font-medium text-accent-ink transition-colors duration-150 hover:bg-accent-hover disabled:cursor-not-allowed disabled:border-strong disabled:bg-disabled disabled:text-quiet"
           >
             {busy ? 'Preparing the PDF…' : 'Download report'}
           </button>

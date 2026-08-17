@@ -52,6 +52,29 @@ export function formatPct(n: number, digits = 1): string {
 }
 
 /**
+ * Axis ticks, in the Indian short scale.
+ *
+ * A y-axis of `1,53,740` needs 54px of gutter, which at 375px is a fifth of
+ * the whole chart. `1.5L` is the same number in the same convention and costs
+ * 30px, so the plot stays readable on a phone. Tooltips and tables keep the
+ * full grouped figure — this is a tick label, not a value a founder reads off
+ * to two digits.
+ *
+ * No space before the suffix, and that is not a typo. Recharts breaks a tick
+ * label at its spaces when it is wider than the axis gutter, so `-6.0 L`
+ * rendered as two stacked lines while `6.0 L` stayed on one — the negative
+ * ticks on the runway chart, which are exactly the ones a founder needs to
+ * read. `₹5L` is the ordinary written form anyway.
+ */
+export function formatIndianCompact(n: number): string {
+  const v = safe(n);
+  const abs = Math.abs(v);
+  if (abs >= CRORE) return `${formatIndian(v / CRORE, 2)}Cr`;
+  if (abs >= LAKH) return `${formatIndian(v / LAKH, 1)}L`;
+  return formatIndian(v);
+}
+
+/**
  * ENGINE_SPEC.md section 4.5: "Round the displayed figure up to the nearest
  * 0.5%." The engine applies it to `PoolSizing.displayPoolPctOfFullyDiluted`
  * for the figure section 4.5 solves for — the top-up. The headline shows the

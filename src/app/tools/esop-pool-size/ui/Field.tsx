@@ -1,9 +1,21 @@
-import type { ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 import { EstimateMarker } from './EstimateMarker';
 
 interface FieldProps {
   readonly label: string;
+  /**
+   * The id of the single control this label names. Required whenever the
+   * field holds exactly one control.
+   *
+   * Without it the label sits in a sibling `div` — it neither wraps the
+   * control nor points at it — so every input in the rail was reaching
+   * assistive technology unnamed, announced by its own value. Fields that
+   * hold two or more controls pass `group` instead.
+   */
   readonly htmlFor?: string;
+  /** Set when the field holds more than one control, so the label names a
+   *  `role="group"` rather than pretending to name one of them. */
+  readonly group?: boolean;
   readonly helper?: ReactNode;
   readonly readout?: ReactNode;
   readonly estimate?: boolean;
@@ -16,6 +28,7 @@ interface FieldProps {
 export function Field({
   label,
   htmlFor,
+  group,
   helper,
   readout,
   estimate,
@@ -24,13 +37,30 @@ export function Field({
   action,
   children,
 }: FieldProps) {
+  const uid = useId();
+  const labelId = `${uid}-label`;
+  const asGroup = group === true || htmlFor === undefined;
+
+  const heading = asGroup ? (
+    <span id={labelId} className="text-[13px] font-medium text-ink">
+      {label}
+      {estimate ? <EstimateMarker /> : null}
+    </span>
+  ) : (
+    <label htmlFor={htmlFor} className="text-[13px] font-medium text-ink">
+      {label}
+      {estimate ? <EstimateMarker /> : null}
+    </label>
+  );
+
   return (
-    <div className="space-y-1.5">
+    <div
+      className="space-y-1.5"
+      role={asGroup ? 'group' : undefined}
+      aria-labelledby={asGroup ? labelId : undefined}
+    >
       <div className="flex items-baseline justify-between gap-2">
-        <label htmlFor={htmlFor} className="text-[13px] font-medium text-ink">
-          {label}
-          {estimate ? <EstimateMarker /> : null}
-        </label>
+        {heading}
         {action}
       </div>
       {children}

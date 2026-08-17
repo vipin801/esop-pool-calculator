@@ -80,15 +80,28 @@ export function GrantPolicyCard({ inputs, setGroup, advanced }: CardProps) {
           onChange={setStrikeKind}
           ariaLabel="Strike price policy"
           options={[
-            { value: 'faceValue', label: 'Face value', helper: 'Minimises perquisite tax exposure. Common pre-Series A.' },
-            { value: 'lastRoundPrice', label: 'Last round price', helper: 'Fair market value. Common from Series A onward.' },
-            { value: 'discountToFMV', label: 'Discount to FMV', helper: 'A stated discount off the last round price.' },
+            {
+              value: 'faceValue',
+              label: 'Face value',
+              helper: 'Lowest exercise price, so the least tax at exercise. Common pre-Series A.',
+            },
+            {
+              value: 'lastRoundPrice',
+              label: 'Last round price',
+              helper: 'The fair market value. Common from Series A onward.',
+            },
+            {
+              value: 'discountToFMV',
+              label: 'Discount to fair market value',
+              helper: 'A stated discount off the last round price.',
+            },
           ]}
         />
         {strikePolicy.kind === 'discountToFMV' ? (
           <div className="mt-2">
             <NumberField
               id="strike-discount"
+              ariaLabel="Discount to fair market value, percent"
               value={strikePolicy.discountPct}
               onChange={(discountPct) => setGroup('grantPolicy', { strikePolicy: { kind: 'discountToFMV', discountPct } })}
               max={100}
@@ -100,7 +113,7 @@ export function GrantPolicyCard({ inputs, setGroup, advanced }: CardProps) {
 
       <Field
         label="Value basis"
-        helper="Which of the three prices converts a rupee grant into options."
+        helper="Notional is the full share price. Realisable is the price less the strike. Fair value is in between."
         note={isPercentOfEquity ? 'Inert under percent-of-equity grants: there is no rupee promise to convert.' : undefined}
       >
         <SegmentedControl<ValueBasis>
@@ -120,6 +133,7 @@ export function GrantPolicyCard({ inputs, setGroup, advanced }: CardProps) {
                 <span className="text-2xs text-faint">{BAND_LABEL[band]}</span>
                 <NumberField
                   id={`grant-pct-${band}`}
+                  ariaLabel={`${BAND_LABEL[band]} grant, percent of fully diluted equity`}
                   value={grantBasis.grantPctByBand[band]}
                   onChange={(value) =>
                     setGroup('grantPolicy', {
@@ -143,6 +157,7 @@ export function GrantPolicyCard({ inputs, setGroup, advanced }: CardProps) {
                 </span>
                 <NumberField
                   id={`grant-value-${band}`}
+                  ariaLabel={`${BAND_LABEL[band]} grant, rupees at grant date`}
                   value={grantBasis.grantValueByBand[band]}
                   onChange={(value) =>
                     setGroup('grantPolicy', {
@@ -161,7 +176,7 @@ export function GrantPolicyCard({ inputs, setGroup, advanced }: CardProps) {
       {advanced ? (
         <>
           <Field
-            label="Comp inflation"
+            label="Comp inflation" htmlFor="comp-inflation"
             helper="Applied to rupee grant values year on year."
             note={isPercentOfEquity ? 'Inert under percent-of-equity grants.' : undefined}
           >
@@ -175,7 +190,7 @@ export function GrantPolicyCard({ inputs, setGroup, advanced }: CardProps) {
             />
           </Field>
 
-          <Field label="Refresh: employees refreshed" helper="Share of eligible employees refreshed each year.">
+          <Field label="Refresh: employees refreshed" htmlFor="refresh-rate" helper="Share of eligible employees refreshed each year.">
             <NumberField
               id="refresh-rate"
               value={grantPolicy.refresh.ratePct}
@@ -185,7 +200,7 @@ export function GrantPolicyCard({ inputs, setGroup, advanced }: CardProps) {
             />
           </Field>
 
-          <Field label="Refresh: size of original grant" helper="Refresh size as a percentage of an initial grant.">
+          <Field label="Refresh: size of original grant" htmlFor="refresh-size" helper="Refresh size as a percentage of an initial grant.">
             <NumberField
               id="refresh-size"
               value={grantPolicy.refresh.sizePct}
@@ -195,7 +210,7 @@ export function GrantPolicyCard({ inputs, setGroup, advanced }: CardProps) {
             />
           </Field>
 
-          <Field label="Buffer for unplanned senior hires" helper="Headroom added on top of total consumption.">
+          <Field label="Buffer for unplanned senior hires" htmlFor="buffer" helper="Headroom added on top of total consumption.">
             <NumberField
               id="buffer"
               value={grantPolicy.bufferPct}

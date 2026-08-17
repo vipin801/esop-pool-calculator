@@ -10,6 +10,7 @@ import { HowCalculated } from './HowCalculated';
 import { MedianEmployeeValue } from './MedianEmployeeValue';
 import { PoolPctChart } from './charts/PoolPctChart';
 import { PoolRunwayChart } from './charts/PoolRunwayChart';
+import { ResultTabs, type ResultTab } from './ResultTabs';
 import { ScenarioStrip } from './ScenarioStrip';
 import { YearTable } from './YearTable';
 
@@ -22,6 +23,14 @@ interface ResultsPanelProps {
   readonly downloadError: string | null;
 }
 
+/**
+ * One result object, not eight stacked cards.
+ *
+ * The header is everything a founder must never lose sight of: the pool
+ * percentage, the options behind it, the grant basis and strike policy that
+ * produced it, and both exhaustion lines. Everything else is a tab, so the
+ * page stops being a scroll and starts being a screen.
+ */
 export function ResultsPanel({
   inputs,
   result,
@@ -30,48 +39,98 @@ export function ResultsPanel({
   reportReady,
   downloadError,
 }: ResultsPanelProps) {
-  return (
-    <div className="space-y-3 rounded-lg border border-border bg-surface p-4 shadow-panel sm:p-5">
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
-        <Headline result={result} />
-        <HowCalculated />
-      </div>
-
-      <BenchmarkStrip benchmarkComparison={result.benchmarkComparison} />
-
-      <PoolRunwayChart recommended={result.recommended} current={result.current} />
-
-      <div className="grid gap-3 xl:grid-cols-2">
-        <GrantCostChart years={result.recommended.years} grantBasisKind={result.recommendedPool.selected.grantBasisKind} />
-        <PoolPctChart recommended={result.recommended} current={result.current} />
-      </div>
-
-      <HiresSupportedChart recommended={result.recommended} current={result.current} />
-
-      <ScenarioStrip inputs={inputs} baseResult={result} onLoad={onLoadScenario} />
-
-      <YearTable recommended={result.recommended} current={result.current} />
-
-      <CapTablePanel capTables={result.capTables} />
-
-      <MedianEmployeeValue value={result.medianEmployeeValue} />
-
-      <ComplianceChecks checks={result.complianceChecks} />
-
-      <div className="flex flex-col gap-3 rounded-lg border border-border bg-muted px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h3 className="text-[13px] font-semibold text-ink">Download the detailed report</h3>
-          <p className="mt-0.5 text-2xs text-faint">Your inputs, the recommendation, the roll forward and the compliance checklist.</p>
-          {downloadError ? (
-            <p role="alert" className="mt-1 text-2xs leading-4 text-danger">
-              {downloadError}
-            </p>
-          ) : null}
+  const tabs: readonly ResultTab[] = [
+    {
+      id: 'overview',
+      label: 'Overview',
+      render: () => (
+        <div className="space-y-3">
+          <BenchmarkStrip benchmarkComparison={result.benchmarkComparison} />
+          <ScenarioStrip inputs={inputs} baseResult={result} onLoad={onLoadScenario} />
+          <HowCalculated solver={result.solver} />
         </div>
-        <Button onClick={onDownload} disabled={!reportReady}>
-          {reportReady ? 'Download report' : 'Preparing report…'}
-        </Button>
+      ),
+    },
+    {
+      id: 'runway',
+      label: 'Runway',
+      render: () => (
+        <div className="grid gap-3 xl:grid-cols-2">
+          <PoolRunwayChart recommended={result.recommended} current={result.current} />
+          <PoolPctChart recommended={result.recommended} current={result.current} />
+        </div>
+      ),
+    },
+    {
+      id: 'hiring-cost',
+      label: 'Hiring cost',
+      render: () => (
+        <div className="grid gap-3 xl:grid-cols-2">
+          <HiresSupportedChart recommended={result.recommended} current={result.current} />
+          <GrantCostChart
+            years={result.recommended.years}
+            grantBasisKind={result.recommendedPool.selected.grantBasisKind}
+          />
+        </div>
+      ),
+    },
+    {
+      id: 'year-by-year',
+      label: 'Year by year',
+      render: () => <YearTable recommended={result.recommended} current={result.current} />,
+    },
+    {
+      id: 'cap-table',
+      label: 'Cap table',
+      render: () => <CapTablePanel capTables={result.capTables} />,
+    },
+    {
+      id: 'compliance',
+      label: 'Compliance',
+      render: () => (
+        <div className="space-y-3">
+          <ComplianceChecks checks={result.complianceChecks} />
+          <MedianEmployeeValue value={result.medianEmployeeValue} />
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <section
+      id="result"
+      aria-labelledby="result-heading"
+      className="scroll-mt-[64px] rounded-lg border border-border bg-surface shadow-panel"
+    >
+      <div className="space-y-2.5 border-b border-border p-4">
+        <h2 id="result-heading" className="sr-only">
+          Your ESOP pool
+        </h2>
+
+        <Headline
+          result={result}
+          action={
+            <div className="flex items-center gap-2">
+              {!result.solver.converged ? (
+                <span className="rounded border border-warn bg-warn-soft px-1.5 py-px text-2xs text-warn">
+                  Last stable value
+                </span>
+              ) : null}
+              <Button onClick={onDownload} disabled={!reportReady} size="sm">
+                {reportReady ? 'Download report' : 'Preparing report…'}
+              </Button>
+            </div>
+          }
+        />
+
+        {downloadError ? (
+          <p role="alert" className="text-2xs leading-4 text-danger">
+            {downloadError}
+          </p>
+        ) : null}
       </div>
-    </div>
+
+      <ResultTabs tabs={tabs} ariaLabel="Result detail" />
+    </section>
   );
 }

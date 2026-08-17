@@ -53,7 +53,11 @@ export function NumberField({
   }
 
   return (
-    <div className="flex items-center rounded border border-border bg-raised focus-within:border-strong">
+    <div
+      className={`focus-ring flex items-center rounded border border-strong ${
+        disabled ? 'bg-disabled' : 'bg-raised'
+      }`}
+    >
       {prefix ? <span className="pl-2.5 text-[13px] text-faint">{prefix}</span> : null}
       <input
         id={id}
@@ -73,7 +77,7 @@ export function NumberField({
             e.currentTarget.blur();
           }
         }}
-        className={`tnum w-full bg-transparent px-2.5 py-2 text-[13px] text-ink outline-none placeholder:text-faint disabled:opacity-50 ${
+        className={`tnum w-full bg-transparent px-2.5 py-2 text-[13px] text-ink outline-none placeholder:text-faint disabled:cursor-not-allowed disabled:text-quiet ${
           align === 'right' ? 'text-right' : ''
         }`}
       />

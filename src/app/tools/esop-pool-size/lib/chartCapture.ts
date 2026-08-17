@@ -49,10 +49,15 @@ function remapColour(value: string | null, lookup: ReadonlyMap<string, string>):
 /**
  * Put back the styling the stylesheet was providing, and force it light.
  *
- * `.recharts-cartesian-axis-tick text` and `.recharts-cartesian-grid line` are
- * styled in globals.css, so a serialised clone loses both and renders black
- * ticks on invisible gridlines.
+ * `.recharts-cartesian-axis-tick-value` and `.recharts-cartesian-grid line`
+ * are styled in globals.css, so a serialised clone loses both and renders
+ * Recharts' default grey ticks on invisible gridlines.
+ *
+ * The tick selector matches Recharts 3's class name. The pre-3 form is kept
+ * alongside it for the same reason globals.css keeps both.
  */
+const TICK_SELECTOR = '.recharts-cartesian-axis-tick-value, .recharts-cartesian-axis-tick text';
+
 function inlinePresentation(svg: SVGElement): void {
   const lookup = darkToLight();
 
@@ -64,7 +69,7 @@ function inlinePresentation(svg: SVGElement): void {
     if (stroke !== null) node.setAttribute('stroke', stroke);
   }
 
-  for (const text of Array.from(svg.querySelectorAll('.recharts-cartesian-axis-tick text'))) {
+  for (const text of Array.from(svg.querySelectorAll(TICK_SELECTOR))) {
     text.setAttribute('fill', LIGHT_PALETTE.axis);
     text.setAttribute('font-size', '11');
     text.setAttribute('font-family', 'Helvetica, Arial, sans-serif');

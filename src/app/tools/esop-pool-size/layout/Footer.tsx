@@ -18,7 +18,7 @@ export function Footer() {
             </a>
             <a
               href="#"
-              className="inline-flex items-center justify-center rounded border border-accent bg-accent px-3.5 py-2 text-[13px] font-medium text-white hover:bg-accent-hover"
+              className="inline-flex items-center justify-center rounded border border-strong bg-raised px-3.5 py-2 text-[13px] font-medium text-ink hover:border-ink"
             >
               Book a demo
             </a>

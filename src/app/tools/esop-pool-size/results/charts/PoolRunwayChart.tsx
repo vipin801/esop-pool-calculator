@@ -14,9 +14,11 @@ import {
 } from 'recharts';
 import type { PoolPlanSeries } from '@/lib/esop';
 import { useTheme } from '../../lib/theme';
+import { usePrefersReducedMotion } from '../../lib/useReducedMotion';
 import { paletteFor } from '../../lib/chartTheme';
-import { formatShares } from '../../lib/format';
+import { formatIndianCompact, formatSignedShares } from '../../lib/format';
 import { ChartFrame } from '../ChartFrame';
+import { tooltipStyle } from './tooltip';
 
 interface PoolRunwayChartProps {
   readonly recommended: PoolPlanSeries;
@@ -26,6 +28,7 @@ interface PoolRunwayChartProps {
 export function PoolRunwayChart({ recommended, current }: PoolRunwayChartProps) {
   const { theme } = useTheme();
   const p = paletteFor(theme);
+  const animate = !usePrefersReducedMotion();
 
   const data = current.years.map((y, i) => ({
     name: `Y${y.year + 1}`,
@@ -55,7 +58,7 @@ export function PoolRunwayChart({ recommended, current }: PoolRunwayChartProps) 
     <ChartFrame
       id="pool-runway"
       title="Pool runway — your current pool"
-      caption="Options, per year. The recommended pool's available balance is shown as a reference line."
+      caption="Options, per year. The recommended pool's available balance is the reference line."
       keys={[
         { label: 'New hires', color: p.accent },
         { label: 'Refreshes', color: p.accentSoft },
@@ -73,18 +76,35 @@ export function PoolRunwayChart({ recommended, current }: PoolRunwayChartProps) 
           {exhaustionLabel}
         </p>
       ) : null}
-      <div className="mt-2 h-[240px]">
+      <div className="mt-2 h-[220px]">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
             <CartesianGrid vertical={false} />
             <XAxis dataKey="name" tickLine={false} axisLine={false} fontSize={11} />
-            <YAxis tickLine={false} axisLine={false} fontSize={11} width={54} tickFormatter={(v: number) => formatShares(v)} />
-            <Tooltip
-              contentStyle={{ background: p.surface, border: `1px solid ${p.grid}`, borderRadius: 8, fontSize: 12 }}
-              formatter={(value) => formatShares(Number(value))}
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              fontSize={11}
+              width={44}
+              tickFormatter={(v: number) => formatIndianCompact(v)}
             />
-            <Bar dataKey="newHires" name="New hires" stackId="1" fill={p.accent} radius={[0, 0, 0, 0]} />
-            <Bar dataKey="refresh" name="Refreshes" stackId="1" fill={p.accentSoft} radius={[3, 3, 0, 0]} />
+            <Tooltip {...tooltipStyle(p)} formatter={(value) => formatSignedShares(Number(value))} />
+            <Bar
+              dataKey="newHires"
+              name="New hires"
+              stackId="1"
+              fill={p.accent}
+              radius={[0, 0, 0, 0]}
+              isAnimationActive={animate}
+            />
+            <Bar
+              dataKey="refresh"
+              name="Refreshes"
+              stackId="1"
+              fill={p.accentSoft}
+              radius={[3, 3, 0, 0]}
+              isAnimationActive={animate}
+            />
             <Area
               type="monotone"
               dataKey="returned"
@@ -93,6 +113,7 @@ export function PoolRunwayChart({ recommended, current }: PoolRunwayChartProps) 
               stroke={p.returned}
               fill={p.returned}
               fillOpacity={0.35}
+              isAnimationActive={animate}
             />
             <Line
               type="monotone"
@@ -102,6 +123,7 @@ export function PoolRunwayChart({ recommended, current }: PoolRunwayChartProps) 
               strokeWidth={2}
               strokeDasharray="4 3"
               dot={false}
+              isAnimationActive={animate}
             />
             <Line
               type="monotone"
@@ -110,6 +132,7 @@ export function PoolRunwayChart({ recommended, current }: PoolRunwayChartProps) 
               stroke={p.accent}
               strokeWidth={2}
               dot={false}
+              isAnimationActive={animate}
             />
             {exhaustYear ? <ReferenceLine x={exhaustYear} stroke={p.warn} strokeDasharray="3 3" /> : null}
           </ComposedChart>

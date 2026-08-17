@@ -17,7 +17,7 @@ export function AttritionCard({ inputs, setGroup, advanced }: CardProps) {
 
   return (
     <InputCard index="05" title="Attrition and exercise">
-      <Field label="Sector" helper="Prefills the base attrition rate. It does not scale a rate you type yourself.">
+      <Field label="Sector" htmlFor="attrition-sector" helper="Prefills the base attrition rate. It does not scale a rate you type yourself.">
         <SelectField
           id="attrition-sector"
           value={attrition.sector}
@@ -31,7 +31,7 @@ export function AttritionCard({ inputs, setGroup, advanced }: CardProps) {
         />
       </Field>
 
-      <Field label="Base annual attrition" estimate>
+      <Field label="Base annual attrition" htmlFor="attrition-base" estimate>
         <NumberField
           id="attrition-base"
           value={attrition.baseAnnualPct}
@@ -42,7 +42,7 @@ export function AttritionCard({ inputs, setGroup, advanced }: CardProps) {
       </Field>
 
       {advanced ? (
-        <Field label="Leadership override" estimate helper="Leadership usually churns slower than the base rate.">
+        <Field label="Leadership override" htmlFor="attrition-leadership" estimate helper="Leadership usually churns slower than the base rate.">
           <NumberField
             id="attrition-leadership"
             value={attrition.byBand.leadership ?? attrition.baseAnnualPct}
@@ -66,7 +66,7 @@ export function AttritionCard({ inputs, setGroup, advanced }: CardProps) {
       </Field>
 
       <Field
-        label="Vested options never exercised"
+        label="Vested options never exercised" htmlFor="lapse-rate"
         estimate
         helper="Share of vested options a leaver never exercises before their window closes."
       >
@@ -98,7 +98,7 @@ export function AttritionCard({ inputs, setGroup, advanced }: CardProps) {
           </Field>
 
           <Field
-            label="Continuing-employee exercises"
+            label="Continuing-employee exercises" htmlFor="continuing-exercise"
             estimate
             helper="Exercises by employees who have not left. Usually zero pre-liquidity in India."
           >

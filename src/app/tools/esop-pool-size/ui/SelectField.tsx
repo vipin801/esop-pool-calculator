@@ -11,6 +11,8 @@ interface SelectFieldProps<T extends string> {
   readonly options: readonly SelectOption<T>[];
   readonly onChange: (value: T) => void;
   readonly disabled?: boolean;
+  /** Only where no `Field` label points at this id — a control inside a group. */
+  readonly ariaLabel?: string;
 }
 
 export function SelectField<T extends string>({
@@ -19,15 +21,17 @@ export function SelectField<T extends string>({
   options,
   onChange,
   disabled,
+  ariaLabel,
 }: SelectFieldProps<T>) {
   return (
     <div className="relative">
       <select
         id={id}
         value={value}
+        aria-label={ariaLabel}
         disabled={disabled}
         onChange={(e) => onChange(e.target.value as T)}
-        className="w-full appearance-none rounded border border-border bg-raised px-2.5 py-2 pr-8 text-[13px] text-ink outline-none focus:border-strong disabled:opacity-50"
+        className="w-full appearance-none rounded border border-strong bg-raised px-2.5 py-2 pr-8 text-[13px] text-ink disabled:cursor-not-allowed disabled:bg-disabled disabled:text-quiet"
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>

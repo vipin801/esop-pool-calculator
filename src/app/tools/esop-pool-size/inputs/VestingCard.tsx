@@ -11,7 +11,7 @@ export function VestingCard({ inputs, setGroup }: CardProps) {
   return (
     <InputCard index="06" title="Vesting">
       <Field
-        label="Cliff"
+        label="Cliff" htmlFor="vesting-cliff"
         note={
           atFloor
             ? `Rule 12(6)(a) of the Companies (Share Capital and Debentures) Rules requires at least ${STATUTORY.minVestingMonths} months between grant and vesting. This is the statutory floor.`
@@ -28,7 +28,7 @@ export function VestingCard({ inputs, setGroup }: CardProps) {
         />
       </Field>
 
-      <Field label="Total vesting period">
+      <Field label="Total vesting period" htmlFor="vesting-years">
         <NumberField
           id="vesting-years"
           value={vesting.vestYears}

@@ -1,6 +1,10 @@
-import { BANDS, DEFAULT_SENIORITY_MIX_PCT, type SeniorityMix as SeniorityMixValue } from '@/lib/esop';
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+import { BANDS, type SeniorityMix as SeniorityMixValue } from '@/lib/esop';
 import { NumberField } from '../ui/NumberField';
 import { BAND_LABEL } from '../lib/labels';
+import { isMixValid, mixTotal, normaliseMix } from '../lib/seniorityMix';
 
 /** A shade per band, derived from the theme tokens rather than a fresh palette. */
 const BAND_SHADE: Record<(typeof BANDS)[number], string> = {
@@ -15,32 +19,62 @@ interface SeniorityMixProps {
   readonly onChange: (mix: SeniorityMixValue) => void;
 }
 
-function normalise(mix: SeniorityMixValue): SeniorityMixValue {
-  const total = BANDS.reduce((sum, band) => sum + Math.max(mix[band], 0), 0);
-  if (total <= 0) return { ...DEFAULT_SENIORITY_MIX_PCT };
+/**
+ * A mix that does not total 100 silently loses hires — the engine normalises
+ * nothing and `seniorityMixSumsTo100` is a warning nobody is obliged to read.
+ * So the group cannot be *left* invalid: it rebalances when focus leaves it,
+ * and says so in a live region rather than changing four numbers silently.
+ *
+ * While the founder is still inside the group the error and the explicit
+ * "Rebalance to 100%" button stay, and nothing is rewritten under their
+ * cursor — typing 40 into a field on the way to 40/30/20/10 must not be
+ * corrected mid-edit.
+ */
+export function SeniorityMix({ mix, onChange }: SeniorityMixProps) {
+  const [announcement, setAnnouncement] = useState('');
+  const groupRef = useRef<HTMLDivElement>(null);
 
-  const scaled = BANDS.map((band) => ({ band, value: (Math.max(mix[band], 0) / total) * 100 }));
-  const rounded = scaled.map((s) => ({ band: s.band, value: Math.round(s.value) }));
-  const drift = 100 - rounded.reduce((sum, r) => sum + r.value, 0);
+  /**
+   * The field's own blur commit and the group's blur both fire inside one
+   * event, and both would read the same stale `mix` prop — so tabbing out of
+   * a field you just edited would rebalance the value from *before* the edit
+   * and throw the edit away. The ref carries the committed value across the
+   * two handlers.
+   */
+  const latest = useRef(mix);
+  useEffect(() => {
+    latest.current = mix;
+  }, [mix]);
 
-  if (drift !== 0) {
-    const largest = rounded.reduce((best, r) => (r.value > best.value ? r : best), rounded[0]!);
-    largest.value += drift;
+  const total = mixTotal(mix);
+  const invalid = !isMixValid(mix);
+
+  function setBand(band: (typeof BANDS)[number], value: number) {
+    const next = { ...latest.current, [band]: Math.max(0, value) };
+    latest.current = next;
+    onChange(next);
   }
 
-  const result = {} as Record<(typeof BANDS)[number], number>;
-  for (const r of rounded) result[r.band] = r.value;
-  return result;
-}
+  function rebalance(reason: 'button' | 'blur') {
+    const current = latest.current;
+    if (isMixValid(current)) return;
 
-export function SeniorityMix({ mix, onChange }: SeniorityMixProps) {
-  const total = BANDS.reduce((sum, band) => sum + Math.max(mix[band], 0), 0);
-  const invalid = Math.round(total) !== 100;
+    const next = normaliseMix(current);
+    latest.current = next;
+    onChange(next);
+    setAnnouncement(reason === 'blur' ? 'Seniority mix rebalanced to 100%.' : 'Seniority mix set to 100%.');
+  }
+
+  function onBlurCapture(event: React.FocusEvent<HTMLDivElement>) {
+    const next = event.relatedTarget as Node | null;
+    if (next && groupRef.current?.contains(next)) return;
+    rebalance('blur');
+  }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" ref={groupRef} onBlur={onBlurCapture}>
       <p className="text-[13px] font-medium text-ink">Seniority mix</p>
-      <div className="flex h-2 overflow-hidden rounded-full border border-border">
+      <div className="flex h-2 overflow-hidden rounded-full border border-strong">
         {BANDS.map((band) => (
           <div
             key={band}
@@ -57,8 +91,9 @@ export function SeniorityMix({ mix, onChange }: SeniorityMixProps) {
             </span>
             <NumberField
               id={`mix-${band}`}
+              ariaLabel={`${BAND_LABEL[band]} share of hires, percent`}
               value={mix[band]}
-              onChange={(value) => onChange({ ...mix, [band]: Math.max(0, value) })}
+              onChange={(value) => setBand(band, value)}
               max={100}
               suffix="%"
             />
@@ -70,13 +105,16 @@ export function SeniorityMix({ mix, onChange }: SeniorityMixProps) {
           <p className="text-2xs text-danger">Mix must total 100%. Currently {Math.round(total)}%.</p>
           <button
             type="button"
-            onClick={() => onChange(normalise(mix))}
+            onClick={() => rebalance('button')}
             className="mt-1 text-2xs font-medium text-danger underline"
           >
             Rebalance to 100%
           </button>
         </div>
       ) : null}
+      <p aria-live="polite" className="sr-only">
+        {announcement}
+      </p>
     </div>
   );
 }

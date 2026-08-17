@@ -81,7 +81,7 @@ export function CompanyCard({
 
   return (
     <InputCard index="01" title="Your company">
-      <Field label="Stage">
+      <Field label="Stage" htmlFor="company-stage">
         <SelectField
           id="company-stage"
           value={company.stage}
@@ -92,7 +92,7 @@ export function CompanyCard({
       </Field>
 
       <Field
-        label="Post-money valuation"
+        label="Post-money valuation" htmlFor="company-valuation"
         readout={lakhCrore(company.postMoneyValuation)}
         helper="Latest round price, or your best estimate."
       >
@@ -107,7 +107,7 @@ export function CompanyCard({
       </Field>
 
       <Field
-        label="Fully diluted shares"
+        label="Fully diluted shares" htmlFor="company-fd-shares"
         helper="Founders + investors + options already granted, including the unallocated pool."
       >
         <NumberField
@@ -135,8 +135,11 @@ export function CompanyCard({
         }
       >
         {poolUnit === 'percent' ? (
+          /* The id switches with the unit, so the Field stays a group and
+             each variant carries its own name. */
           <NumberField
             id="company-existing-pool-pct"
+            ariaLabel="Existing unallocated pool, percent of fully diluted"
             value={Math.round(existingPoolPct * 100) / 100}
             onChange={setExistingPoolFromPct}
             max={90}
@@ -145,6 +148,7 @@ export function CompanyCard({
         ) : (
           <NumberField
             id="company-existing-pool-shares"
+            ariaLabel="Existing unallocated pool, in shares"
             value={company.existingUnallocatedOptions}
             onChange={setExistingPoolShares}
             grouped
@@ -155,7 +159,7 @@ export function CompanyCard({
       {advanced ? (
         <>
           <Field
-            label="Granted and outstanding"
+            label="Granted and outstanding" htmlFor="company-granted-outstanding"
             helper="Live grants, vested and unvested. Included in fully diluted."
           >
             <NumberField
@@ -174,6 +178,7 @@ export function CompanyCard({
               <div className="grid grid-cols-2 gap-2">
                 <SelectField
                   id="company-granted-band"
+                  ariaLabel="Band of the existing grants"
                   value={existingCohort?.band ?? 'mid'}
                   onChange={(band) =>
                     setOpeningGrants([
@@ -188,6 +193,7 @@ export function CompanyCard({
                 />
                 <NumberField
                   id="company-granted-age"
+                  ariaLabel="Average age of the existing grants, in years"
                   value={existingCohort?.ageYearsAtPlanStart ?? 2}
                   onChange={(age) =>
                     setOpeningGrants([
@@ -205,7 +211,7 @@ export function CompanyCard({
           ) : null}
 
           <Field
-            label="Founder ownership"
+            label="Founder ownership" htmlFor="company-founder-ownership"
             estimate
             helper="Used only to show the cap table before and after."
           >
@@ -234,7 +240,7 @@ export function CompanyCard({
 
           {round ? (
             <>
-              <Field label="Round year" helper="Plan year the round closes in, within your hiring horizon.">
+              <Field label="Round year" htmlFor="round-year" helper="Plan year the round closes in, within your hiring horizon.">
                 <NumberField
                   id="round-year"
                   value={round.year}
@@ -243,7 +249,7 @@ export function CompanyCard({
                 />
               </Field>
 
-              <Field label="Pre-money valuation">
+              <Field label="Pre-money valuation" htmlFor="round-pre-money">
                 <NumberField
                   id="round-pre-money"
                   value={round.preMoneyValuation}
@@ -253,7 +259,7 @@ export function CompanyCard({
                 />
               </Field>
 
-              <Field label="Raise amount">
+              <Field label="Raise amount" htmlFor="round-raise">
                 <NumberField
                   id="round-raise"
                   value={round.raiseAmount}
@@ -263,7 +269,7 @@ export function CompanyCard({
                 />
               </Field>
 
-              <Field label="Investor-required post-round pool" helper="As a percentage of the post-round fully diluted count.">
+              <Field label="Investor-required post-round pool" htmlFor="round-investor-pool-pct" helper="As a percentage of the post-round fully diluted count.">
                 <NumberField
                   id="round-investor-pool-pct"
                   value={round.investorRequiredPostRoundPoolPct}

@@ -23,14 +23,24 @@ interface FundingRoundCardProps extends CardProps {
 
 /**
  * Brief §3, section 06. `pool-solver.ts` never reads `rounds` — modelling one
- * changes the top-up-at-round and founder-cost outputs, never the
- * recommended pool percentage, so every field here is `reportOnly` in
- * lib/visibility.ts and none of them is required (D7) once the toggle
- * itself has been answered.
+ * changes the top-up-at-round and founder-cost outputs, never the recommended
+ * pool percentage — so every sub-field here is `reportOnly` in
+ * lib/visibility.ts, and since D9 the toggle is `minor` rather than required:
+ * nothing in this section gates a result.
+ *
+ * The toggle is the one `minor` field with no `EstimateMarker`, deliberately.
+ * D6's marker means "a value out of the defaults table is standing in for
+ * yours", and M2/M3 keep that vocabulary honest by refusing a provenance tag
+ * to anything that is not an estimate. "No round modelled" is not a value from
+ * `DEFAULTS` at all — an empty `rounds` array means the round engine does not
+ * run, so there is no figure standing in for anything. The seeded
+ * `DEFAULT_ROUND` below it is an invented example, which is exactly why its
+ * fields stay `reportOnly` and blank rather than presenting ₹300 crore as an
+ * assumption the tool is making.
  */
-export function FundingRoundCard({ rounds, setRounds, touched, markTouched, requiredPaths }: FundingRoundCardProps) {
+export function FundingRoundCard({ inputs, rounds, setRounds, touched, markTouched, requiredPaths }: FundingRoundCardProps) {
   const round = rounds[0];
-  const { isBlank, isRequired, withTouch } = makeTouchHelpers(touched, markTouched, requiredPaths);
+  const { isBlank, isRequired, withTouch } = makeTouchHelpers(touched, markTouched, requiredPaths, inputs);
 
   return (
     <InputCard index="06" title="Next funding round">

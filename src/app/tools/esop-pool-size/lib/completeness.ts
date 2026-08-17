@@ -5,12 +5,15 @@
  * would only fall back to its own seeded default (D6) if left alone, cannot
  * be a reason to withhold the answer. Required is exactly `tierFor(path,
  * inputs) === 'drivesPool'` from `lib/visibility.ts` — the one place that
- * table is written down. A `minor` or `reportOnly` field stays visible and
- * editable but is optional; a `hidden` one is not rendered at all. Both are
- * asserted against §4's worked example in `visibility.test.ts` and again here
- * against the structural existence rules below (a discount percentage that
- * doesn't exist because the strike isn't `discountToFMV`, an opening cohort
- * that doesn't exist because nothing has been granted yet).
+ * table is written down, and since D9 that tier means "no honest default
+ * exists for this" rather than "this has a term in the equation". A `minor` or
+ * `reportOnly` field stays visible and editable but is optional, and a `minor`
+ * one shows the default it is using (D9 §5); a `hidden` one is not rendered at
+ * all. The resulting required set is pinned path by path in
+ * `visibility.test.ts` and constrained again here by the structural existence
+ * rules below (a discount percentage that doesn't exist because the strike
+ * isn't `discountToFMV`, an opening cohort that doesn't exist because nothing
+ * has been granted yet).
  *
  * `inputs` itself is never blank (see touched.ts): it is read here only to
  * resolve which paths currently exist and at which tier.

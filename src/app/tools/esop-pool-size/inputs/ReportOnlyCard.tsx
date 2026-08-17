@@ -19,7 +19,7 @@ import type { CardProps } from './InputCard';
 export function ReportOnlyCard({ inputs, setGroup, touched, markTouched, requiredPaths }: CardProps) {
   const { company, compliance, employeeValue, exercise } = inputs;
   const authorisedRupees = company.authorisedCapitalShares * company.faceValuePerShare;
-  const { isBlank, isRequired, withTouch } = makeTouchHelpers(touched, markTouched, requiredPaths);
+  const { isBlank, isRequired, withTouch } = makeTouchHelpers(touched, markTouched, requiredPaths, inputs);
 
   return (
     <CollapsibleSection index="07" title="Doesn't change your pool, changes your report">

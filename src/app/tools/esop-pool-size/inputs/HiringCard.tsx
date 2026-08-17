@@ -12,7 +12,7 @@ export function HiringCard({ inputs, setGroup, touched, markTouched, requiredPat
   const { hiring } = inputs;
   const years = Array.from({ length: hiring.horizonYears }, (_, i) => i);
   const totalHires = years.reduce((sum, i) => sum + Math.max(0, hiring.hiresPerYear[i] ?? 0), 0);
-  const { isBlank, isRequired, withTouch } = makeTouchHelpers(touched, markTouched, requiredPaths);
+  const { isBlank, isRequired, withTouch } = makeTouchHelpers(touched, markTouched, requiredPaths, inputs);
 
   function setHorizon(horizonYears: number) {
     let hiresPerYear = hiring.hiresPerYear;
@@ -64,6 +64,7 @@ export function HiringCard({ inputs, setGroup, touched, markTouched, requiredPat
         touched={touched}
         markTouched={markTouched}
         requiredPaths={requiredPaths}
+        inputs={inputs}
       />
     </InputCard>
   );

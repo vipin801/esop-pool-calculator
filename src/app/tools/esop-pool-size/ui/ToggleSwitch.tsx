@@ -1,6 +1,7 @@
 interface ToggleSwitchProps {
   readonly id: string;
-  /** `null` before the founder has answered — every field starts blank. */
+  /** `null` before the founder has answered, for a required toggle only (D7).
+   *  A `minor` toggle passes its real value from the first render, per D9 §5. */
   readonly checked: boolean | null;
   readonly onChange: (checked: boolean) => void;
   readonly label: string;

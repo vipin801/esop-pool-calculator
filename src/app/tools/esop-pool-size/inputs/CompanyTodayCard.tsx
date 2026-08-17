@@ -43,7 +43,7 @@ export function CompanyTodayCard({
   const { company, growth } = inputs;
   const [poolUnit, setPoolUnit] = useState<PoolUnit>('percent');
   const existingCohort = openingGrants[0];
-  const { isBlank, isRequired, withTouch } = makeTouchHelpers(touched, markTouched, requiredPaths);
+  const { isBlank, isRequired, withTouch } = makeTouchHelpers(touched, markTouched, requiredPaths, inputs);
   const { isHidden, isReportOnly } = makeVisibilityHelpers(inputs);
 
   const existingPoolPct =

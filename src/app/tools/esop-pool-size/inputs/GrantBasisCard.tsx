@@ -25,7 +25,7 @@ function otherGrantBasis(kind: GrantBasis['kind']): GrantBasis {
 export function GrantBasisCard({ inputs, setGroup, touched, markTouched, requiredPaths }: CardProps) {
   const { company, grantPolicy } = inputs;
   const { grantBasis, comparisonGrantBasis } = grantPolicy;
-  const { isBlank, isRequired, withTouch } = makeTouchHelpers(touched, markTouched, requiredPaths);
+  const { isBlank, isRequired, withTouch } = makeTouchHelpers(touched, markTouched, requiredPaths, inputs);
 
   function switchBasis(kind: GrantBasis['kind']) {
     if (kind === grantBasis.kind) return;

@@ -30,14 +30,54 @@ Numbered D1, D2, D3… Never renumber. Never delete. If a decision is reversed, 
 | D4 | Two separate compliance toggles: DPIIT recognition and IMB certification under Section 80-IAC. Never one. | 2026-08-15 |
 | D5 | Two benchmark tracks are always shown together: advisory consensus and observed India data. Neither is presented as the truth. | 2026-08-15 |
 | D6 | Every default is an editable estimate, marked as such in the UI, and never presented as sourced data. | 2026-08-15 |
-| D7 | The form starts with every field blank, in both Simple and Advanced mode. No result — recommendation, headline, tabs, mobile summary bar — renders until every field currently on screen has been entered. **This supersedes "The one job"'s under-12-interactions figure**, which described a form pre-seeded from `DEFAULTS`; Simple mode alone is 25 required fields blank-to-result, not 10. `inputs` itself is never actually blank — the engine still takes a total `EsopInputs` (M33) — only the *display* is; see `lib/touched.ts` and `lib/completeness.ts` in the route. **Its "Simple and Advanced mode" wording is superseded by D8**; the blank-to-result requirement itself is unchanged. | 2026-08-17 |
-| D8 | There is one form, never a Simple/Advanced toggle or a renamed variant of one. Every field is always on screen or absent based on the founder's own choices — grant basis, strike policy, a modelled round, recycling, refresh — never behind a mode switch, per the pasted build brief's §3. Fields resolve to one of four tiers, computed by pure functions in `lib/visibility.ts`: `drivesPool`, `minor`, `reportOnly`, `hidden`. Only `drivesPool` is required under D7 — a `minor` or `reportOnly` field stays visible and editable but falls back to its own seeded default (D6) if the founder never touches it, the same way a `hidden` field's default already does; the brief's own worked example ("a Basis A founder with recycling off sees 12 fields") only holds under this reading. Fields never physically reorder when a tier changes — only the badge does. Superseded, in wording only, D7's "Simple and Advanced mode" framing. | 2026-08-17 |
+| D7 | The form starts with every field blank, in both Simple and Advanced mode. No result — recommendation, headline, tabs, mobile summary bar — renders until every field currently on screen has been entered. **This supersedes "The one job"'s under-12-interactions figure**, which described a form pre-seeded from `DEFAULTS`; Simple mode alone is 25 required fields blank-to-result, not 10. `inputs` itself is never actually blank — the engine still takes a total `EsopInputs` (M33) — only the *display* is; see `lib/touched.ts` and `lib/completeness.ts` in the route. **Its "Simple and Advanced mode" wording is superseded by D8**; the blank-to-result requirement itself is unchanged. **D9 narrows the blank start to required and `reportOnly` fields only** — a `minor` field renders the default it is actually using, marked as an estimate, because a blank box that still moves the answer is the unmarked default D6 forbids. The gate itself is untouched: no result until every `drivesPool` field has been entered. | 2026-08-17 |
+| D8 | There is one form, never a Simple/Advanced toggle or a renamed variant of one. Every field is always on screen or absent based on the founder's own choices — grant basis, strike policy, a modelled round, recycling, refresh — never behind a mode switch, per the pasted build brief's §3. Fields resolve to one of four tiers, computed by pure functions in `lib/visibility.ts`: `drivesPool`, `minor`, `reportOnly`, `hidden`. Only `drivesPool` is required under D7 — a `minor` or `reportOnly` field stays visible and editable but falls back to its own seeded default (D6) if the founder never touches it, the same way a `hidden` field's default already does; the brief's own worked example ("a Basis A founder with recycling off sees 12 fields") only holds under this reading. Fields never physically reorder when a tier changes — only the badge does. Superseded, in wording only, D7's "Simple and Advanced mode" framing. **D9 moves the `drivesPool` boundary and redefines what that tier name means; the four tiers, the one-form rule and the no-reordering rule are unchanged.** | 2026-08-17 |
+| D9 | The form requires only the inputs no honest default exists for, and `drivesPool` — still the one tier D7 gates on, still resolved in `lib/visibility.ts` alone — now means **"only the founder can supply this"** rather than "this has a term in the pool equation". Required: stage, grant basis (D1), fully diluted shares, existing unallocated pool, options granted and outstanding, planning horizon and hires per year; plus post-money valuation and valuation growth under Basis B; plus strike policy (D2) where it decides the denominator and theta where fair value reads it. Everything else that still moves the answer is `minor` — visible, editable, optional — and **renders the default it is using rather than a blank box, carrying its `EstimateMarker`**, because a field blank on screen while silently contributing 15% to the answer is exactly the unmarked default D6 forbids. **D7's blank start therefore applies to required fields only**, and to `reportOnly` fields, whose seeds are invented company facts rather than assumptions the engine is making. No second notion of optionality was introduced: no per-field `optional` flag, no parallel list of names. | 2026-08-17 |
 
 **D8's visibility table is not the brief's table verbatim.** The brief that prompted D8 gives its own field-by-field visibility rules, and three of its rows were traced against the shipped engine rather than trusted by inspection — each is a correction, not a restatement, and each is written down in `lib/visibility.ts` at the point it applies:
 
 - **Lambda and the exercise window are never `hidden`, only `minor`, when recycling is off.** The brief's table hides them there. `src/lib/esop/cohorts.ts` shows `lambda` (`exercise.vestedNeverExercisedPct`) splitting a leaver's vested options into `vestedLapsed` and `vestedExercised` regardless of `recycleForfeited` — recycling only decides where a lapsed option goes, not whether lambda has an effect — and per M18, a cancelled-not-recycled option leaves `FD_t` while an exercised one does not. With recycling off, lambda is exactly what decides how much of `FD_t` departs the plan each year. Hiding it would remove a field still setting the answer.
 - **Strike policy is live only under Basis B plus the realisable value basis, not fair value too.** The brief's table lives it under realisable *or* fair value. `src/lib/esop/denominator.ts`'s `fairValue` arm is `theta * pricePerShare` and never reads the exercise price; only the `realisable` arm (`pricePerShare - exercisePrice`) does. Under fair value, changing the strike changes the reported exercise price, never the option count. Fair value's real live control is theta, which the brief's table does not otherwise get a field for — the theta control D8 adds is gated on this instead.
 - **Valuation growth does not go `hidden` just because a round is modelled.** The brief's table adds "and no rounds modelled" to growth's live condition. `src/lib/esop/roll-forward.ts` and `valuation.ts` show `growth.valuationGrowthPctPerYear` pricing every year of the roll forward unconditionally; `rounds.ts` is a separate, additional one-time dilution report layered on top, not a replacement of the year-by-year path. A modelled round does not stop growth from pricing every grant.
+
+### What a founder can now skip, and what D9 measured
+
+**Measured, not asserted**, by calling `requiredFieldPaths` directly and again in
+`visibility.test.ts`, which pins the required set path by path so the figures cannot
+decay into folklore the way [023]'s "10 to 11 interactions" did:
+
+| State | Required before D9 | After |
+|---|---|---|
+| Basis B, Series A seed (recycling and refresh both on by default) | 35 | **12** |
+| Basis A, same seed otherwise | 31 | **10** |
+| Basis A, the D9 brief's minimal illustration (recycling off, refresh off, no round) | 21 | **9** |
+
+A founder can now reach a defensible pool without touching: the seniority mix, the
+grant size for any band, the buffer, comp inflation, the value basis, the recycle
+toggle, the refresh toggle and its rate and size, the round toggle, the sector, base
+attrition, the leadership attrition override, the cliff, the vesting period, the
+vesting frequency, lambda, or the post-termination exercise window. Every one of those
+now shows the value being used for it, marked `Estimate`.
+
+**Four judgment calls D9 forced, none of them in its own §4 list:**
+
+- **The attrition-and-vesting block and the refresh rate and size drop to `minor` too**, though §4 named only "the recycle / refresh / round toggles". Forced, not widened: §4 makes those toggles optional *and* they default to on, so leaving their dependent fields required would have a default the founder never chose demand nine more fields — the same unmarked-default pathology §5 exists to prevent, one step removed. Under the literal §4-only reading the Basis A seed would have fallen from 31 to 19, which fails §1's stated goal. D8's Correction 1 survives a fortiori: lambda and the window are still never `hidden`, and now never required either.
+- **Options granted and outstanding, and the opening cohort's band and age, stay required** wherever they are live. §3 names fully diluted shares and the existing pool as "company-specific, no default is even conceivable"; this is the third member of that family, and M21 has the engine refuse (`missingOpeningCohorts`) rather than invent a grant year and a band. A wrong figure here misstates paid-up capital rather than approximating a rate.
+- **Theta stays required where fair value reads it.** It has a default (0.55) but it scales the option count outright — 0.55 against 1 is close to 2× — which is §3's own "silently wrong rather than merely approximate" test, the one it applies to valuation growth. It costs nobody on the default path: `valueBasis` defaults to notional, under which theta is `hidden`.
+- **`rounds.enabled` is the one `minor` field with no `EstimateMarker`.** M2 and M3 keep the provenance vocabulary honest by refusing a tag to anything that is not an estimate; an empty `rounds` array is not a value from `DEFAULTS` standing in for the founder's, it means the round engine does not run. Its sub-fields stay `reportOnly` and blank for the same reason inverted: `FundingRoundCard`'s seeded ₹300 crore round is an invented example that must not be presented as an assumption.
+
+**§5 is scoped to `minor` and nothing else, deliberately.** `drivesPool` keeps the blank
+start because that *is* the mechanism by which a field is required. `reportOnly` keeps
+it because those seeds are company facts, not modelling assumptions — pre-filling an
+incorporation date three years ago, 55% founder ownership, or a ₹300 crore round would
+invent a fact rather than disclose an assumption. `showsSeededDefault` in
+`lib/visibility.ts` is where that single line is drawn, and `lib/touched.ts`'s
+`isBlank` is its only consumer.
+
+`tierFor`'s catch-all flipped from `drivesPool` to `minor`, so the required list is the
+short closed one D9 §3 states. That is a fail-open — a company-specific field added
+later and left off `REQUIRED_ALWAYS` would silently become optional — which is why the
+required set is pinned by name in a test rather than only spot-checked by tier.
 
 ## Locked model decisions
 
@@ -319,3 +359,60 @@ consumers already existed.
   D7's result regardless of whether the founder opens it. If a future session finds a field in that
   section that does move the recommended pool, it belongs in a different section, not an exception
   carved into this one.
+
+Raised in [027], the minimal-required-inputs session (D9). No engine change; `src/lib/esop`
+was not opened — `git status src/lib/esop` is empty.
+
+- **"Seeds every default below" is now a visible falsehood, and this is the most
+  consequential thing D9 surfaced.** `GrantBasisCard`'s helper under Stage says it, and
+  changing the stage reseeds nothing: `onChange` is `setGroup('company', { stage })` and
+  nothing else. `DEFAULT_GRANT_BASIS_BY_STAGE` and `DEFAULT_STRIKE_POLICY_BY_STAGE` are
+  read in `buildSeedInputs` only, at mount. Before D9 the claim was untestable by eye
+  because every field was blank; now a founder who picks Pre-seed watches 0.9 / 0.225 /
+  0.1 / 0.06, a 12-month cliff and 15% attrition sit unchanged on screen. **Not fixed
+  here on purpose:** reseeding on a stage change is new behaviour, not a tier
+  reassignment, and it needs M16's decision made again — a founder who typed a grant
+  size and then changed stage must not have it silently overruled, so it needs a
+  touched-aware reseed, which is a design call rather than a mechanical one. Either
+  build it or change the copy; do not leave both.
+- **`reportOnly` fields are still blank-and-silently-defaulted, for the report.** D9 §5
+  fixes the unmarked default for the *pool*; a founder who never opens section 07 still
+  gets a compliance checklist and an Ind AS 102 estimate computed against `false`,
+  `indAS102`, a face value of ₹10 and an incorporation date three years ago, with every
+  box on screen empty. The report is gated behind the lead form (D3), so nobody is shown
+  a number without having asked for it, and pre-filling invented company facts would be
+  worse — but "blank on screen, defaulted underneath" is the same shape D6 objects to,
+  one output removed. Worth a decision rather than an assumption.
+- **`NumberField`'s display precision went from two decimals to three**, which is the one
+  change this session made outside `lib/` and the cards. `DEFAULTS.grantPctByBand.senior`
+  is 0.225 (M1's midpoint of the advisory 0.15–0.3 range) and rounded to `0.23` on
+  screen, which was invisible while the box was blank and became a misstatement the
+  moment D9 §5 rendered it. Measured across both bases: that field is the only rendering
+  that moved. It is the only entry in the defaults table with a third decimal place.
+- **The D9 brief's §6 expectation that "the placeholder's 'N of M fields' … shrinks for
+  free" no longer applies**, because [025] already cut that counter down to one line
+  ("Fill in the fields above to see your recommended pool."). The only surviving reader
+  of the required count is `ResultsPanel`'s `incompleteCount`, and it does shrink — read
+  off the DOM after switching an already-complete Basis A form to Basis B: "2 fields
+  still need entering below for this number to reflect your latest choices," matching the
+  two fields Basis B reopens exactly.
+- **The required-field count now has a test**, closing the item [023] left open ("a future
+  session could pin it in `visibility.test.ts`"). It is pinned path by path in three
+  states, not merely counted, because `tierFor`'s catch-all is now `minor` and a
+  count-only assertion would pass while a company-specific field silently went optional.
+- **Screenshots were unavailable again**, the same limitation [025] hit: the Browser pane
+  does not composite frames in this session, so every check was made by reading the DOM
+  and the React fiber rather than by looking. What was verified live: the ten required
+  markers under Basis A and twelve under Basis B, by label; every `minor` field's rendered
+  value against the defaults table; `reportOnly` toggles still `aria-checked="mixed"` and
+  its text boxes still empty; and a Basis A founder reaching 17.5% / 20,18,367 options
+  having touched ten fields and no toggle, mix, grant size or buffer.
+- `.claude/launch.json` gained `"autoPort": true`. Port 3000 was held by an unrelated
+  `node.exe`, so no preview could start; `next dev` takes the assigned port from `PORT`
+  and there is no hardcoded port flag to fight. Named as a scope call rather than
+  smuggled, per [024]'s precedent for the eslint ignore.
+- All AUDIT_P4-carried engine defects (5, 7, 8, 9, 10, 11, 12, 13) are untouched, per
+  scope. Defect 7 is worth re-reading next to D9 though: `DEFAULTS.hiresPerYear` has five
+  entries against a horizon of 4, so the fifth is still dropped — and the four that
+  survive are now four of the ten fields a founder must fill, which is where anyone will
+  meet it first.

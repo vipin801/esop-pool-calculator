@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { BANDS, type SeniorityMix as SeniorityMixValue } from '@/lib/esop';
+import { BANDS, type EsopInputs, type SeniorityMix as SeniorityMixValue } from '@/lib/esop';
+import { EstimateMarker } from '../ui/EstimateMarker';
 import { NumberField } from '../ui/NumberField';
 import { RequiredMarker } from '../ui/RequiredMarker';
 import { BAND_LABEL } from '../lib/labels';
@@ -22,6 +23,8 @@ interface SeniorityMixProps {
   readonly touched: ReadonlySet<string>;
   readonly markTouched: (path: string) => void;
   readonly requiredPaths: ReadonlySet<string>;
+  /** For the tier lookup behind `isBlank` (lib/touched.ts), nothing else. */
+  readonly inputs: EsopInputs;
 }
 
 /**
@@ -35,10 +38,10 @@ interface SeniorityMixProps {
  * cursor — typing 40 into a field on the way to 40/30/20/10 must not be
  * corrected mid-edit.
  */
-export function SeniorityMix({ mix, onChange, touched, markTouched, requiredPaths }: SeniorityMixProps) {
+export function SeniorityMix({ mix, onChange, touched, markTouched, requiredPaths, inputs }: SeniorityMixProps) {
   const [announcement, setAnnouncement] = useState('');
   const groupRef = useRef<HTMLDivElement>(null);
-  const { isBlank, isRequired } = makeTouchHelpers(touched, markTouched, requiredPaths);
+  const { isBlank, isRequired } = makeTouchHelpers(touched, markTouched, requiredPaths, inputs);
 
   /**
    * The field's own blur commit and the group's blur both fire inside one
@@ -79,7 +82,10 @@ export function SeniorityMix({ mix, onChange, touched, markTouched, requiredPath
 
   return (
     <div className="space-y-2" ref={groupRef} onBlur={onBlurCapture}>
-      <p className="text-eyebrow font-medium text-ink">Seniority mix</p>
+      <p className="text-eyebrow font-medium text-ink">
+        Seniority mix
+        <EstimateMarker />
+      </p>
       <div className="flex h-2 overflow-hidden rounded-full border border-strong">
         {BANDS.map((band) => (
           <div

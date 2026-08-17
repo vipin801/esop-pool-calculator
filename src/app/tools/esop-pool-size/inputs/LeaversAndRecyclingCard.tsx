@@ -17,17 +17,18 @@ const SECTOR_LABEL: Record<Sector, string> = {
 /**
  * Brief §3, section 05, merging the old AttritionCard and VestingCard.
  * Nothing here is ever hidden — see lib/visibility.ts's Correction 1 for why
- * lambda and the exercise window stay visible (`minor`) even with recycling
- * off — but only the recycle toggle itself is `drivesPool` unconditionally;
- * everything else drops to optional (still real, still editable, silently
- * defaulted if left alone) until recycling is switched on. Collapsed by
- * default state mirrors the current value of `recycleForfeited` rather than
- * forcing a mismatched "closed" on a plan that already recycles.
+ * lambda and the exercise window stay visible even with recycling off — and
+ * since D9 nothing here is required either: every field is `minor`, so it
+ * shows the spec default it would otherwise have applied silently, marked as
+ * an estimate, and the founder reaches a pool without opening this section at
+ * all. Collapsed by default state mirrors the current value of
+ * `recycleForfeited` rather than forcing a mismatched "closed" on a plan that
+ * already recycles.
  */
 export function LeaversAndRecyclingCard({ inputs, setGroup, touched, markTouched, requiredPaths }: CardProps) {
   const { attrition, exercise, vesting } = inputs;
   const atFloor = vesting.cliffMonths <= STATUTORY.minVestingMonths;
-  const { isBlank, isRequired, withTouch } = makeTouchHelpers(touched, markTouched, requiredPaths);
+  const { isBlank, isRequired, withTouch } = makeTouchHelpers(touched, markTouched, requiredPaths, inputs);
 
   return (
     <CollapsibleSection
@@ -38,6 +39,7 @@ export function LeaversAndRecyclingCard({ inputs, setGroup, touched, markTouched
     >
       <Field
         label="Forfeited and lapsed options"
+        estimate
         required={isRequired('exercise.recycleForfeited')}
         helper={exercise.recycleForfeited ? 'They return to the pool.' : 'They are extinguished, not recycled.'}
       >
@@ -51,6 +53,7 @@ export function LeaversAndRecyclingCard({ inputs, setGroup, touched, markTouched
 
       <Field
         label="Sector" htmlFor="attrition-sector"
+        estimate
         required={isRequired('attrition.sector')}
         helper="Prefills the base attrition rate. It does not scale a rate you type yourself."
       >
@@ -111,7 +114,7 @@ export function LeaversAndRecyclingCard({ inputs, setGroup, touched, markTouched
         />
       </Field>
 
-      <Field label="Post-termination exercise window" required={isRequired('exercise.exerciseWindowDays')}>
+      <Field label="Post-termination exercise window" estimate required={isRequired('exercise.exerciseWindowDays')}>
         <SegmentedControl
           value={isBlank('exercise.exerciseWindowDays') ? null : String(exercise.exerciseWindowDays)}
           onChange={withTouch('exercise.exerciseWindowDays', (v) =>
@@ -129,6 +132,7 @@ export function LeaversAndRecyclingCard({ inputs, setGroup, touched, markTouched
 
       <Field
         label="Cliff" htmlFor="vesting-cliff"
+        estimate
         required={isRequired('vesting.cliffMonths')}
         note={
           atFloor
@@ -147,7 +151,7 @@ export function LeaversAndRecyclingCard({ inputs, setGroup, touched, markTouched
         />
       </Field>
 
-      <Field label="Total vesting period" htmlFor="vesting-years" required={isRequired('vesting.vestYears')}>
+      <Field label="Total vesting period" htmlFor="vesting-years" estimate required={isRequired('vesting.vestYears')}>
         <NumberField
           id="vesting-years"
           value={vesting.vestYears}
@@ -159,7 +163,7 @@ export function LeaversAndRecyclingCard({ inputs, setGroup, touched, markTouched
         />
       </Field>
 
-      <Field label="Vesting frequency" required={isRequired('vesting.frequency')}>
+      <Field label="Vesting frequency" estimate required={isRequired('vesting.frequency')}>
         <SegmentedControl
           value={isBlank('vesting.frequency') ? null : vesting.frequency}
           onChange={withTouch('vesting.frequency', (frequency) => setGroup('vesting', { frequency }))}

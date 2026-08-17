@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { EsopInputs } from '@/lib/esop';
+import { requiredFieldPaths } from '../lib/completeness';
 import { buildSeedInputs } from '../lib/seedInputs';
-import { tierFor } from '../lib/visibility';
+import { showsSeededDefault, tierFor } from '../lib/visibility';
 
 const BASE = buildSeedInputs(new Date('2026-01-01T00:00:00.000Z'));
 
@@ -67,12 +68,13 @@ describe('tierFor', () => {
     });
   });
 
-  describe('comp inflation and value basis — live under Basis B, hidden under Basis A', () => {
+  describe('comp inflation and value basis — visible under Basis B, hidden under Basis A', () => {
     it.each(['grantPolicy.compInflationPctPerYear', 'grantPolicy.valueBasis'])('%s is hidden under percent-of-equity', (path) => {
       expect(tierFor(path, PERCENT_OF_EQUITY)).toBe('hidden');
     });
-    it.each(['grantPolicy.compInflationPctPerYear', 'grantPolicy.valueBasis'])('%s drives the pool under rupee value', (path) => {
-      expect(tierFor(path, RUPEE_NOTIONAL)).toBe('drivesPool');
+    /** D9 §4: both have a default (8%, notional) and both moved to `minor`. */
+    it.each(['grantPolicy.compInflationPctPerYear', 'grantPolicy.valueBasis'])('%s is minor under rupee value, not required', (path) => {
+      expect(tierFor(path, RUPEE_NOTIONAL)).toBe('minor');
     });
   });
 
@@ -107,10 +109,13 @@ describe('tierFor', () => {
   });
 
   describe('refresh rate and size — hidden until the refresh toggle is on', () => {
-    it('drives the pool once the refresh rate is above zero', () => {
+    /** D9 §4 made the toggle optional and it defaults to on, so its sub-fields
+     *  are `minor` too: a default the founder never chose cannot demand two
+     *  fields of its own. */
+    it('is minor, not required, once the refresh rate is above zero', () => {
       const on = withInputs({ grantPolicy: { refresh: { ...BASE.grantPolicy.refresh, ratePct: 25 } } });
-      expect(tierFor('grantPolicy.refresh.ratePct', on)).toBe('drivesPool');
-      expect(tierFor('grantPolicy.refresh.sizePct', on)).toBe('drivesPool');
+      expect(tierFor('grantPolicy.refresh.ratePct', on)).toBe('minor');
+      expect(tierFor('grantPolicy.refresh.sizePct', on)).toBe('minor');
     });
     it('is hidden when the refresh rate is exactly zero', () => {
       const off = withInputs({ grantPolicy: { refresh: { ...BASE.grantPolicy.refresh, ratePct: 0 } } });
@@ -135,6 +140,12 @@ describe('tierFor', () => {
       expect(tierFor(path, off)).toBe('minor');
     });
 
+    /** D9 §4 took the recycle toggle itself to `minor`, so these can no longer
+     *  step up to required with it: they would then be demanded by a default
+     *  the founder never chose. Every one of them has a spec default (15%
+     *  attrition, a 12-month cliff, 4 years, 50% lapse), so they are `minor`
+     *  in both states now — Correction 1's "never hidden" reading holds
+     *  unconditionally rather than only in the off state. */
     it.each([
       'attrition.sector',
       'attrition.baseAnnualPct',
@@ -143,8 +154,8 @@ describe('tierFor', () => {
       'vesting.vestYears',
       'vesting.frequency',
       'exercise.vestedNeverExercisedPct',
-    ])('%s drives the pool when recycling is on', (path) => {
-      expect(tierFor(path, on)).toBe('drivesPool');
+    ])('%s is minor, not required, when recycling is on', (path) => {
+      expect(tierFor(path, on)).toBe('minor');
     });
 
     it('the exercise window is always minor, recycling on or off, since the engine reads it nowhere', () => {
@@ -179,7 +190,12 @@ describe('tierFor', () => {
     });
   });
 
-  describe('unconditional fields default to drivesPool', () => {
+  /**
+   * D9 §3 split what used to be one "unconditional fields default to
+   * drivesPool" case. The same twelve paths are still covered; six of them
+   * changed tier and are asserted below rather than dropped.
+   */
+  describe('D9 §3 — the inputs no honest default exists for stay required', () => {
     it.each([
       'company.stage',
       'grantPolicy.grantBasis.kind',
@@ -187,15 +203,144 @@ describe('tierFor', () => {
       'company.existingUnallocatedOptions',
       'hiring.horizonYears',
       'hiring.hiresPerYear.0',
-      'hiring.seniorityMix.leadership',
-      'grantPolicy.grantBasis.grantPctByBand.senior',
-      'grantPolicy.bufferPct',
-      'exercise.recycleForfeited',
-      'grantPolicy.refresh.enabled',
-      'rounds.enabled',
     ])('%s drives the pool regardless of basis', (path) => {
       expect(tierFor(path, PERCENT_OF_EQUITY)).toBe('drivesPool');
       expect(tierFor(path, RUPEE_NOTIONAL)).toBe('drivesPool');
     });
+
+    it('requires every year of the hiring plan, however long the horizon', () => {
+      const longHorizon = { ...BASE, hiring: { ...BASE.hiring, horizonYears: 6 } };
+      for (let i = 0; i < 6; i++) {
+        expect(tierFor(`hiring.hiresPerYear.${i}`, longHorizon)).toBe('drivesPool');
+      }
+    });
+  });
+
+  describe('D9 §4 — the defaulted drivers drop to minor, still visible and editable', () => {
+    it.each([
+      'hiring.seniorityMix.leadership',
+      'hiring.seniorityMix.junior',
+      'grantPolicy.bufferPct',
+      'exercise.recycleForfeited',
+      'grantPolicy.refresh.enabled',
+      'rounds.enabled',
+    ])('%s is minor regardless of basis', (path) => {
+      expect(tierFor(path, PERCENT_OF_EQUITY)).toBe('minor');
+      expect(tierFor(path, RUPEE_NOTIONAL)).toBe('minor');
+    });
+
+    it('drops the grant size per band under whichever basis is selected', () => {
+      expect(tierFor('grantPolicy.grantBasis.grantPctByBand.senior', PERCENT_OF_EQUITY)).toBe('minor');
+      expect(tierFor('grantPolicy.grantBasis.grantValueByBand.senior', RUPEE_NOTIONAL)).toBe('minor');
+    });
+  });
+
+  /**
+   * D9 §5. Only `minor` shows its seeded default; `drivesPool` keeps D7's
+   * blank start, which is the mechanism by which it is required at all, and
+   * `reportOnly` keeps it too because those seeds are invented company facts
+   * rather than assumptions the engine is making.
+   */
+  describe('showsSeededDefault — minor and nothing else', () => {
+    it.each(['grantPolicy.bufferPct', 'attrition.baseAnnualPct', 'vesting.cliffMonths', 'exercise.recycleForfeited'])(
+      '%s shows the value being used for it',
+      (path) => {
+        expect(showsSeededDefault(path, RUPEE_NOTIONAL)).toBe(true);
+      },
+    );
+
+    it.each(['company.stage', 'company.fullyDilutedShares', 'hiring.hiresPerYear.0', 'company.postMoneyValuation'])(
+      '%s stays blank until entered',
+      (path) => {
+        expect(showsSeededDefault(path, RUPEE_NOTIONAL)).toBe(false);
+      },
+    );
+
+    it.each(['compliance.incorporationDate', 'company.founderOwnershipPctOfFullyDiluted', 'rounds.0.preMoneyValuation'])(
+      '%s stays blank because its seed is an invented company fact',
+      (path) => {
+        expect(showsSeededDefault(path, RUPEE_NOTIONAL)).toBe(false);
+      },
+    );
+
+    it('says nothing about a hidden field, which is not rendered at all', () => {
+      expect(tierFor('growth.valuationGrowthPctPerYear', PERCENT_OF_EQUITY)).toBe('hidden');
+      expect(showsSeededDefault('growth.valuationGrowthPctPerYear', PERCENT_OF_EQUITY)).toBe(false);
+    });
+  });
+});
+
+/**
+ * The required set, pinned path by path rather than only counted.
+ *
+ * `tierFor`'s catch-all is `minor`, so a company-specific field added later
+ * and left off `REQUIRED_ALWAYS` would silently become optional. Nothing in
+ * the tier spot-checks above would catch that; this does. It is also where
+ * D9 §6's "measure, don't trust the brief" lands: the counts in PROJECT.md
+ * come from here.
+ */
+describe('requiredFieldPaths', () => {
+  const BASIS_A = withInputs({
+    grantPolicy: {
+      grantBasis: { kind: 'percentOfEquity', grantPctByBand: { leadership: 0.9, senior: 0.225, mid: 0.1, junior: 0.06 } },
+      comparisonGrantBasis: { kind: 'rupeeValue', grantValueByBand: { leadership: 8_000_000, senior: 2_500_000, mid: 1_000_000, junior: 300_000 } },
+    },
+  });
+
+  /** Basis A at the seed: recycling and refresh are both on by default, and
+   *  neither now pulls a field of its own into the required set. */
+  it('asks a Basis A founder for ten fields, all of them facts only they hold', () => {
+    expect([...requiredFieldPaths(BASIS_A)]).toEqual([
+      'company.stage',
+      'grantPolicy.grantBasis.kind',
+      'company.fullyDilutedShares',
+      'company.existingUnallocatedOptions',
+      'company.grantedOutstandingOptions',
+      'hiring.horizonYears',
+      'hiring.hiresPerYear.0',
+      'hiring.hiresPerYear.1',
+      'hiring.hiresPerYear.2',
+      'hiring.hiresPerYear.3',
+    ]);
+  });
+
+  /** Basis B adds exactly the two §3 names it adds: the valuation the rupee
+   *  promise is priced against, and the growth ENGINE_SPEC §1 makes the
+   *  largest single driver. */
+  it('asks a Basis B founder for those plus the valuation and its growth', () => {
+    const extra = requiredFieldPaths(BASE).filter((path) => !requiredFieldPaths(BASIS_A).includes(path));
+    expect(extra).toEqual(['company.postMoneyValuation', 'growth.valuationGrowthPctPerYear']);
+  });
+
+  it('adds the strike policy only where it decides the denominator', () => {
+    expect(requiredFieldPaths(RUPEE_REALISABLE)).toContain('grantPolicy.strikePolicy.kind');
+    expect(requiredFieldPaths(RUPEE_NOTIONAL)).not.toContain('grantPolicy.strikePolicy.kind');
+    expect(requiredFieldPaths(RUPEE_FAIR_VALUE)).not.toContain('grantPolicy.strikePolicy.kind');
+  });
+
+  it('adds theta only where fair value reads it', () => {
+    expect(requiredFieldPaths(RUPEE_FAIR_VALUE)).toContain('grantPolicy.fairValue.theta');
+    expect(requiredFieldPaths(RUPEE_NOTIONAL)).not.toContain('grantPolicy.fairValue.theta');
+  });
+
+  /** M21: the engine refuses to invent a grant year and a band, so the two
+   *  cohort fields stay required once there is a cohort to describe. */
+  it('adds the opening cohort once something has been granted', () => {
+    const withGrants = { ...BASIS_A, company: { ...BASIS_A.company, grantedOutstandingOptions: 250_000 } };
+    const required = requiredFieldPaths(withGrants);
+    expect(required).toContain('openingGrants.0.band');
+    expect(required).toContain('openingGrants.0.ageYearsAtPlanStart');
+  });
+
+  it('asks for nothing from sections 05, 06 or 07 under either basis', () => {
+    for (const inputs of [BASIS_A, BASE]) {
+      const required = requiredFieldPaths(inputs);
+      for (const path of required) {
+        expect(path).not.toMatch(/^(attrition|vesting|compliance|employeeValue|rounds)\./);
+      }
+      expect(required).not.toContain('exercise.recycleForfeited');
+      expect(required).not.toContain('exercise.vestedNeverExercisedPct');
+      expect(required).not.toContain('exercise.exerciseWindowDays');
+    }
   });
 });

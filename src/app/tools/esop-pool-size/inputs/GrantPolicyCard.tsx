@@ -28,7 +28,7 @@ export function GrantPolicyCard({ inputs, setGroup, touched, markTouched, requir
   const { grantPolicy } = inputs;
   const { grantBasis, strikePolicy, valueBasis, refresh, fairValue } = grantPolicy;
   const isPercentOfEquity = grantBasis.kind === 'percentOfEquity';
-  const { isBlank, isRequired, withTouch } = makeTouchHelpers(touched, markTouched, requiredPaths);
+  const { isBlank, isRequired, withTouch } = makeTouchHelpers(touched, markTouched, requiredPaths, inputs);
   const { isHidden, isReportOnly } = makeVisibilityHelpers(inputs);
   const refreshOn = refresh.ratePct > 0;
 
@@ -43,7 +43,7 @@ export function GrantPolicyCard({ inputs, setGroup, touched, markTouched, requir
   return (
     <InputCard index="04" title="Grant policy">
       {isPercentOfEquity ? (
-        <Field label="Grant per hire" helper="Percent of fully diluted equity, per band.">
+        <Field label="Grant per hire" estimate helper="Percent of fully diluted equity, per band.">
           <div className="grid grid-cols-2 gap-2">
             {BANDS.map((band) => (
               <label key={band} className="space-y-1">
@@ -69,7 +69,7 @@ export function GrantPolicyCard({ inputs, setGroup, touched, markTouched, requir
           </div>
         </Field>
       ) : (
-        <Field label="Grant per hire" helper="Rupee value at grant date, per band.">
+        <Field label="Grant per hire" estimate helper="Rupee value at grant date, per band.">
           <div className="grid grid-cols-2 gap-2">
             {BANDS.map((band) => (
               <label key={band} className="space-y-1">
@@ -98,6 +98,7 @@ export function GrantPolicyCard({ inputs, setGroup, touched, markTouched, requir
 
       <Field
         label="Buffer for unplanned senior hires" htmlFor="buffer"
+        estimate
         required={isRequired('grantPolicy.bufferPct')}
         helper="Headroom added on top of total consumption."
       >
@@ -114,6 +115,7 @@ export function GrantPolicyCard({ inputs, setGroup, touched, markTouched, requir
       {isHidden('grantPolicy.compInflationPctPerYear') ? null : (
         <Field
           label="Comp inflation" htmlFor="comp-inflation"
+          estimate
           required={isRequired('grantPolicy.compInflationPctPerYear')}
           helper="Applied to rupee grant values year on year."
         >
@@ -131,6 +133,7 @@ export function GrantPolicyCard({ inputs, setGroup, touched, markTouched, requir
       {isHidden('grantPolicy.valueBasis') ? null : (
         <Field
           label="Value basis"
+          estimate
           required={isRequired('grantPolicy.valueBasis')}
           helper="Notional is the full share price. Realisable is the price less the strike. Fair value is in between."
         >
@@ -213,7 +216,7 @@ export function GrantPolicyCard({ inputs, setGroup, touched, markTouched, requir
         </Field>
       )}
 
-      <Field label="Refresh grants" required={isRequired('grantPolicy.refresh.enabled')} helper="A second grant to employees already on the plan, some years in.">
+      <Field label="Refresh grants" estimate required={isRequired('grantPolicy.refresh.enabled')} helper="A second grant to employees already on the plan, some years in.">
         <ToggleSwitch
           id="refresh-enabled"
           checked={isBlank('grantPolicy.refresh.enabled') ? null : refreshOn}
@@ -232,6 +235,7 @@ export function GrantPolicyCard({ inputs, setGroup, touched, markTouched, requir
         <>
           <Field
             label="Refresh: employees refreshed" htmlFor="refresh-rate"
+            estimate
             required={isRequired('grantPolicy.refresh.ratePct')}
             helper="Share of eligible employees refreshed each year."
           >
@@ -247,6 +251,7 @@ export function GrantPolicyCard({ inputs, setGroup, touched, markTouched, requir
 
           <Field
             label="Refresh: size of original grant" htmlFor="refresh-size"
+            estimate
             required={isRequired('grantPolicy.refresh.sizePct')}
             helper="Refresh size as a percentage of an initial grant."
           >

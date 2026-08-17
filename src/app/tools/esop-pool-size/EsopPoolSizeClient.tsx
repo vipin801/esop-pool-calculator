@@ -55,11 +55,12 @@ function EsopPoolSizeApp() {
   const reportChartsRef = useRef<HTMLDivElement>(null);
 
   /**
-   * Every field starts blank (PROJECT.md decision D7). `inputs` itself is
-   * never blank — the engine takes a total `EsopInputs` (M33) — so what is
-   * blank is the *display*: a path not yet in `touched` renders empty, and
-   * the result stays hidden until every path `requiredFieldPaths` currently
-   * names is in this set. See lib/touched.ts and lib/completeness.ts.
+   * Required fields start blank (D7, narrowed by D9 §5 — a `minor` field shows
+   * the default it is using instead). `inputs` itself is never blank — the
+   * engine takes a total `EsopInputs` (M33) — so what is blank is the
+   * *display*, and the result stays hidden until every path
+   * `requiredFieldPaths` currently names is in this set. See lib/touched.ts
+   * and lib/completeness.ts.
    */
   const [touched, setTouched] = useState<ReadonlySet<string>>(() => new Set());
 

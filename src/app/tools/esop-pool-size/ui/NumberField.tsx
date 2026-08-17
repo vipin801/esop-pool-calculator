@@ -16,16 +16,30 @@ interface NumberFieldProps {
   readonly align?: 'left' | 'right';
   readonly disabled?: boolean;
   /**
-   * The founder has not yet entered this field. `value` still holds the real
-   * seed the engine would use, but the box shows empty rather than that seed
-   * — every field starts blank, and showing the seed here would show it
-   * everywhere at once, the thing this prop exists to prevent.
+   * The founder has not yet entered this field *and* it is one of the ones
+   * whose control starts empty. `value` still holds the real seed the engine
+   * would use; the box shows nothing instead. Required fields set this until
+   * answered (D7); a `minor` field never does, because a blank box that still
+   * moves the answer is an unmarked default (D9 §5). Callers ask
+   * `lib/touched.ts`'s `isBlank`, which decides both halves.
    */
   readonly blank?: boolean;
 }
 
+/**
+ * Three decimal places, not two.
+ *
+ * Two was invisible while every field started blank: the only seeded default in
+ * `DEFAULTS` carrying a third decimal is the senior band's Basis A grant, and
+ * M1 puts it at the midpoint of the advisory 0.15–0.3 range, so 0.225. Now that
+ * D9 §5 renders an untouched `minor` field's default rather than an empty box,
+ * rounding it to 0.23 would show a figure the engine is not using — the
+ * unmarked default D6 forbids, arriving through the display layer instead of
+ * through a blank. Nothing else in the table needs the third place, and no
+ * field's rendering moves but that one.
+ */
 function display(v: number, grouped: boolean): string {
-  return grouped ? formatIndian(v) : String(Math.round(v * 100) / 100);
+  return grouped ? formatIndian(v) : String(Math.round(v * 1000) / 1000);
 }
 
 export function NumberField({

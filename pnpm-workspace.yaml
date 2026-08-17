@@ -9,3 +9,9 @@ allowBuilds:
   # Transitive dependency of jspdf. Its postinstall prints a funding notice and
   # builds nothing, so it has no reason to execute.
   core-js: false
+  # Transitive dependency of eslint-import-resolver-typescript (itself pulled
+  # in by eslint-config-next and eslint-plugin-import, both devDependencies).
+  # Same shape as esbuild above: `postinstall.js` selects the platform-native
+  # `@unrs/resolver-binding-*` package, and the resolver can't do its actual
+  # job — resolving TypeScript imports during lint — without it.
+  unrs-resolver: true

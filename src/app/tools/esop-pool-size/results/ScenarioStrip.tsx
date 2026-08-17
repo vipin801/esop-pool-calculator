@@ -42,13 +42,13 @@ export function ScenarioStrip({ inputs, baseResult, onLoad }: ScenarioStripProps
   return (
     <section className="rounded-lg border border-border bg-raised">
       <div className="flex items-baseline justify-between gap-3 border-b border-border px-4 py-2.5">
-        <h3 className="text-[13px] font-semibold text-ink">Scenarios</h3>
+        <h3 className="text-eyebrow font-semibold text-ink">Scenarios</h3>
       </div>
       <div className="grid grid-cols-1 gap-px bg-border sm:grid-cols-3">
         {results.map(({ key, label, note, result }) => (
           <div key={key} className="bg-raised px-4 py-3">
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[13px] font-semibold text-ink">{label}</span>
+              <span className="text-eyebrow font-semibold text-ink">{label}</span>
               {key === 'base' ? (
                 <span className="text-2xs text-accent">Current</span>
               ) : result === 'error' ? null : (

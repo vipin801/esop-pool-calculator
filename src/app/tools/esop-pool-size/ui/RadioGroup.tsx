@@ -59,7 +59,7 @@ export function RadioGroup<T extends string>({
           <span>
             <span
               id={`${uid}-${option.value}-label`}
-              className={`block text-[13px] leading-4 ${disabled ? 'text-quiet' : 'text-ink'}`}
+              className={`block text-eyebrow leading-4 ${disabled ? 'text-quiet' : 'text-ink'}`}
             >
               {option.label}
             </span>

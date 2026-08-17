@@ -42,12 +42,12 @@ export function Field({
   const asGroup = group === true || htmlFor === undefined;
 
   const heading = asGroup ? (
-    <span id={labelId} className="text-[13px] font-medium text-ink">
+    <span id={labelId} className="text-eyebrow font-medium text-ink">
       {label}
       {estimate ? <EstimateMarker /> : null}
     </span>
   ) : (
-    <label htmlFor={htmlFor} className="text-[13px] font-medium text-ink">
+    <label htmlFor={htmlFor} className="text-eyebrow font-medium text-ink">
       {label}
       {estimate ? <EstimateMarker /> : null}
     </label>

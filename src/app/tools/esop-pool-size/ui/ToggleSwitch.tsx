@@ -43,7 +43,7 @@ export function ToggleSwitch({
           } ${checked ? 'translate-x-[18px]' : 'translate-x-0.5'}`}
         />
       </button>
-      <span className={`text-[13px] ${disabled ? 'text-quiet' : 'text-sub'}`}>{label}</span>
+      <span className={`text-eyebrow ${disabled ? 'text-quiet' : 'text-sub'}`}>{label}</span>
       <span className="sr-only">{checked ? onLabel : offLabel}</span>
     </label>
   );

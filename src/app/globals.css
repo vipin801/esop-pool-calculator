@@ -1,83 +1,107 @@
 @import 'tailwindcss';
 
+/*
+ * The Incentiv design tokens, vendored from `incentiv-design-system/tokens/`
+ * in the repo root. They are the source of the visual language; everything
+ * below is an alias layer that points this tool's semantic names at them.
+ * `src/app/tokens/README.md` records what was and was not vendored, and why.
+ */
+@import './tokens/colors.css';
+@import './tokens/typography.css';
+@import './tokens/spacing.css';
+@import './tokens/shape.css';
+@import './tokens/motion.css';
+
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
- * Two families of line, and the difference is a contrast requirement rather
- * than a taste.
+ * THE SEAM.
  *
- * `--border` draws dividers between rows, cards and table cells. WCAG 1.4.11
- * exempts purely decorative separators, so it stays light and the page keeps
- * its quiet grid.
+ * Each line below is either an alias onto an Incentiv token or a value
+ * Incentiv does not ship. Nothing here invents a colour: an alias reads the
+ * design system, and a retained value is the one this tool already used,
+ * marked UNMAPPED so it reads as a gap rather than a choice.
  *
- * `--border-strong` draws the *boundary of a control* — the edge that tells a
- * founder a box is typeable. That is "visual information required to identify
- * a user interface component" and carries the 3:1 floor, which the old
- * #cdd2d2 missed at 1.53:1. Every input, select, segmented control, toggle
- * and secondary button uses it.
+ * `--bg`, `--surface`, `--accent`, `--accent-hover` and `--accent-ink` are not
+ * redeclared here at all — the vendored `tokens/colors.css` already defines
+ * those exact names for those exact roles, so the app reads them directly and
+ * a dark override lands where the design system puts it.
  *
- * `--text-faint` carries most of the helper copy at 11px and was #868f90,
- * 3.31:1 on white. Small text needs 4.5:1, so it is darker now.
+ * Three notes on the mapping, because each was a decision rather than a
+ * lookup:
  *
- * `--accent-ink` is what goes *on* the accent. In dark mode the accent is a
- * bright mint and white on it measured 2.09:1, so the primary button's label
- * was the worst contrast on the page.
+ * `--text-faint` reads `--ink-2`, not `--ink-3`. Incentiv's third ink measures
+ * 3.06–3.92:1 across its own surfaces in both themes, under the 4.5:1 floor
+ * WCAG 1.4.3 sets for text this size — the same defect [023] measured and
+ * fixed when `--text-faint` was #868f90 at 3.31:1. The cost is that `faint`
+ * and `sub` are one colour now; the alternative was shipping helper copy that
+ * fails AA on every surface.
  *
- * Disabled controls are given a background and a colour rather than
- * `opacity: 0.5`. WCAG exempts inactive components, but a half-transparent
- * label measured 1.70:1 and simply could not be read; the state now reads
- * from the fill, the cursor and `aria-disabled`, all of which survive.
+ * `--border-strong` reads `--ink-3`, which clears the 3:1 floor a *control
+ * boundary* carries (3.40 light, 3.68 dark) and is what Incentiv itself uses
+ * as a border on card hover. `--line` is the divider family and stays there,
+ * at 1.27:1, because WCAG exempts a decorative separator.
+ *
+ * Incentiv has three neutral surfaces and this tool has five, so two pairs
+ * collapse: `--surface`/`--surface-raised` and `--surface-muted`/
+ * `--surface-disabled`. In light nothing moves. In dark, chart cards and stat
+ * tiles stop sitting a step above the panel and are separated by their
+ * hairline instead — which is Incentiv's own card anatomy, `--surface` plus a
+ * 1px `--line`, no shadow and no lift.
  */
 :root {
-  --bg: #ffffff;
-  --surface: #ffffff;
-  --surface-raised: #ffffff;
-  --surface-muted: #f6f7f7;
-  --surface-disabled: #f0f2f2;
-  --border: #e4e7e7;
-  --border-strong: #868a8a;
-  --text: #0b0d0e;
-  --text-muted: #5b6465;
-  --text-faint: #666d6e;
-  --text-disabled: #5b6465;
-  --accent: #0e7c66;
-  --accent-hover: #0b6553;
+  /* Inter is self-hosted through `next/font` in layout.tsx, so the family
+     tokens point at that rather than at the design system's Google-hosted
+     stack. Same typeface, no network request — the substitution the design
+     system's own README asks for. */
+  --font-display: var(--font-inter), 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-body: var(--font-display);
+
+  --surface-raised: var(--surface);
+  --surface-muted: var(--surface-2);
+  --surface-disabled: var(--surface-2);
+  --border: var(--line);
+  --border-strong: var(--ink-3);
+  --text: var(--ink);
+  --text-muted: var(--ink-2);
+  --text-faint: var(--ink-2);
+  --text-disabled: var(--ink-2);
+  --ok: var(--positive);
+  --chart-grid: var(--line);
+
+  /* UNMAPPED. Incentiv ships no status colours beyond `--positive` and no
+     chart palette, so these keep the values this tool already used. Carried in
+     PROJECT.md under Open items rather than guessed at. */
   --accent-soft: #e7f2ef;
-  --accent-ink: #ffffff;
   --warn: #8a5300;
   --warn-soft: #fdf5e7;
   --danger: #9e2222;
   --danger-soft: #fceded;
-  --ok: #0e7c66;
-  /* A hue of its own for "options returned to the pool", distinct from the
-     grey used for "options available" so the two read apart in a chart. */
   --returned: #3f6ea3;
-  --chart-grid: #d9dddd;
 }
 
+/*
+ * Dark. Only the values that are not a straight alias appear here — an alias
+ * follows its Incentiv token automatically, because `tokens/colors.css`
+ * redeclares the token itself under `[data-theme="dark"]` and `ThemeProvider`
+ * sets both that attribute and this class.
+ */
 .dark {
-  --bg: #0b0d0e;
-  --surface: #0b0d0e;
-  --surface-raised: #121516;
-  --surface-muted: #15191a;
-  --surface-disabled: #1b1f20;
-  --border: #262b2c;
-  --border-strong: #6a7071;
-  --text: #f4f6f6;
-  --text-muted: #a2acad;
-  --text-faint: #7d8788;
-  --text-disabled: #a2acad;
-  --accent: #35c9a5;
-  --accent-hover: #4fd8b6;
+  /* UNMAPPED, as above. */
   --accent-soft: #10241f;
-  --accent-ink: #04211b;
   --warn: #e0ab5f;
   --warn-soft: #241c0e;
   --danger: #e78a8a;
   --danger-soft: #241313;
-  --ok: #35c9a5;
   --returned: #7fb3e0;
-  --chart-grid: #2e3435;
+
+  /* OUT OF SYSTEM, and the only Incentiv value this app does not take as
+     given. Incentiv's dark accent #4d74ff measures 4.23:1 on its own
+     `--surface-2`, under the 4.5:1 text floor its own spec demands of both
+     themes. This is that colour lifted 20% toward Incentiv's `--accent-hover`,
+     the smallest step that clears it: 4.50 on `--surface-2`, 4.87 on
+     `--surface`, and 5.19 for `--accent-ink` laid on top. */
+  --accent: #547aff;
 }
 
 @theme inline {
@@ -103,15 +127,41 @@
   --color-ok: var(--ok);
   --color-returned: var(--returned);
 
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-body);
 
+  /*
+   * Three of this tool's six type sizes are already exactly the Incentiv
+   * scale — 13px is `--t-eyebrow-size`, 15px is `--t-small-size`, 17px is
+   * `--t-body-size` — so they become named utilities reading the token
+   * instead of `text-[13px]` literals. Identical rendered sizes; the change
+   * is where the number comes from.
+   *
+   * No line-height is paired with them, because `text-[13px]` set none and
+   * this must not move a single line box.
+   *
+   * UNMAPPED: `text-2xs` (11px, 82 uses) sits below anything Incentiv ships —
+   * its scale stops at the 13px eyebrow. So do the 22px, 26px and 38px
+   * headline sizes. Promoting them would reflow the rail and the result
+   * object, which is a layout change and not a token swap.
+   */
   --text-2xs: 0.6875rem;
   --text-2xs--line-height: 1rem;
+  --text-eyebrow: var(--t-eyebrow-size);
+  --text-small: var(--t-small-size);
+  --text-body: var(--t-body-size);
 
-  --radius-DEFAULT: 8px;
-  --radius-md: 8px;
+  /* 8px is exactly `--r-button`/`--r-input`, so it reads the token.
+     UNMAPPED: `rounded-lg` is 10px against Incentiv's 12px `--r-card`, and
+     `--container-page` is 1240px against its 1200px `--content-max`. Both are
+     value changes rather than substitutions and are left alone. */
+  --radius-DEFAULT: var(--r-button);
+  --radius-md: var(--r-input);
   --radius-lg: 10px;
 
+  /* UNMAPPED. Incentiv ships one shadow token and reserves it for overlays,
+     and calls cards flat. This is used on the result object and the lead
+     modal; mapping the modal alone and dropping the panel's would be a
+     restyle, so both keep what they had. */
   --shadow-panel: 0 1px 2px rgba(11, 13, 14, 0.04), 0 8px 24px -12px rgba(11, 13, 14, 0.1);
 
   --container-page: 1240px;

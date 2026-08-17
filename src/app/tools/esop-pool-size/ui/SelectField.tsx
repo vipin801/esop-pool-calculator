@@ -31,7 +31,7 @@ export function SelectField<T extends string>({
         aria-label={ariaLabel}
         disabled={disabled}
         onChange={(e) => onChange(e.target.value as T)}
-        className="w-full appearance-none rounded border border-strong bg-raised px-2.5 py-2 pr-8 text-[13px] text-ink disabled:cursor-not-allowed disabled:bg-disabled disabled:text-quiet"
+        className="w-full appearance-none rounded border border-strong bg-raised px-2.5 py-2 pr-8 text-eyebrow text-ink disabled:cursor-not-allowed disabled:bg-disabled disabled:text-quiet"
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>

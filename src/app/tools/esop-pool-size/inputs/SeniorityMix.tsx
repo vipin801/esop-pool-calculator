@@ -73,7 +73,7 @@ export function SeniorityMix({ mix, onChange }: SeniorityMixProps) {
 
   return (
     <div className="space-y-2" ref={groupRef} onBlur={onBlurCapture}>
-      <p className="text-[13px] font-medium text-ink">Seniority mix</p>
+      <p className="text-eyebrow font-medium text-ink">Seniority mix</p>
       <div className="flex h-2 overflow-hidden rounded-full border border-strong">
         {BANDS.map((band) => (
           <div

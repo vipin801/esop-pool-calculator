@@ -34,7 +34,7 @@ export function InputCard({ index, title, children }: InputCardProps) {
     <div className="rounded-lg border border-border bg-raised">
       <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
         <span className="tnum text-2xs font-semibold text-faint">{index}</span>
-        <h3 className="text-[13px] font-semibold text-ink">{title}</h3>
+        <h3 className="text-eyebrow font-semibold text-ink">{title}</h3>
       </div>
       <div className="space-y-4 px-4 py-4">{children}</div>
     </div>

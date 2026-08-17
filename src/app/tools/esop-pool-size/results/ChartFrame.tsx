@@ -35,7 +35,7 @@ export function ChartFrame({ title, caption, keys, dataTable, children, id }: Ch
   return (
     <section className="min-w-0 rounded-lg border border-border bg-raised p-3" data-chart={id}>
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <h3 className="text-[13px] font-semibold text-ink">{title}</h3>
+        <h3 className="text-eyebrow font-semibold text-ink">{title}</h3>
         {keys ? (
           <ul className="flex flex-wrap items-center gap-x-3 gap-y-1">
             {keys.map((k) => (

@@ -31,15 +31,29 @@ function rgb(hex: string): Rgb {
   ];
 }
 
-const INK = rgb('#0b0d0e');
-const SUB = rgb('#5b6465');
-const FAINT = rgb('#868f90');
-const ACCENT = rgb('#0e7c66');
-const BORDER = rgb('#e4e7e7');
-const MUTED = rgb('#f6f7f7');
-const WARN = rgb('#8a5300');
-const DANGER = rgb('#9e2222');
-const WHITE: Rgb = [255, 255, 255];
+/*
+ * The printed page is always the light theme, so these are the light Incentiv
+ * values. jsPDF takes RGB triples, not CSS custom properties, which is why
+ * they are literals here rather than reads of the token layer; each names the
+ * token it is.
+ *
+ * `FAINT` follows the screen's `--text-faint` onto `--ink-2` rather than onto
+ * `--ink-3`, for the same reason and with the same cost: it carries the 7.5pt
+ * and 8pt lines — references, disclaimers, captions — where `--ink-3` measures
+ * 3.40:1 on paper. The PDF therefore has two ink tiers where it used to have
+ * three.
+ *
+ * `WARN` and `DANGER` are UNMAPPED: Incentiv ships no status colours.
+ */
+const INK = rgb('#111214'); // --ink
+const SUB = rgb('#55565a'); // --ink-2
+const FAINT = rgb('#55565a'); // --ink-2
+const ACCENT = rgb('#1f4fff'); // --accent
+const BORDER = rgb('#e4e4e0'); // --line
+const MUTED = rgb('#f3f3f0'); // --surface-2
+const WARN = rgb('#8a5300'); // UNMAPPED
+const DANGER = rgb('#9e2222'); // UNMAPPED
+const WHITE: Rgb = [255, 255, 255]; // --surface
 
 const STATUS_COLOUR: Record<ChecklistItem['status'], Rgb> = {
   pass: ACCENT,

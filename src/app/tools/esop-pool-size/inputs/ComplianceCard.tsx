@@ -86,7 +86,7 @@ export function ComplianceCard({ inputs, setGroup, advanced }: CardProps) {
               onChange={(e) => setGroup('compliance', { incorporationDate: e.target.value })}
               // No `outline-none`: this control has no wrapper to hang a ring
               // on, so it keeps the global :focus-visible outline.
-              className="w-full rounded border border-strong bg-raised px-2.5 py-2 text-[13px] text-ink"
+              className="w-full rounded border border-strong bg-raised px-2.5 py-2 text-eyebrow text-ink"
             />
           </Field>
 

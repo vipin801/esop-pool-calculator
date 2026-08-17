@@ -58,7 +58,7 @@ export function NumberField({
         disabled ? 'bg-disabled' : 'bg-raised'
       }`}
     >
-      {prefix ? <span className="pl-2.5 text-[13px] text-faint">{prefix}</span> : null}
+      {prefix ? <span className="pl-2.5 text-eyebrow text-faint">{prefix}</span> : null}
       <input
         id={id}
         type="text"
@@ -77,11 +77,11 @@ export function NumberField({
             e.currentTarget.blur();
           }
         }}
-        className={`tnum w-full bg-transparent px-2.5 py-2 text-[13px] text-ink outline-none placeholder:text-faint disabled:cursor-not-allowed disabled:text-quiet ${
+        className={`tnum w-full bg-transparent px-2.5 py-2 text-eyebrow text-ink outline-none placeholder:text-faint disabled:cursor-not-allowed disabled:text-quiet ${
           align === 'right' ? 'text-right' : ''
         }`}
       />
-      {suffix ? <span className="pr-2.5 text-[13px] text-faint">{suffix}</span> : null}
+      {suffix ? <span className="pr-2.5 text-eyebrow text-faint">{suffix}</span> : null}
     </div>
   );
 }

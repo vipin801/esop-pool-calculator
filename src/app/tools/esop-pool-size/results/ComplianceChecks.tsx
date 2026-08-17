@@ -21,7 +21,7 @@ function StatusIcon({ status }: { readonly status: ComplianceStatus }) {
 export function ComplianceChecks({ checks }: ComplianceChecksProps) {
   return (
     <section className="rounded-lg border border-border bg-raised">
-      <h3 className="border-b border-border px-4 py-2.5 text-[13px] font-semibold text-ink">
+      <h3 className="border-b border-border px-4 py-2.5 text-eyebrow font-semibold text-ink">
         Compliance checks (India)
       </h3>
       <ul className="divide-y divide-border">
@@ -29,7 +29,7 @@ export function ComplianceChecks({ checks }: ComplianceChecksProps) {
           <li key={check.id} className="flex gap-2.5 px-4 py-3">
             <StatusIcon status={check.status} />
             <div className="min-w-0">
-              <p className="text-[13px] leading-5 text-ink">{check.finding}</p>
+              <p className="text-eyebrow leading-5 text-ink">{check.finding}</p>
               <p className="mt-0.5 text-2xs leading-4 text-sub">{check.action}</p>
               <p className="mt-0.5 text-2xs text-faint">
                 {check.statutoryReference} · {check.disclaimer}

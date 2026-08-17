@@ -27,7 +27,7 @@ interface LeadModalProps {
 }
 
 const INPUT_CLASSES =
-  'focus-ring w-full rounded border border-strong bg-surface px-2.5 py-2 text-[13px] text-ink outline-none';
+  'focus-ring w-full rounded border border-strong bg-surface px-2.5 py-2 text-eyebrow text-ink outline-none';
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -139,7 +139,7 @@ export function LeadModal({ open, stage, busy, onClose, onSubmit }: LeadModalPro
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h2 id={`${fieldId}-title`} className="text-[15px] font-semibold text-ink">
+            <h2 id={`${fieldId}-title`} className="text-small font-semibold text-ink">
               Download the detailed report
             </h2>
             <p className="mt-1 text-2xs leading-4 text-faint">
@@ -257,7 +257,7 @@ export function LeadModal({ open, stage, busy, onClose, onSubmit }: LeadModalPro
           <button
             type="submit"
             disabled={!valid || busy}
-            className="w-full rounded border border-accent bg-accent px-3.5 py-2 text-[13px] font-medium text-accent-ink transition-colors duration-150 hover:bg-accent-hover disabled:cursor-not-allowed disabled:border-strong disabled:bg-disabled disabled:text-quiet"
+            className="w-full rounded border border-accent bg-accent px-3.5 py-2 text-eyebrow font-medium text-accent-ink transition-colors duration-150 hover:bg-accent-hover disabled:cursor-not-allowed disabled:border-strong disabled:bg-disabled disabled:text-quiet"
           >
             {busy ? 'Preparing the PDF…' : 'Download report'}
           </button>

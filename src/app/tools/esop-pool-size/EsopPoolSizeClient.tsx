@@ -138,7 +138,7 @@ function EsopPoolSizeApp() {
     <div className="min-h-screen w-full bg-surface">
       <a
         href="#main"
-        className="sr-only rounded border border-strong bg-raised px-3 py-2 text-[13px] text-ink focus:not-sr-only focus:absolute focus:left-4 focus:top-3 focus:z-50"
+        className="sr-only rounded border border-strong bg-raised px-3 py-2 text-eyebrow text-ink focus:not-sr-only focus:absolute focus:left-4 focus:top-3 focus:z-50"
       >
         Skip to the calculator
       </a>
@@ -170,7 +170,7 @@ function EsopPoolSizeApp() {
                 downloadError={downloadError}
               />
             ) : (
-              <div role="alert" className="rounded-lg border border-warn bg-warn-soft p-4 text-[13px] text-warn">
+              <div role="alert" className="rounded-lg border border-warn bg-warn-soft p-4 text-eyebrow text-warn">
                 This plan can’t be priced yet: {outcome.message}
               </div>
             )}

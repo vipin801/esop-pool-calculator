@@ -44,7 +44,7 @@ export function SliderField({
           className="w-full"
         />
         <span
-          className={`tnum w-14 shrink-0 rounded border border-strong px-1.5 py-1 text-right text-[13px] ${
+          className={`tnum w-14 shrink-0 rounded border border-strong px-1.5 py-1 text-right text-eyebrow ${
             disabled ? 'bg-disabled text-quiet' : 'bg-raised text-ink'
           }`}
         >

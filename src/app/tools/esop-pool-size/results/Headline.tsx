@@ -81,22 +81,22 @@ export function Headline({ result, action }: HeadlineProps) {
           <p className="tnum text-[38px] font-semibold leading-none tracking-tight text-ink">
             {formatPct(displayPoolPct(recommended.openingPoolPctOfFullyDiluted))}
           </p>
-          <p className="text-[15px] text-sub">of fully diluted, recommended</p>
+          <p className="text-small text-sub">of fully diluted, recommended</p>
         </div>
         {action}
       </div>
 
-      <p className="tnum text-[13px] leading-5 text-sub">
+      <p className="tnum text-eyebrow leading-5 text-sub">
         {formatShares(recommended.openingPoolOptions)} options, under{' '}
         {GRANT_BASIS_LABEL[recommendedPool.selected.grantBasisKind]} grants struck at{' '}
         {STRIKE_LABEL[recommendedPool.selected.strikePolicyKind]}.
       </p>
 
       <div className="space-y-1 rounded border border-border bg-muted px-3 py-2">
-        <p className="tnum text-[13px] leading-5 text-ink">
+        <p className="tnum text-eyebrow leading-5 text-ink">
           <span className="font-semibold">Recommended pool</span> — {recommendedRunway}
         </p>
-        <p className="tnum text-[13px] leading-5 text-ink">
+        <p className="tnum text-eyebrow leading-5 text-ink">
           <span className="font-semibold">Your current pool</span>
           {hasExistingPool ? ` (${formatPct(current.openingPoolPctOfFullyDiluted)} of fully diluted)` : ''} —{' '}
           {currentRunway}
@@ -106,7 +106,7 @@ export function Headline({ result, action }: HeadlineProps) {
       <dl className="grid grid-cols-1 gap-px overflow-hidden rounded border border-border bg-border sm:grid-cols-3">
         <div className="bg-raised px-3 py-2">
           <dt className="text-2xs text-faint">{topUpLabel}</dt>
-          <dd className="tnum mt-0.5 text-[17px] font-semibold leading-6 text-ink">
+          <dd className="tnum mt-0.5 text-body font-semibold leading-6 text-ink">
             {formatShares(recommendedPool.selected.poolOptions)}
             <span className="ml-1.5 text-2xs font-normal text-faint">
               {formatPct(recommendedPool.selected.displayPoolPctOfFullyDiluted)} of <Abbr short="FD" long="fully diluted" />
@@ -120,14 +120,14 @@ export function Headline({ result, action }: HeadlineProps) {
         </div>
         <div className="bg-raised px-3 py-2">
           <dt className="text-2xs text-faint">Hires your current pool supports</dt>
-          <dd className="tnum mt-0.5 text-[17px] font-semibold leading-6 text-ink">
+          <dd className="tnum mt-0.5 text-body font-semibold leading-6 text-ink">
             {formatShares(current.exhaustion.hiresSupported)} of {formatShares(totalPlannedHires)}
           </dd>
           <p className="mt-0.5 text-2xs leading-4 text-faint">From the unallocated pool you hold right now.</p>
         </div>
         <div className="bg-raised px-3 py-2">
           <dt className="text-2xs text-faint">{costStat.label}</dt>
-          <dd className="tnum mt-0.5 text-[17px] font-semibold leading-6 text-ink">{costStat.value}</dd>
+          <dd className="tnum mt-0.5 text-body font-semibold leading-6 text-ink">{costStat.value}</dd>
           <p className="mt-0.5 text-2xs leading-4 text-faint">{costStat.helper}</p>
         </div>
       </dl>

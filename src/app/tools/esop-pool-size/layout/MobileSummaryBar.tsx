@@ -36,7 +36,7 @@ export function MobileSummaryBar({ recommended, current, selected }: MobileSumma
   return (
     <div className="fixed bottom-0 left-0 right-0 z-30 flex items-center justify-between gap-3 border-t border-strong bg-surface px-5 py-2 lg:hidden">
       <div className="min-w-0">
-        <p className="tnum text-[17px] font-semibold leading-6 text-ink">
+        <p className="tnum text-body font-semibold leading-6 text-ink">
           {formatPct(displayPoolPct(recommended.openingPoolPctOfFullyDiluted))}{' '}
           <span className="text-2xs font-normal text-faint">
             of <Abbr short="FD" long="fully diluted" />

@@ -14,14 +14,14 @@ export function Header() {
     <header className="sticky top-0 z-40 border-b border-border bg-surface">
       <div className="mx-auto flex max-w-page items-center justify-between gap-4 px-5 py-3">
         <Link href="/" className="flex items-center gap-2">
-          <span className="flex h-6 w-6 items-center justify-center rounded bg-accent text-[13px] font-bold text-white">
+          <span className="flex h-6 w-6 items-center justify-center rounded bg-accent text-eyebrow font-bold text-white">
             i
           </span>
-          <span className="text-[15px] font-semibold tracking-tight text-ink">incentiv</span>
+          <span className="text-small font-semibold tracking-tight text-ink">incentiv</span>
         </Link>
         <nav className="hidden items-center gap-5 md:flex">
           {NAV.map((item) => (
-            <a key={item} href="#" className="text-[13px] text-sub hover:text-ink">
+            <a key={item} href="#" className="text-eyebrow text-sub hover:text-ink">
               {item}
             </a>
           ))}

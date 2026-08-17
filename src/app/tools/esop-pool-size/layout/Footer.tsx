@@ -4,7 +4,7 @@ export function Footer() {
       <div className="mx-auto max-w-page px-5 py-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <span className="text-[15px] font-semibold tracking-tight text-ink">incentiv</span>
+            <span className="text-small font-semibold tracking-tight text-ink">incentiv</span>
             <p className="mt-2 max-w-md text-2xs leading-4 text-faint">
               Private-markets infrastructure for Indian companies. General information, not legal advice.
             </p>
@@ -18,7 +18,7 @@ export function Footer() {
             </a>
             <a
               href="#"
-              className="inline-flex items-center justify-center rounded border border-strong bg-raised px-3.5 py-2 text-[13px] font-medium text-ink hover:border-ink"
+              className="inline-flex items-center justify-center rounded border border-strong bg-raised px-3.5 py-2 text-eyebrow font-medium text-ink hover:border-ink"
             >
               Book a demo
             </a>

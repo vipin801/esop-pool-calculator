@@ -222,3 +222,63 @@ was not opened.
 - **`ScenarioStrip` still runs two live `calculateEsopPool` calls per render**, carried from [021].
   It is now inside a tab, so it only runs while the Overview tab is open — cheaper by accident, not
   by design, and it will cost again the moment the input rail grows slower fields.
+
+Raised in [024], the Incentiv token swap. No engine change; `src/lib/esop` was not opened. The
+seam is `src/app/globals.css`, aliasing onto the tokens vendored at `src/app/tokens/`; see
+`src/app/tokens/README.md` for what was and was not vendored.
+
+- **Nine values have no Incentiv token and keep what this tool already used.** Every one is marked
+  `UNMAPPED` at its declaration. `--warn`, `--warn-soft`, `--danger` and `--danger-soft` carry the
+  compliance `warn` and `blocked` rows and every field validation error; Incentiv ships no status
+  colour beyond `--positive`. `--accent-soft` and the chart's `accentFaint` are unmapped *and* have
+  no consumer. `--shadow-panel` is unmapped because Incentiv ships one shadow token and reserves it
+  for overlays while calling cards flat — mapping the lead modal's and dropping the result object's
+  would be a restyle, so both kept theirs. `SegmentedControl`'s `shadow-[0_1px_1px_rgba(...)]` is a
+  literal in neither system.
+- **The chart series set is the one real regression, and it was taken knowingly.** Six chart values
+  are unmapped: `accentSoft`, `accentFaint`, `neutral`, `neutralSoft`, `returned`, `warn`. Two of
+  them were chosen in [021] to sit apart from a *mint* accent and no longer do. `returned` (#3f6ea3)
+  against the Incentiv blue is the same hue family at 1.10:1 between the two marks in light, and
+  `PoolRunwayChart` plots them together; `accentSoft` is still a desaturated mint, so the refresh
+  bars no longer read as a soft version of the accent. Every mark still clears its 3:1 floor —
+  measured light 5.80/3.33/4.91/3.27/5.29/6.33, dark 4.87/4.29/7.08/3.42/8.20/8.83 — so this is a
+  legibility and coherence problem, not a contrast one. **Closing it means deriving a chart palette
+  around a blue accent, which is a design decision Incentiv does not answer.**
+- **Incentiv's dark accent fails its own spec, and this app carries a corrected value.** `#4d74ff`
+  on Incentiv's `--surface-2` is 4.23:1, under the 4.5:1 the design system's own spec demands of
+  both themes. `globals.css` lifts it 20% toward `--accent-hover` to `#547aff` — 4.50 on
+  `--surface-2`, 4.87 on `--surface`. It is the single value this app does not take as given, and
+  it should go back to a straight alias the day the design system fixes the palette.
+- **`--text-faint` and `--text-muted` are one colour now.** Both read `--ink-2`, because Incentiv's
+  `--ink-3` measures 3.06–3.92:1 across its own surfaces and fails the 4.5:1 text floor in both
+  themes — the same defect [023] fixed. The tool lost a tier of text hierarchy to keep AA. The PDF
+  lost the same tier for the same reason: `reportPdf.ts`'s `FAINT` and `SUB` are both `--ink-2`,
+  and `FAINT` carries the 7.5pt and 8pt reference and disclaimer lines.
+- **Incentiv has three neutral surfaces and this tool has five.** `--surface`/`--surface-raised` and
+  `--surface-muted`/`--surface-disabled` collapse onto one value each. In light nothing moved. In
+  dark, chart cards and stat tiles stopped sitting a step above the panel and are separated by their
+  hairline instead, which is Incentiv's own card anatomy.
+- **Tokens taken as pure indirection, with no value change:** `text-[13px]`/`[15px]`/`[17px]` are
+  now `text-eyebrow`/`text-small`/`text-body` reading `--t-eyebrow-size`/`--t-small-size`/
+  `--t-body-size`, and `--radius-DEFAULT`/`--radius-md` read `--r-button`/`--r-input`. All four were
+  already exactly the Incentiv value.
+- **Tokens deliberately not taken, each a value change rather than a substitution:** `text-2xs`
+  (11px, 82 uses) has nothing below Incentiv's 13px eyebrow to read; `text-[22px]`, `[26px]` and
+  `[38px]` sit between rungs; `rounded-lg` is 10px against `--r-card` 12px; `--container-page` is
+  1240px against `--content-max` 1200px; the page gutter is 20px against `--gutter` 24px.
+- **Incentiv tokens still with no consumer:** `--font-mono` (IBM Plex Mono — the system's signature
+  device, and the thing that would most make this tool read as Incentiv), `--ease`, `--dur-base`,
+  `--dur-reveal`, `--shadow-overlay`, `--hit-min`, `--border-w`, `--r-screenshot`, the hero/h2/h3/h4
+  and stat type sizes, `--tracking-display`, `--measure-body`, `--measure-hero`,
+  `--t-eyebrow-tracking`, and every semantic spacing token (`--space-section`, `--space-block`,
+  `--space-card`, `--space-stack`, `--margin-mobile`).
+- **One brand rule the swap does not carry.** Incentiv spends the accent once per viewport. This
+  tool spends it 22 times in markup plus a chart series. Honouring it is a restyle, not a token
+  swap, and was left alone deliberately.
+- **`incentiv-design-system/` is untracked and stays that way.** 2.5 MB, of which 1.9 MB is an HTML
+  export, and it was dropped into the repo root rather than committed. `eslint.config.mjs` ignores
+  it, because its own JSX reports two errors that are not this app's. The vendored copy under
+  `src/app/tokens/` is what the build reads.
+- **`src/app/page.module.css`, the create-next-app boilerplate at `/`, was not touched.** It carries
+  its own hard-coded palette and its own `prefers-color-scheme` block, and it is not this tool's
+  route.

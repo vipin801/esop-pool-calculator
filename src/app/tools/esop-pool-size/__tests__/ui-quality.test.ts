@@ -79,20 +79,56 @@ describe('copy budget', () => {
  * ------------------------------------------------------------------------- */
 
 const GLOBALS_CSS = readFileSync(join(APP_DIR, 'globals.css'), 'utf8');
+const INCENTIV_COLORS_CSS = readFileSync(join(APP_DIR, 'tokens', 'colors.css'), 'utf8');
 
-function tokensFor(selector: string): Record<string, string> {
-  const block = new RegExp(`${selector}\\s*\\{([\\s\\S]*?)\\n\\}`).exec(GLOBALS_CSS);
-  if (!block) throw new Error(`No ${selector} block in globals.css`);
+/**
+ * Since the Incentiv token swap the semantic layer is aliases — `--text` is
+ * `var(--ink)` — so reading a hex straight out of globals.css finds almost
+ * nothing. This resolves one level of indirection against the vendored design
+ * system, which is where the number now lives.
+ *
+ * What is asserted below is unchanged. Only where the value is looked up moved.
+ */
+function declarationsIn(css: string, selector: string, label: string): Record<string, string> {
+  const block = new RegExp(`${selector}\\s*\\{([\\s\\S]*?)\\n?\\}`).exec(css);
+  if (!block) throw new Error(`No ${selector} block in ${label}`);
 
   const out: Record<string, string> = {};
-  for (const match of (block[1] ?? '').matchAll(/(--[a-z-]+):\s*(#[0-9a-f]{6})/gi)) {
-    out[match[1]!] = match[2]!;
+  for (const match of (block[1] ?? '').matchAll(/(--[a-z0-9-]+)\s*:\s*([^;]+);/gi)) {
+    out[match[1]!] = match[2]!.trim();
   }
   return out;
 }
 
-const LIGHT_TOKENS = tokensFor(':root');
-const DARK_TOKENS = tokensFor('\\.dark');
+const RAW_LIGHT = declarationsIn(INCENTIV_COLORS_CSS, ':root', 'tokens/colors.css');
+const RAW_DARK = {
+  ...RAW_LIGHT,
+  ...declarationsIn(INCENTIV_COLORS_CSS, '\\[data-theme="dark"\\]', 'tokens/colors.css'),
+};
+const APP_LIGHT = declarationsIn(GLOBALS_CSS, ':root', 'globals.css');
+const APP_DARK = { ...APP_LIGHT, ...declarationsIn(GLOBALS_CSS, '\\.dark', 'globals.css') };
+
+/**
+ * `app` wins over `raw` where both declare a name — that is the `.dark`
+ * accent lift, and the five tokens (`--bg`, `--surface`, `--accent`,
+ * `--accent-hover`, `--accent-ink`) the app does not redeclare at all and
+ * therefore takes straight from the design system.
+ */
+function tokensFor(app: Record<string, string>, raw: Record<string, string>): Record<string, string> {
+  const merged = { ...raw, ...app };
+  const out: Record<string, string> = {};
+
+  for (const [name, value] of Object.entries(merged)) {
+    const alias = /^var\(\s*(--[a-z0-9-]+)\s*\)$/i.exec(value);
+    const resolved = alias ? (merged[alias[1]!] ?? '') : value;
+    if (/^#[0-9a-f]{6}$/i.test(resolved)) out[name] = resolved;
+  }
+
+  return out;
+}
+
+const LIGHT_TOKENS = tokensFor(APP_LIGHT, RAW_LIGHT);
+const DARK_TOKENS = tokensFor(APP_DARK, RAW_DARK);
 
 function channel(c: number): number {
   return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
@@ -162,6 +198,67 @@ function chartPairs(p: ChartPalette): readonly Pair[] {
     min: key === 'axis' ? TEXT_MIN : UI_MIN,
   }));
 }
+
+/** Every token the pair matrix below reads. A broken alias must fail here
+ *  rather than silently drop a pair and leave the matrix looking green. */
+const MATRIX_TOKENS = [
+  '--surface',
+  '--surface-raised',
+  '--surface-muted',
+  '--surface-disabled',
+  '--border-strong',
+  '--text',
+  '--text-muted',
+  '--text-faint',
+  '--text-disabled',
+  '--accent',
+  '--accent-hover',
+  '--accent-ink',
+  '--warn',
+  '--warn-soft',
+  '--danger',
+  '--danger-soft',
+] as const;
+
+describe.each([
+  ['light', LIGHT_TOKENS],
+  ['dark', DARK_TOKENS],
+])('the %s token layer resolves', (_theme, tokens) => {
+  it('resolves every token the contrast matrix reads to a six-digit hex', () => {
+    const unresolved = MATRIX_TOKENS.filter((name) => !/^#[0-9a-f]{6}$/i.test(tokens[name] ?? ''));
+    expect(unresolved).toEqual([]);
+  });
+});
+
+describe('the semantic layer reads the design system rather than copying it', () => {
+  // A future edit that inlines a hex here would still pass every contrast
+  // assertion while quietly severing the tool from the token source, which is
+  // the whole point of the seam.
+  const ALIASED: Record<string, string> = {
+    '--surface-raised': '--surface',
+    '--surface-muted': '--surface-2',
+    '--surface-disabled': '--surface-2',
+    '--border': '--line',
+    '--border-strong': '--ink-3',
+    '--text': '--ink',
+    '--text-muted': '--ink-2',
+    '--text-faint': '--ink-2',
+    '--text-disabled': '--ink-2',
+    '--ok': '--positive',
+    '--chart-grid': '--line',
+  };
+
+  it.each(Object.entries(ALIASED))('%s is var(%s)', (name, incentiv) => {
+    expect(APP_LIGHT[name]).toBe(`var(${incentiv})`);
+  });
+
+  it('takes the five colliding names straight from the design system', () => {
+    for (const name of ['--bg', '--surface', '--accent-hover', '--accent-ink']) {
+      expect(APP_LIGHT[name], `${name} must not be redeclared in globals.css`).toBeUndefined();
+      expect(RAW_LIGHT[name]).toMatch(/^#[0-9A-Fa-f]{6}$/);
+    }
+  });
+});
 
 describe.each([
   ['light', LIGHT_TOKENS, LIGHT_PALETTE],

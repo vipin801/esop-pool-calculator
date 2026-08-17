@@ -25,7 +25,7 @@ function OneCapTable({ table }: { readonly table: CapTable }) {
   return (
     <div className="rounded-lg border border-border bg-raised">
       <div className="flex items-center justify-between gap-2 px-3 pt-3">
-        <h3 className="text-[13px] font-semibold text-ink">{table.label}</h3>
+        <h3 className="text-eyebrow font-semibold text-ink">{table.label}</h3>
         <CopyCsvButton headers={HEADERS} rows={rows} />
       </div>
       <div className="overflow-auto px-3 pb-3">

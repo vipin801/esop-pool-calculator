@@ -38,6 +38,11 @@ export function ThemeProvider({ children }: { readonly children: ReactNode }) {
   useEffect(() => {
     const root = document.documentElement;
     root.classList.toggle('dark', theme === 'dark');
+    // The vendored Incentiv tokens flip on `[data-theme="dark"]`, which is the
+    // selector the design system ships. The `.dark` class stays because
+    // globals.css's own dark block and Tailwind's `dark:` variant read it, so
+    // the two selectors are set together and can never disagree.
+    root.dataset.theme = theme;
     root.style.colorScheme = theme;
     window.localStorage.setItem(STORAGE_KEY, theme);
   }, [theme]);

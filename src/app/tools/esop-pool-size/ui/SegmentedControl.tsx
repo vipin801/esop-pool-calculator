@@ -38,7 +38,7 @@ export function SegmentedControl<T extends string>({
             disabled={disabled}
             onClick={() => onChange(option.value)}
             className={`rounded px-2 font-medium transition-colors duration-150 disabled:cursor-not-allowed ${
-              size === 'sm' ? 'py-1 text-2xs' : 'py-1.5 text-[13px]'
+              size === 'sm' ? 'py-1 text-2xs' : 'py-1.5 text-eyebrow'
             } ${
               active
                 ? 'bg-raised text-ink shadow-[0_1px_1px_rgba(11,13,14,0.06)] ring-1 ring-strong'

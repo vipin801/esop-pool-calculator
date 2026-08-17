@@ -1,0 +1,28 @@
+:root{
+  --font-display:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --font-body:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace;
+
+  --t-hero-size:clamp(2.25rem,1.6rem + 2.6vw,3.5rem);
+  --t-hero-leading:1.08;
+  --t-h2-size:clamp(1.75rem,1.45rem + 1.3vw,2.5rem);
+  --t-h2-leading:1.15;
+  --t-h3-size:1.75rem;
+  --t-h3-leading:1.25;
+  --t-h4-size:1.25rem;
+  --t-h4-leading:1.4;
+  --t-body-size:1.0625rem;
+  --t-body-leading:1.6;
+  --t-small-size:0.9375rem;
+  --t-small-leading:1.5;
+  --t-eyebrow-size:0.8125rem;
+  --t-eyebrow-leading:1;
+  --t-eyebrow-tracking:0.08em;
+  --t-stat-size:3rem;
+  --t-stat-lead-size:4rem;
+  --t-stat-leading:1;
+
+  --tracking-display:-0.02em;
+  --measure-body:62ch;
+  --measure-hero:20ch;
+}

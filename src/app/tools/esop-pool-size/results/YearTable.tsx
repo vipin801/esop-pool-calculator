@@ -34,7 +34,7 @@ function SeriesTable({ series }: { readonly series: PoolPlanSeries }) {
   return (
     <div className="rounded-lg border border-border bg-raised">
       <div className="flex items-center justify-between gap-2 px-3 pt-3">
-        <h3 className="text-[13px] font-semibold text-ink">
+        <h3 className="text-eyebrow font-semibold text-ink">
           {series.label === 'recommended' ? 'Recommended pool' : 'Your current pool'}
         </h3>
         <CopyCsvButton headers={HEADERS} rows={rows} />

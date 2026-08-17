@@ -18,7 +18,7 @@ interface HowCalculatedProps {
 export function HowCalculated({ solver }: HowCalculatedProps) {
   return (
     <details className="rounded border border-border bg-muted">
-      <summary className="cursor-pointer px-4 py-2.5 text-[13px] font-semibold text-ink">
+      <summary className="cursor-pointer px-4 py-2.5 text-eyebrow font-semibold text-ink">
         How this is calculated
       </summary>
       <div className="border-t border-border px-4 py-3">

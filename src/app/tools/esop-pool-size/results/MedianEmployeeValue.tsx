@@ -10,7 +10,7 @@ export function MedianEmployeeValue({ value }: MedianEmployeeValueProps) {
   if (!value) {
     return (
       <section className="rounded-lg border border-border bg-raised p-4">
-        <h3 className="text-[13px] font-semibold text-ink">What a median employee holds at horizon</h3>
+        <h3 className="text-eyebrow font-semibold text-ink">What a median employee holds at horizon</h3>
         <p className="mt-2 text-2xs leading-4 text-faint">
           No hires in the seniority mix, so there is no median employee to value.
         </p>
@@ -20,26 +20,26 @@ export function MedianEmployeeValue({ value }: MedianEmployeeValueProps) {
 
   return (
     <section className="rounded-lg border border-border bg-raised p-4">
-      <h3 className="text-[13px] font-semibold text-ink">What a median employee holds at horizon</h3>
+      <h3 className="text-eyebrow font-semibold text-ink">What a median employee holds at horizon</h3>
       <p className="mt-1 text-2xs leading-4 text-faint">
         The {BAND_LABEL[value.band]} band, granted {formatShares(value.optionsGranted)} options in year 0.
       </p>
       <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div>
           <dt className="text-2xs text-faint">Vested at horizon</dt>
-          <dd className="tnum mt-1 text-[15px] font-semibold text-ink">{formatShares(value.vestedAtHorizon)}</dd>
+          <dd className="tnum mt-1 text-small font-semibold text-ink">{formatShares(value.vestedAtHorizon)}</dd>
         </div>
         <div>
           <dt className="text-2xs text-faint">Notional value</dt>
-          <dd className="tnum mt-1 text-[15px] font-semibold text-ink">{lakhCrore(value.notionalValueRupees)}</dd>
+          <dd className="tnum mt-1 text-small font-semibold text-ink">{lakhCrore(value.notionalValueRupees)}</dd>
         </div>
         <div>
           <dt className="text-2xs text-faint">Realisable, after tax</dt>
-          <dd className="tnum mt-1 text-[15px] font-semibold text-ink">{lakhCrore(value.realisableValueRupees)}</dd>
+          <dd className="tnum mt-1 text-small font-semibold text-ink">{lakhCrore(value.realisableValueRupees)}</dd>
         </div>
         <div>
           <dt className="text-2xs text-faint">Tax at exercise</dt>
-          <dd className="tnum mt-1 text-[15px] font-semibold text-ink">{lakhCrore(value.perquisiteTaxRupees)}</dd>
+          <dd className="tnum mt-1 text-small font-semibold text-ink">{lakhCrore(value.perquisiteTaxRupees)}</dd>
         </div>
       </div>
       <p className="mt-3 text-2xs leading-4 text-faint">

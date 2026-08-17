@@ -42,7 +42,7 @@ export function BenchmarkStrip({ benchmarkComparison }: BenchmarkStripProps) {
   return (
     <section className="rounded-lg border border-border bg-raised p-4">
       <div className="flex items-baseline justify-between gap-3">
-        <h3 className="text-[13px] font-semibold text-ink">Benchmark comparison</h3>
+        <h3 className="text-eyebrow font-semibold text-ink">Benchmark comparison</h3>
         <span className="tnum text-2xs font-semibold text-accent">You {formatPct(poolPctOfFullyDiluted)}</span>
       </div>
 

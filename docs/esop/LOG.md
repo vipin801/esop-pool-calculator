@@ -587,7 +587,7 @@ Decisions:
 - D15 was updated in place in PROJECT.md to describe the blurred-real-chart behaviour rather than the flat placeholder it replaced — the same decision refined in response to seeing it, not a new one.
 Open items: none new this entry. Everything carried in [028] (D10/D11's missing retrospective, `afterModelledRound`/`FundingRoundImpact.tsx` not covered by D13/D15, the still-unverified cap-table double-border fix, `esop-engine-spec-v2.md`/no `CLAUDE.md`) is unchanged.
 
-[030] 2026-08-18 | prompt P30 (see [028]'s numbering note) | branch main | commit <pending> (sha backfilled by the follow-up commit, also covered by this entry)
+[030] 2026-08-18 | prompt P30 (see [028]'s numbering note) | branch main | commit 4b0cded (sha backfilled by the follow-up commit, also covered by this entry)
 Changed: `/` on the standalone Vercel deployment served the unedited create-next-app boilerplate ("To get started, edit the page.tsx file") — never this tool's route (per [024]: `src/app/page.tsx`/`page.module.css` carry their own hard-coded palette and were deliberately not touched by the token swap), but reachable and confusing on a deployment with no other page mounted at `/` yet. `next.config.ts` gained a `redirects()` entry, `/` to `/tools/esop-pool-size`, `permanent: false` — a 307/308 rather than 308-permanent, deliberately, so it stays easy to point `/` at something else later without fighting a browser's cached permanent redirect. `src/app/page.tsx` itself is untouched; the boilerplate still exists, just unreachable via `/`.
 Tests: 1118 passed / 1118 total (unchanged — no test targets `/`), tsc pass, build pass.
 Decisions:

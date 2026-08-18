@@ -70,19 +70,44 @@ export function ScenarioStrip({ inputs, baseResult, onLoad }: ScenarioStripProps
                 <p className="tnum mt-2 text-[22px] font-semibold leading-7 text-ink">
                   {formatPct(result.recommendedPool.selected.displayPoolPctOfFullyDiluted)}
                 </p>
-                <dl className="mt-2 space-y-1">
-                  <div className="flex justify-between gap-2">
-                    <dt className="text-2xs text-faint">Current pool</dt>
-                    <dd className="tnum text-2xs text-sub">{currentPoolRunwayLabel(result.current)}</dd>
+                {key === 'base' ? (
+                  <>
+                    <dl className="mt-2 space-y-1">
+                      <div className="flex justify-between gap-2">
+                        <dt className="text-2xs text-faint">Current pool</dt>
+                        <dd className="tnum text-2xs text-sub">{currentPoolRunwayLabel(result.current)}</dd>
+                      </div>
+                      <div className="flex justify-between gap-2">
+                        <dt className="text-2xs text-faint">Founder cost</dt>
+                        <dd className="tnum text-2xs text-sub">{poolCostFor(result)}</dd>
+                      </div>
+                    </dl>
+                    <p className="mt-2 text-2xs leading-4 text-faint">{note}</p>
+                  </>
+                ) : (
+                  /**
+                   * Slow/Fast are perturbations of `minor`-tier assumptions
+                   * (hiring pace, growth, attrition, grant size — `lib/scenarios.ts`),
+                   * and `poolCostFor` reads the same invented
+                   * `founderOwnershipPctOfFullyDiluted` split D13 already locks
+                   * on the cap table. Naming the perturbation ("hiring at 70%,
+                   * growth halved...") or the founder cost it implies is the
+                   * same leak one door over, so the whole detail block is
+                   * opaque here — only the headline percentage and `Load`
+                   * stay free, same as Base. No label or figure renders,
+                   * matching `WhyThisNumber`/`CapTablePanel`'s locked columns.
+                   */
+                  <div className="mt-2 space-y-1.5 overflow-hidden" aria-hidden="true">
+                    <div className="h-3 w-full rounded bg-border blur-[1.5px]" />
+                    <div className="h-3 w-full rounded bg-border blur-[1.5px]" />
+                    <div className="h-3 w-4/5 rounded bg-border blur-[1.5px]" />
                   </div>
-                  <div className="flex justify-between gap-2">
-                    <dt className="text-2xs text-faint">Founder cost</dt>
-                    <dd className="tnum text-2xs text-sub">{poolCostFor(result)}</dd>
-                  </div>
-                </dl>
+                )}
               </>
             )}
-            <p className="mt-2 text-2xs leading-4 text-faint">{note}</p>
+            {result !== 'error' && key !== 'base' ? (
+              <span className="sr-only">Locked until you download the full report.</span>
+            ) : null}
           </div>
         ))}
       </div>

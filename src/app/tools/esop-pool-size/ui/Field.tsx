@@ -46,13 +46,13 @@ export function Field({
   const asGroup = group === true || htmlFor === undefined;
 
   const heading = asGroup ? (
-    <span id={labelId} className="text-eyebrow font-medium text-ink">
+    <span id={labelId} className="text-small font-medium text-ink">
       {label}
       {required ? <RequiredMarker /> : null}
       {estimate ? <EstimateMarker /> : null}
     </span>
   ) : (
-    <label htmlFor={htmlFor} className="text-eyebrow font-medium text-ink">
+    <label htmlFor={htmlFor} className="text-small font-medium text-ink">
       {label}
       {required ? <RequiredMarker /> : null}
       {estimate ? <EstimateMarker /> : null}
@@ -61,7 +61,7 @@ export function Field({
 
   return (
     <div
-      className="space-y-1.5"
+      className="space-y-2"
       role={asGroup ? 'group' : undefined}
       aria-labelledby={asGroup ? labelId : undefined}
     >
@@ -72,13 +72,13 @@ export function Field({
       {children}
       {helper || readout ? (
         <div className="flex items-baseline justify-between gap-3">
-          {helper ? <p className="text-2xs leading-4 text-faint">{helper}</p> : <span />}
-          {readout ? <p className="tnum whitespace-nowrap text-2xs font-medium text-sub">{readout}</p> : null}
+          {helper ? <p className="text-eyebrow leading-4 text-faint">{helper}</p> : <span />}
+          {readout ? <p className="tnum whitespace-nowrap text-eyebrow font-medium text-sub">{readout}</p> : null}
         </div>
       ) : null}
-      {note ? <p className="text-2xs leading-4 text-warn">{note}</p> : null}
+      {note ? <p className="text-eyebrow leading-4 text-warn">{note}</p> : null}
       {error ? (
-        <p role="alert" className="text-2xs leading-4 text-danger">
+        <p role="alert" className="text-eyebrow leading-4 text-danger">
           {error}
         </p>
       ) : null}

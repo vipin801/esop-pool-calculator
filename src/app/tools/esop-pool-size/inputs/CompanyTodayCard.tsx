@@ -2,12 +2,13 @@
 
 import { useState } from 'react';
 import { BANDS, type OpeningGrantCohortInput } from '@/lib/esop';
+import { CroreField } from '../ui/CroreField';
 import { Field } from '../ui/Field';
 import { NumberField } from '../ui/NumberField';
 import { SegmentedControl } from '../ui/SegmentedControl';
 import { SelectField } from '../ui/SelectField';
 import { SliderField } from '../ui/SliderField';
-import { lakhCrore, formatShares } from '../lib/format';
+import { formatShares } from '../lib/format';
 import { makeTouchHelpers } from '../lib/touched';
 import { makeVisibilityHelpers } from '../lib/visibility';
 import { InputCard, type CardProps } from './InputCard';
@@ -23,6 +24,11 @@ const GROWTH_PRESETS = [
 interface CompanyTodayCardProps extends CardProps {
   readonly openingGrants: readonly OpeningGrantCohortInput[];
   readonly setOpeningGrants: (grants: readonly OpeningGrantCohortInput[]) => void;
+  /** `Your model`'s "Grant economics" group reuses ScreenGrants for valuation
+   *  and its growth instead, so this card hides both there rather than
+   *  showing the same two fields through two different controls. Defaults
+   *  to false so every other caller is unaffected. */
+  readonly hideValuationAndGrowth?: boolean;
 }
 
 /**
@@ -39,6 +45,7 @@ export function CompanyTodayCard({
   touched,
   markTouched,
   requiredPaths,
+  hideValuationAndGrowth,
 }: CompanyTodayCardProps) {
   const { company, growth } = inputs;
   const [poolUnit, setPoolUnit] = useState<PoolUnit>('percent');
@@ -187,25 +194,24 @@ export function CompanyTodayCard({
         </Field>
       ) : null}
 
-      <Field
-        label="Post-money valuation" htmlFor="company-valuation"
-        required={isRequired('company.postMoneyValuation')}
-        readout={isBlank('company.postMoneyValuation') ? undefined : lakhCrore(company.postMoneyValuation)}
-        helper="Latest round price, or your best estimate."
-        note={isReportOnly('company.postMoneyValuation') ? "Doesn't change your pool under percent-of-equity grants — there's no valuation term in the formula. Still used for your report." : undefined}
-      >
-        <NumberField
-          id="company-valuation"
-          value={company.postMoneyValuation}
-          blank={isBlank('company.postMoneyValuation')}
-          onChange={withTouch('company.postMoneyValuation', (postMoneyValuation) => setGroup('company', { postMoneyValuation }))}
-          prefix="₹"
-          grouped
-          align="right"
-        />
-      </Field>
+      {hideValuationAndGrowth ? null : (
+        <Field
+          label="Post-money valuation" htmlFor="company-valuation"
+          required={isRequired('company.postMoneyValuation')}
+          helper="Latest round price, or your best estimate."
+          note={isReportOnly('company.postMoneyValuation') ? "Doesn't change your pool under percent-of-equity grants — there's no valuation term in the formula. Still used for your report." : undefined}
+        >
+          <CroreField
+            id="company-valuation"
+            value={company.postMoneyValuation}
+            blank={isBlank('company.postMoneyValuation')}
+            onChange={withTouch('company.postMoneyValuation', (postMoneyValuation) => setGroup('company', { postMoneyValuation }))}
+            align="right"
+          />
+        </Field>
+      )}
 
-      {isHidden('growth.valuationGrowthPctPerYear') ? null : (
+      {hideValuationAndGrowth || isHidden('growth.valuationGrowthPctPerYear') ? null : (
         <Field label="Valuation growth per year" htmlFor="growth-valuation" required={isRequired('growth.valuationGrowthPctPerYear')}>
           <SliderField
             id="growth-valuation"

@@ -6,7 +6,8 @@
  * Five keys are the Incentiv tokens, held here as literals for that reason
  * and annotated with the token each one is:
  *
- *   accent  = --accent  (the dark value is globals.css's lifted #547aff)
+ *   accent  = --accent  (2026-08-18 live-site retune; light is a11y-corrected,
+ *             dark is the measured value as-is — see globals.css)
  *   surface = --surface, which is also this app's --surface-raised
  *   text    = --ink
  *   axis    = --ink-2, the same token --text-faint reads
@@ -26,9 +27,9 @@
  *
  * Every series colour still clears 3:1 against the panel it is drawn on, in
  * both themes — WCAG 1.4.11, which covers a bar or a line because the mark
- * *is* the information. Measured after the swap: light 5.80/3.33/4.91/3.27/
- * 5.29/6.33, dark 4.87/4.29/7.08/3.42/8.20/8.83, axis 7.33 and 7.31 against
- * its 4.5 text floor.
+ * *is* the information. Re-measured against the 2026-08-18 retune: light
+ * 5.35/3.33/4.91/3.27/5.29/6.33, dark 6.59/4.40/7.27/3.51/8.41/9.06, axis 5.74
+ * and 6.58 against its 4.5 text floor.
  *
  * `grid` is the exception and is deliberately below 3:1. Grid lines are not
  * required to read the chart — the axis ticks carry the values and every
@@ -50,30 +51,30 @@ export interface ChartPalette {
 }
 
 export const LIGHT_PALETTE: ChartPalette = {
-  accent: '#1f4fff', // --accent
+  accent: '#0063e6', // --accent (2026-08-18 live-site retune, a11y-corrected — see globals.css)
   accentSoft: '#55998a', // UNMAPPED
   accentFaint: '#cfe6df', // UNMAPPED, and no consumer
   neutral: '#6b7273', // UNMAPPED
   neutralSoft: '#8b8f8f', // UNMAPPED
   returned: '#3f6ea3', // UNMAPPED
-  grid: '#e4e4e0', // --line
-  axis: '#55565a', // --ink-2
+  grid: '#e5e1dc', // --line
+  axis: '#666666', // --ink-2
   surface: '#ffffff', // --surface
-  text: '#111214', // --ink
+  text: '#1a1a1a', // --ink
   warn: '#8a5300', // UNMAPPED
 };
 
 export const DARK_PALETTE: ChartPalette = {
-  accent: '#547aff', // --accent, lifted in globals.css
+  accent: '#4d9aff', // --accent (2026-08-18 live-site retune — measured value, no correction needed)
   accentSoft: '#1f8a72', // UNMAPPED
   accentFaint: '#1b3c35', // UNMAPPED, and no consumer
   neutral: '#9aa3a4', // UNMAPPED
   neutralSoft: '#666c6d', // UNMAPPED
   returned: '#7fb3e0', // UNMAPPED
-  grid: '#26282c', // --line
-  axis: '#a2a4a8', // --ink-2
-  surface: '#141518', // --surface
-  text: '#f2f2ef', // --ink
+  grid: '#2e2e2e', // --line
+  axis: '#999999', // --ink-2
+  surface: '#121212', // --surface
+  text: '#f5f3f0', // --ink
   warn: '#e0ab5f', // UNMAPPED
 };
 

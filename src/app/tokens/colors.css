@@ -1,28 +1,36 @@
+/*
+ * 2026-08-18: re-sourced from the live incentiv.finance/tools/* pages
+ * (computed styles, both themes), not from the incentiv-design-system/
+ * export below — that bundle's own colours.css still gives light --accent
+ * as #1F4FFF and ships no serif/shape signal the live site actually uses.
+ * See src/app/tokens/README.md for the full measurement and every
+ * accessibility-driven departure from the raw measured value.
+ */
 :root{
-  --bg:#FAFAF8;
+  --bg:#FCFAF8;
   --surface:#FFFFFF;
-  --surface-2:#F3F3F0;
-  --ink:#111214;
-  --ink-2:#55565A;
-  --ink-3:#8A8B8F;
-  --line:#E4E4E0;
-  --accent:#1F4FFF;
-  --accent-hover:#173DCC;
+  --surface-2:#F4F0EC;
+  --ink:#1A1A1A;
+  --ink-2:#666666;
+  --ink-3:#858585;
+  --line:#E5E1DC;
+  --accent:#0063E6;
+  --accent-hover:#004DB3;
   --accent-ink:#FFFFFF;
-  --positive:#0E7A4A;
+  --positive:#047857;
   --shadow-overlay:0 8px 32px rgb(0 0 0 / 0.12);
 }
 [data-theme="dark"]{
-  --bg:#0C0D0F;
-  --surface:#141518;
-  --surface-2:#1B1D21;
-  --ink:#F2F2EF;
-  --ink-2:#A2A4A8;
-  --ink-3:#6E7075;
-  --line:#26282C;
-  --accent:#4D74FF;
-  --accent-hover:#7191FF;
-  --accent-ink:#0C0D0F;
-  --positive:#3DCB8A;
+  --bg:#0A0A0A;
+  --surface:#121212;
+  --surface-2:#232323;
+  --ink:#F5F3F0;
+  --ink-2:#999999;
+  --ink-3:#787878;
+  --line:#2E2E2E;
+  --accent:#4D9AFF;
+  --accent-hover:#7AB4FF;
+  --accent-ink:#0A0A0A;
+  --positive:#34D399;
   --shadow-overlay:0 8px 32px rgb(0 0 0 / 0.5);
 }

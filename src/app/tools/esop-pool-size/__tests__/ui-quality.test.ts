@@ -324,7 +324,14 @@ describe('focus is always visible', () => {
  * ------------------------------------------------------------------------- */
 
 describe('form controls are named', () => {
-  const INPUT_CARDS = sourceFiles(['.tsx']).filter((f) => f.rel.startsWith('/inputs/'));
+  // design.md §4/§6: the onboarding screens and `Your model`'s reused-card
+  // groups now carry field controls too (`hires-y`, the wizard's per-band
+  // grant editors), alongside the original `/inputs/` cards — so both
+  // directories are in scope for these a11y checks, not just the one the
+  // redesign's cards happened to start in.
+  const INPUT_CARDS = sourceFiles(['.tsx']).filter(
+    (f) => f.rel.startsWith('/inputs/') || f.rel.startsWith('/layout/onboarding/'),
+  );
 
   it('gives every Field either a control to point at or a group role', () => {
     const field = sourceFiles(['.tsx']).find((f) => f.rel === '/ui/Field.tsx')!;
@@ -360,7 +367,7 @@ describe('form controls are named', () => {
       'strike-discount',
       'company-granted-band',
       'company-granted-age',
-      'hires-y',
+      'onb-hires-y',
       'mix-',
       'grant-pct-',
       'grant-value-',
@@ -536,15 +543,23 @@ describe('the seniority mix', () => {
 describe('information architecture', () => {
   const panel = sourceFiles(['.tsx']).find((f) => f.rel === '/results/ResultsPanel.tsx')!;
 
-  it('puts every result section behind one tab strip', () => {
-    const ids = [...panel.text.matchAll(/id: '([a-z-]+)',\n\s+label:/g)].map((m) => m[1]);
-    expect(ids).toEqual(['overview', 'runway', 'hiring-cost', 'year-by-year', 'cap-table', 'compliance']);
+  it('puts every report section in one continuous scroll, not a tab strip', () => {
+    // design.md §5/Phase 7: the six-tab result object was retired for one
+    // scrolling report with anchor-nav sections. Asserting the new
+    // invariant directly, the way LOG [020] rewrote a test whose scope had
+    // been overtaken by a deliberate architecture change, rather than
+    // leaving an assertion that describes the tab strip this replaces.
+    expect(panel.text).not.toContain('<ResultTabs');
+    expect(panel.text).not.toContain("from './ResultTabs'");
+    for (const id of ['why-this-number', 'runway', 'hiring', 'benchmarks', 'year-by-year', 'cap-table', 'compliance']) {
+      expect(panel.text).toContain(`id="${id}"`);
+    }
   });
 
-  it('keeps the headline and both exhaustion lines out of the tabs', () => {
-    const [header = '', tabsRegion = ''] = panel.text.split('<ResultTabs');
+  it('keeps the headline above the scrolling report, not inside a section', () => {
+    const [header = '', sections = ''] = panel.text.split('<nav');
     expect(header).toContain('<Headline');
-    expect(tabsRegion).not.toContain('<Headline');
+    expect(sections).not.toContain('<Headline');
   });
 
   it('renders exactly one primary button in the whole route', () => {
@@ -556,25 +571,6 @@ describe('information architecture', () => {
     // second primary would share a viewport with the tool's own.
     expect(primaries).toEqual([]);
     expect(panel.text).toMatch(/<Button onClick=\{onDownload\}/);
-  });
-
-  it('implements the tabs with the ARIA tabs pattern', () => {
-    const tabs = sourceFiles(['.tsx']).find((f) => f.rel === '/results/ResultTabs.tsx')!;
-    for (const needle of [
-      'role="tablist"',
-      'role="tab"',
-      'role="tabpanel"',
-      'aria-selected',
-      'aria-controls',
-      'aria-labelledby',
-      "'ArrowRight'",
-      "'ArrowLeft'",
-      "'Home'",
-      "'End'",
-      'tabIndex={selected ? 0 : -1}',
-    ]) {
-      expect(tabs.text).toContain(needle);
-    }
   });
 
   it('traps focus in the lead modal and gives it back', () => {

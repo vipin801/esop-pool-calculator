@@ -23,9 +23,10 @@ import { tooltipStyle } from './tooltip';
 interface PoolRunwayChartProps {
   readonly recommended: PoolPlanSeries;
   readonly current: PoolPlanSeries;
+  readonly locked?: boolean;
 }
 
-export function PoolRunwayChart({ recommended, current }: PoolRunwayChartProps) {
+export function PoolRunwayChart({ recommended, current, locked = false }: PoolRunwayChartProps) {
   const { theme } = useTheme();
   const p = paletteFor(theme);
   const animate = !usePrefersReducedMotion();
@@ -70,6 +71,7 @@ export function PoolRunwayChart({ recommended, current }: PoolRunwayChartProps) 
         headers: ['Year', 'New hires', 'Refreshes', 'Returned', 'Available (current)', 'Available (recommended)'],
         rows: data.map((d) => [d.name, d.newHires, d.refresh, d.returned, d.availableCurrent, d.availableRecommended]),
       }}
+      locked={locked}
     >
       {exhaustionLabel ? (
         <p className="mt-1 inline-flex items-center gap-1.5 rounded border border-warn bg-warn-soft px-2 py-1 text-2xs font-medium text-warn">

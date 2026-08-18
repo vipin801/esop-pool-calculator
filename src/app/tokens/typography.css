@@ -1,5 +1,12 @@
 :root{
-  --font-display:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  /* 2026-08-18: the live site's own headings render 'DM Serif Display',
+     Georgia, serif — the design-system export above still says Inter. See
+     tokens/colors.css's note and tokens/README.md. This app has no consumer
+     of --font-display yet (globals.css no longer forces it back to Inter),
+     so the change is currently inert; Georgia is the fallback until the
+     day something actually asks for this token and the real face gets
+     loaded through next/font. */
+  --font-display:'DM Serif Display',Georgia,serif;
   --font-body:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   --font-mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace;
 

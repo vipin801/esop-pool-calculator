@@ -27,6 +27,17 @@ import { showsSeededDefault } from './visibility';
 
 export type TouchedPaths = ReadonlySet<string>;
 
+/**
+ * The onboarding "How many leadership / CXO hires?" question (`ScreenHiring`)
+ * has no `EsopInputs` path of its own — it is translated into
+ * `hiring.seniorityMix` by `lib/translateHiringPlan.ts` rather than stored
+ * verbatim, so a synthetic touched-path stands in for it. Named once, here,
+ * because `WhyThisNumber` needs to read the same path `ScreenHiring` writes
+ * to tell a founder-answered leadership count apart from the non-zero seeded
+ * default `hiring.seniorityMix.leadership` carries when nobody has.
+ */
+export const META_LEADERSHIP_HIRES = 'onboarding.hiring.leadershipHires';
+
 /** Has the founder entered this field. Distinct from "does its control render
  *  empty", which is the helper below: a `minor` field is untouched and still
  *  shows a value. */

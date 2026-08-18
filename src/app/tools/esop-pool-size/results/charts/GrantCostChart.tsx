@@ -12,6 +12,7 @@ import { tooltipStyle } from './tooltip';
 interface GrantCostChartProps {
   readonly years: readonly RollForwardYear[];
   readonly grantBasisKind: GrantBasisKind;
+  readonly locked?: boolean;
 }
 
 const TEN_LAKH = 1_000_000;
@@ -25,7 +26,7 @@ function valueText(value: unknown, name: unknown): string {
   return name === 'Valuation (₹ crore)' ? `₹${formatIndian(n, 1)} crore` : formatIndian(n);
 }
 
-export function GrantCostChart({ years, grantBasisKind }: GrantCostChartProps) {
+export function GrantCostChart({ years, grantBasisKind, locked = false }: GrantCostChartProps) {
   const { theme } = useTheme();
   const p = paletteFor(theme);
   const animate = !usePrefersReducedMotion();
@@ -45,6 +46,7 @@ export function GrantCostChart({ years, grantBasisKind }: GrantCostChartProps) {
         caption="Grants are a fixed percent of equity here, so a rupee grant cost does not apply."
         keys={[{ label: 'Valuation (₹ crore)', color: p.neutral }]}
         dataTable={{ headers: ['Year', 'Valuation (₹ crore)'], rows: data.map((d) => [d.name, d.valuationCr]) }}
+        locked={locked}
       >
         <div className="mt-2 h-[220px]">
           <ResponsiveContainer width="100%" height="100%">
@@ -88,6 +90,7 @@ export function GrantCostChart({ years, grantBasisKind }: GrantCostChartProps) {
         headers: ['Year', 'Valuation (₹ crore)', 'Options per ₹10,00,000'],
         rows: data.map((d) => [d.name, d.valuationCr, d.optionsPer10L ?? 'Not priced on this basis']),
       }}
+      locked={locked}
     >
       <div className="mt-2 h-[220px]">
         <ResponsiveContainer width="100%" height="100%">

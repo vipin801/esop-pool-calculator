@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export function Footer() {
   return (
     <footer className="mt-12 border-t border-border bg-muted">
@@ -10,6 +12,9 @@ export function Footer() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-4">
+            <Link href="/tools/esop-pool-size/how-it-works" className="text-2xs text-sub hover:text-ink">
+              How this works
+            </Link>
             <a href="#main" className="text-2xs text-sub hover:text-ink">
               ESOP Tax Calculator
             </a>

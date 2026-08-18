@@ -18,6 +18,9 @@ interface MobileSummaryBarProps {
   readonly recommended: PoolPlanSeries;
   readonly current: PoolPlanSeries;
   readonly selected: PoolSizing;
+  /** design.md §6.3: opens the same model editor as the desktop sticky
+   *  panel, in a full-screen sheet — the "View / edit model" action. */
+  readonly onOpenModel: () => void;
 }
 
 /**
@@ -38,27 +41,36 @@ interface MobileSummaryBarProps {
  * Left unstyled by `ui/Button.tsx` on purpose — `ui-quality.test.ts` asserts
  * exactly one primary-styled button in the whole route, the download button.
  */
-export function MobileSummaryBar({ recommended, current, selected }: MobileSummaryBarProps) {
+export function MobileSummaryBar({ recommended, current, selected, onOpenModel }: MobileSummaryBarProps) {
   return (
-    <button
-      type="button"
-      onClick={() => document.getElementById('result')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-      className="fixed bottom-0 left-0 right-0 z-30 flex w-full items-center justify-between gap-3 border-t border-strong bg-surface px-5 py-2 text-left lg:hidden"
-    >
-      <div className="min-w-0">
-        <p className="tnum text-body font-semibold leading-6 text-ink">
-          {formatPct(displayPoolPct(recommended.openingPoolPctOfFullyDiluted))}{' '}
-          <span className="text-2xs font-normal text-faint">
-            of <Abbr short="FD" long="fully diluted" />
-          </span>
+    <div className="fixed bottom-0 left-0 right-0 z-30 flex w-full items-stretch gap-2 border-t border-strong bg-surface px-3 py-2 lg:hidden">
+      <button
+        type="button"
+        onClick={() => document.getElementById('result')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+        className="flex min-w-0 flex-1 items-center justify-between gap-3 text-left"
+      >
+        <div className="min-w-0">
+          <p className="tnum text-body font-semibold leading-6 text-ink">
+            {formatPct(displayPoolPct(recommended.openingPoolPctOfFullyDiluted))}{' '}
+            <span className="text-2xs font-normal text-faint">
+              of <Abbr short="FD" long="fully diluted" />
+            </span>
+          </p>
+          <p className="truncate text-2xs leading-4 text-faint">
+            {GRANT_BASIS_SHORT[selected.grantBasisKind]} grants at {STRIKE_SHORT[selected.strikePolicyKind]}
+          </p>
+        </div>
+        <p className="tnum max-w-[45%] shrink-0 text-right text-2xs leading-4 text-sub">
+          Current pool: {currentPoolRunwayLabel(current)}
         </p>
-        <p className="truncate text-2xs leading-4 text-faint">
-          {GRANT_BASIS_SHORT[selected.grantBasisKind]} grants at {STRIKE_SHORT[selected.strikePolicyKind]}
-        </p>
-      </div>
-      <p className="tnum max-w-[45%] shrink-0 text-right text-2xs leading-4 text-sub">
-        Current pool: {currentPoolRunwayLabel(current)}
-      </p>
-    </button>
+      </button>
+      <button
+        type="button"
+        onClick={onOpenModel}
+        className="shrink-0 self-center rounded border border-strong px-2.5 py-1.5 text-2xs font-medium text-sub hover:text-ink"
+      >
+        Edit model
+      </button>
+    </div>
   );
 }

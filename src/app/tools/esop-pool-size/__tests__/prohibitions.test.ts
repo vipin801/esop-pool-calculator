@@ -222,8 +222,12 @@ describe('never outputs a pool percentage without the grant basis and strike pol
     expect(headline.text).toContain('STRIKE_LABEL[recommendedPool.selected.strikePolicyKind]');
   });
 
-  it('keeps the headline outside the tab strip, so no tab can show a percentage without them', () => {
-    const [header = ''] = panel.text.split('<ResultTabs');
+  it('keeps the headline above the scrolling report, so no section can show a percentage without them', () => {
+    // design.md §5/Phase 7: the tab strip that used to make this structural
+    // is retired for one continuous scroll — `Headline` sits above the
+    // anchor nav and every section, so the invariant now holds even more
+    // directly than "outside the tabs" did.
+    const [header = ''] = panel.text.split('<nav');
     expect(header).toContain('<Headline');
   });
 
@@ -254,8 +258,12 @@ describe('never lets a compliance row appear without the disclaimer', () => {
   });
 
   it('renders it on every row rather than once per panel', () => {
+    // design.md §5.5: rows moved into their own `CheckRow` component when
+    // compliance was regrouped by status, so the disclaimer is asserted
+    // inside that component's body rather than inline in a `checks.map`.
     const checks = sourceFiles(['.tsx']).find((f) => f.rel === '/results/ComplianceChecks.tsx')!;
-    const [, perRow = ''] = checks.text.split('checks.map');
-    expect(perRow).toContain('check.disclaimer');
+    const [, rowComponent = ''] = checks.text.split('function CheckRow');
+    expect(rowComponent).toContain('check.disclaimer');
+    expect(checks.text).toMatch(/rows\.map\(\(check\)/);
   });
 });

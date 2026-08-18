@@ -32,10 +32,10 @@ export function RadioGroup<T extends string>({
         <label
           key={option.value}
           htmlFor={`${uid}-${option.value}`}
-          className={`flex items-start gap-2 rounded border px-2.5 py-2 ${
+          className={`flex items-start gap-2 rounded px-2.5 py-2 ${
             disabled
-              ? 'cursor-not-allowed border-border bg-disabled'
-              : `cursor-pointer bg-raised ${value === option.value ? 'border-accent' : 'border-strong'}`
+              ? 'cursor-not-allowed border border-border bg-disabled'
+              : `cursor-pointer bg-raised ${value === option.value ? 'border-2 border-ink' : 'border border-strong'}`
           }`}
         >
           {/*
@@ -55,7 +55,7 @@ export function RadioGroup<T extends string>({
             onChange={() => onChange(option.value)}
             aria-labelledby={`${uid}-${option.value}-label`}
             aria-describedby={option.helper ? `${uid}-${option.value}-helper` : undefined}
-            className="mt-0.5 h-3.5 w-3.5 accent-accent"
+            className="mt-0.5 h-3.5 w-3.5 accent-ink"
           />
           <span>
             <span

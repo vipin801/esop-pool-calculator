@@ -9,10 +9,12 @@ interface SegmentedControlProps<T extends string> {
   readonly options: readonly SegmentedOption<T>[];
   readonly onChange: (value: T) => void;
   readonly ariaLabel: string;
-  readonly size?: 'sm' | 'md';
+  readonly size?: 'sm' | 'md' | 'lg';
   readonly disabled?: boolean;
 }
 
+/** 2026-08-18 restraint pass: the selected segment is a dark fill, not the
+ *  accent — `--accent` is reserved for focus rings only (PROJECT.md). */
 export function SegmentedControl<T extends string>({
   value,
   options,
@@ -25,7 +27,7 @@ export function SegmentedControl<T extends string>({
     <div
       role="radiogroup"
       aria-label={ariaLabel}
-      className={`grid gap-1 rounded border border-strong p-1 ${disabled ? 'bg-disabled' : 'bg-muted'}`}
+      className={`grid gap-1 rounded border border-strong ${size === 'lg' ? 'h-11 p-0.5' : 'p-1'} ${size === 'lg' ? 'max-sm:!grid-cols-3' : ''} ${disabled ? 'bg-disabled' : 'bg-muted'}`}
       style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}
     >
       {options.map((option) => {
@@ -39,12 +41,8 @@ export function SegmentedControl<T extends string>({
             disabled={disabled}
             onClick={() => onChange(option.value)}
             className={`rounded px-2 font-medium transition-colors duration-150 disabled:cursor-not-allowed ${
-              size === 'sm' ? 'py-1 text-2xs' : 'py-1.5 text-eyebrow'
-            } ${
-              active
-                ? 'bg-raised text-ink shadow-[0_1px_1px_rgba(11,13,14,0.06)] ring-1 ring-strong'
-                : 'text-sub hover:text-ink'
-            } ${disabled ? 'text-quiet' : ''}`}
+              size === 'lg' ? 'h-full text-eyebrow' : size === 'sm' ? 'py-1 text-2xs' : 'py-1.5 text-eyebrow'
+            } ${active ? 'bg-ink text-bg' : 'text-sub hover:text-ink'} ${disabled ? 'text-quiet' : ''}`}
           >
             {option.label}
           </button>

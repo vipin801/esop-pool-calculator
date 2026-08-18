@@ -1,7 +1,10 @@
+/* 2026-08-18: re-sourced from the live site, see tokens/colors.css's own
+   note. --r-card matches the Funding Simulator's card; --r-button/--r-input
+   match both live tools exactly (4px, no disagreement between them). */
 :root{
-  --r-card:12px;
-  --r-button:8px;
-  --r-input:8px;
+  --r-card:16px;
+  --r-button:4px;
+  --r-input:4px;
   --r-screenshot:12px;
   --border-w:1px;
   --hit-min:44px;

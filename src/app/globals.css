@@ -1,10 +1,15 @@
 @import 'tailwindcss';
 
 /*
- * The Incentiv design tokens, vendored from `incentiv-design-system/tokens/`
- * in the repo root. They are the source of the visual language; everything
- * below is an alias layer that points this tool's semantic names at them.
- * `src/app/tokens/README.md` records what was and was not vendored, and why.
+ * The Incentiv design tokens. `colors.css`/`shape.css`/`typography.css` were
+ * vendored verbatim from `incentiv-design-system/tokens/` for the original
+ * [024] swap; as of 2026-08-18 their colour, shape and display-font values
+ * instead come from the live incentiv.finance/tools/* pages (computed
+ * styles, both themes) — the bundle drifted from what actually shipped
+ * (still `#1F4FFF`/8px-radius/Inter-only there). `spacing.css`/`motion.css`
+ * are untouched, still verbatim. `src/app/tokens/README.md` has the full
+ * measurement, values, and every accessibility-driven departure from what
+ * was measured.
  */
 @import './tokens/colors.css';
 @import './tokens/typography.css';
@@ -31,31 +36,39 @@
  * lookup:
  *
  * `--text-faint` reads `--ink-2`, not `--ink-3`. Incentiv's third ink measures
- * 3.06–3.92:1 across its own surfaces in both themes, under the 4.5:1 floor
+ * 3.25–4.24:1 across its own surfaces in both themes, under the 4.5:1 floor
  * WCAG 1.4.3 sets for text this size — the same defect [023] measured and
- * fixed when `--text-faint` was #868f90 at 3.31:1. The cost is that `faint`
+ * fixed, re-verified against the 2026-08-18 values. The cost is that `faint`
  * and `sub` are one colour now; the alternative was shipping helper copy that
  * fails AA on every surface.
  *
  * `--border-strong` reads `--ink-3`, which clears the 3:1 floor a *control
- * boundary* carries (3.40 light, 3.68 dark) and is what Incentiv itself uses
- * as a border on card hover. `--line` is the divider family and stays there,
- * at 1.27:1, because WCAG exempts a decorative separator.
+ * boundary* carries (3.25 light, 3.56 dark, both against the tighter `muted`
+ * surface) and is what Incentiv itself uses as a border on card hover.
+ * `--line` is the divider family and stays there, well under 3:1, because
+ * WCAG exempts a decorative separator.
  *
  * Incentiv has three neutral surfaces and this tool has five, so two pairs
  * collapse: `--surface`/`--surface-raised` and `--surface-muted`/
  * `--surface-disabled`. In light nothing moves. In dark, chart cards and stat
  * tiles stop sitting a step above the panel and are separated by their
  * hairline instead — which is Incentiv's own card anatomy, `--surface` plus a
- * 1px `--line`, no shadow and no lift.
+ * 1px `--line` (now with `--shadow-panel` reinstated on top — see below).
  */
 :root {
-  /* Inter is self-hosted through `next/font` in layout.tsx, so the family
-     tokens point at that rather than at the design system's Google-hosted
-     stack. Same typeface, no network request — the substitution the design
-     system's own README asks for. */
-  --font-display: var(--font-inter), 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-body: var(--font-display);
+  /* Inter is self-hosted through `next/font` in layout.tsx, so `--font-body`
+     points at that rather than at the design system's Google-hosted stack.
+     Same typeface, no network request — the substitution the design
+     system's own README asks for.
+
+     `--font-display` is NOT redeclared here (2026-08-18, was until the live-
+     site retune): `tokens/typography.css` now carries the live site's own
+     'DM Serif Display', Georgia, serif directly, and nothing in this route
+     reads `--font-display` yet — grep finds zero `font-display`/`font-[...
+     --font-display]` consumers — so leaving it unaliased costs nothing
+     today and stops this file from quietly overwriting a real brand value
+     with Inter the moment a heading does ask for it. */
+  --font-body: var(--font-inter), 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
   --surface-raised: var(--surface);
   --surface-muted: var(--surface-2);
@@ -78,6 +91,14 @@
   --danger: #9e2222;
   --danger-soft: #fceded;
   --returned: #3f6ea3;
+
+  /* Real Incentiv data this time, not invented: the Funding Simulator's own
+     card (`rounded-2xl border border-border bg-card shadow-elegant`),
+     measured 2026-08-18. Feeds `--shadow-panel` below rather than living in
+     `tokens/colors.css`, because the panel/card-shadow role itself is still
+     this tool's own invention — Incentiv's `--shadow-overlay` is reserved for
+     a true overlay (the mobile sheet), a different elevation step. */
+  --panel-shadow: 0 4px 16px rgba(26, 26, 26, 0.06);
 }
 
 /*
@@ -95,13 +116,23 @@
   --danger-soft: #241313;
   --returned: #7fb3e0;
 
-  /* OUT OF SYSTEM, and the only Incentiv value this app does not take as
-     given. Incentiv's dark accent #4d74ff measures 4.23:1 on its own
-     `--surface-2`, under the 4.5:1 text floor its own spec demands of both
-     themes. This is that colour lifted 20% toward Incentiv's `--accent-hover`,
-     the smallest step that clears it: 4.50 on `--surface-2`, 4.87 on
-     `--surface`, and 5.19 for `--accent-ink` laid on top. */
-  --accent: #547aff;
+  /* No `--accent` override here any more. As of the 2026-08-18 live-site
+     retune the correction lives in `tokens/colors.css` itself for BOTH
+     themes, not as a globals.css afterthought on dark alone — see that
+     file's own header note. The measured light accent (hsl(214,100%,60%),
+     #338bff) is 3.35:1 against white as text/as a button label, under the
+     4.5:1 floor; `colors.css` carries #0063e6 (45% lightness, same hue)
+     instead, 5.35:1 against `--surface` and 4.72:1 against the tighter
+     `--surface-2`. The measured dark accent (#4d9aff, 65% lightness) already
+     clears 6.59:1 against `--surface` with dark `--accent-ink` on top, so it
+     needed no correction and is taken as measured. */
+
+  /* Dark half of `--panel-shadow` above, also measured off the Funding
+     Simulator's own card, in dark. Incentiv uses a light-tinted, low-opacity
+     shadow here rather than a black one — a black drop-shadow essentially
+     disappears against a near-black panel, so this reads as a faint rim-glow
+     instead. Kept exactly, not approximated. */
+  --panel-shadow: 0 4px 16px rgba(245, 243, 240, 0.06);
 }
 
 @theme inline {
@@ -150,19 +181,28 @@
   --text-small: var(--t-small-size);
   --text-body: var(--t-body-size);
 
-  /* 8px is exactly `--r-button`/`--r-input`, so it reads the token.
-     UNMAPPED: `rounded-lg` is 10px against Incentiv's 12px `--r-card`, and
-     `--container-page` is 1240px against its 1200px `--content-max`. Both are
-     value changes rather than substitutions and are left alone. */
+  /* `--radius-DEFAULT`/`--radius-md` read `--r-button`/`--r-input` (4px,
+     2026-08-18 — see tokens/shape.css). `--radius-lg` now reads `--r-card`
+     (16px) directly too: it used to hold a literal 10px, UNMAPPED against
+     Incentiv's then-12px `--r-card`, but 16px is the live Funding Simulator
+     card's own radius, so the gap is closed rather than carried. This is the
+     one radius `rounded-lg` in the route resolves to, everywhere it's used —
+     the result panel, `Your model`'s footer bar, the lead modal and the
+     mobile sheet all move together.
+
+     UNMAPPED, unrelated to shape: `--container-page` is 1240px against
+     Incentiv's 1200px `--content-max` — a layout width, not a token this
+     pass touches. */
   --radius-DEFAULT: var(--r-button);
   --radius-md: var(--r-input);
-  --radius-lg: 10px;
+  --radius-lg: var(--r-card);
 
-  /* UNMAPPED. Incentiv ships one shadow token and reserves it for overlays,
-     and calls cards flat. This is used on the result object and the lead
-     modal; mapping the modal alone and dropping the panel's would be a
-     restyle, so both keep what they had. */
-  --shadow-panel: 0 1px 2px rgba(11, 13, 14, 0.04), 0 8px 24px -12px rgba(11, 13, 14, 0.1);
+  /* Reads `--panel-shadow` above — real Incentiv data (the Funding
+     Simulator's own card shadow), not the "cards are flat" UNMAPPED gap this
+     used to be. Still used on the result object, `Your model`'s footer bar
+     and the lead modal; `--shadow-overlay` (the mobile sheet) is a separate,
+     stronger elevation step and is untouched. */
+  --shadow-panel: var(--panel-shadow);
 
   --container-page: 1240px;
 }

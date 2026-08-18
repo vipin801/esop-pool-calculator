@@ -7,12 +7,13 @@ import {
   type ValueBasis,
 } from '@/lib/esop';
 import { Field } from '../ui/Field';
+import { LakhField } from '../ui/LakhField';
 import { NumberField } from '../ui/NumberField';
+import { OptionalFieldToggle } from '../ui/OptionalFieldToggle';
 import { RadioGroup } from '../ui/RadioGroup';
 import { RequiredMarker } from '../ui/RequiredMarker';
 import { SegmentedControl } from '../ui/SegmentedControl';
 import { ToggleSwitch } from '../ui/ToggleSwitch';
-import { lakhCrore } from '../lib/format';
 import { BAND_LABEL } from '../lib/labels';
 import { makeTouchHelpers } from '../lib/touched';
 import { makeVisibilityHelpers } from '../lib/visibility';
@@ -24,7 +25,29 @@ const VALUE_BASIS_LABEL: Record<ValueBasis, string> = {
   fairValue: 'Fair value',
 };
 
-export function GrantPolicyCard({ inputs, setGroup, touched, markTouched, requiredPaths }: CardProps) {
+/**
+ * D11 (the "Simplify Optional ESOP Inputs" pass): buffer, comp inflation,
+ * value basis and refresh sit behind one `OptionalFieldToggle`, "Add grant
+ * policy" — none of the four is ever `drivesPool` (D9), so the engine's
+ * default for each keeps running, unmarked, until the founder opts in. Grant
+ * per hire and strike/theta are unaffected, gated only by their own
+ * `hide*` props exactly as before — they are not in the brief's list, and
+ * strike policy can be `drivesPool` in a configuration this card never
+ * actually renders it in (see `hideStrikeAndTheta` below), so it stays out
+ * of the toggle rather than risk hiding a required field behind a click.
+ */
+interface GrantPolicyCardProps extends CardProps {
+  /** `Your model`'s "Grant assumptions" group reuses this card but reads the
+   *  per-band values and the strike/theta controls from the onboarding
+   *  screens instead (ScreenGrants), so it hides both here rather than
+   *  showing the same field through two different controls. Defaults to
+   *  false so every other caller is unaffected. */
+  readonly hideGrantPerHire?: boolean;
+  readonly hideStrikeAndTheta?: boolean;
+  readonly index?: string;
+}
+
+export function GrantPolicyCard({ inputs, setGroup, touched, markTouched, requiredPaths, hideGrantPerHire, hideStrikeAndTheta, index = '04' }: GrantPolicyCardProps) {
   const { grantPolicy } = inputs;
   const { grantBasis, strikePolicy, valueBasis, refresh, fairValue } = grantPolicy;
   const isPercentOfEquity = grantBasis.kind === 'percentOfEquity';
@@ -41,8 +64,8 @@ export function GrantPolicyCard({ inputs, setGroup, touched, markTouched, requir
   }
 
   return (
-    <InputCard index="04" title="Grant policy">
-      {isPercentOfEquity ? (
+    <InputCard index={index} title="Grant policy">
+      {hideGrantPerHire ? null : isPercentOfEquity ? (
         <Field label="Grant per hire" estimate helper="Percent of fully diluted equity, per band.">
           <div className="grid grid-cols-2 gap-2">
             {BANDS.map((band) => (
@@ -74,10 +97,10 @@ export function GrantPolicyCard({ inputs, setGroup, touched, markTouched, requir
             {BANDS.map((band) => (
               <label key={band} className="space-y-1">
                 <span className="text-2xs text-faint">
-                  {BAND_LABEL[band]} · {lakhCrore(grantBasis.grantValueByBand[band])}
+                  {BAND_LABEL[band]}
                   {isRequired(`grantPolicy.grantBasis.grantValueByBand.${band}`) ? <RequiredMarker /> : null}
                 </span>
-                <NumberField
+                <LakhField
                   id={`grant-value-${band}`}
                   ariaLabel={`${BAND_LABEL[band]} grant, rupees at grant date`}
                   value={grantBasis.grantValueByBand[band]}
@@ -87,8 +110,6 @@ export function GrantPolicyCard({ inputs, setGroup, touched, markTouched, requir
                       grantBasis: { kind: 'rupeeValue', grantValueByBand: { ...grantBasis.grantValueByBand, [band]: value } },
                     }),
                   )}
-                  prefix="₹"
-                  grouped
                 />
               </label>
             ))}
@@ -96,109 +117,166 @@ export function GrantPolicyCard({ inputs, setGroup, touched, markTouched, requir
         </Field>
       )}
 
-      <Field
-        label="Buffer for unplanned senior hires" htmlFor="buffer"
-        estimate
-        required={isRequired('grantPolicy.bufferPct')}
-        helper="Headroom added on top of total consumption."
-      >
-        <NumberField
-          id="buffer"
-          value={grantPolicy.bufferPct}
-          blank={isBlank('grantPolicy.bufferPct')}
-          onChange={withTouch('grantPolicy.bufferPct', (bufferPct) => setGroup('grantPolicy', { bufferPct }))}
-          max={100}
-          suffix="%"
-        />
-      </Field>
-
-      {isHidden('grantPolicy.compInflationPctPerYear') ? null : (
-        <Field
-          label="Comp inflation" htmlFor="comp-inflation"
-          estimate
-          required={isRequired('grantPolicy.compInflationPctPerYear')}
-          helper="Applied to rupee grant values year on year."
-        >
-          <NumberField
-            id="comp-inflation"
-            value={grantPolicy.compInflationPctPerYear}
-            blank={isBlank('grantPolicy.compInflationPctPerYear')}
-            onChange={withTouch('grantPolicy.compInflationPctPerYear', (compInflationPctPerYear) => setGroup('grantPolicy', { compInflationPctPerYear }))}
-            max={100}
-            suffix="%"
-          />
-        </Field>
-      )}
-
-      {isHidden('grantPolicy.valueBasis') ? null : (
-        <Field
-          label="Value basis"
-          estimate
-          required={isRequired('grantPolicy.valueBasis')}
-          helper="Notional is the full share price. Realisable is the price less the strike. Fair value is in between."
-        >
-          <SegmentedControl<ValueBasis>
-            value={isBlank('grantPolicy.valueBasis') ? null : valueBasis}
-            onChange={withTouch('grantPolicy.valueBasis', (next) => setGroup('grantPolicy', { valueBasis: next }))}
-            ariaLabel="Value basis"
-            options={VALUE_BASES.map((basis) => ({ value: basis, label: VALUE_BASIS_LABEL[basis] }))}
-          />
-        </Field>
-      )}
-
-      <Field
-        label="Strike price policy"
-        required={isRequired('grantPolicy.strikePolicy.kind')}
-        helper="The exercise price every employee pays."
-        note={
-          isReportOnly('grantPolicy.strikePolicy.kind')
-            ? isPercentOfEquity
-              ? "Doesn't change your pool under percent-of-equity grants — still sets what employees pay to exercise."
-              : "Doesn't change your option count under this value basis — still sets what employees pay to exercise."
-            : undefined
-        }
-      >
-        <RadioGroup<StrikePolicyKind>
-          name="strikePolicy"
-          value={isBlank('grantPolicy.strikePolicy.kind') ? null : strikePolicy.kind}
-          onChange={withTouch('grantPolicy.strikePolicy.kind', setStrikeKind)}
-          ariaLabel="Strike price policy"
-          options={[
-            {
-              value: 'faceValue',
-              label: 'Face value',
-              helper: 'Lowest exercise price, so the least tax at exercise. Common pre-Series A.',
-            },
-            {
-              value: 'lastRoundPrice',
-              label: 'Last round price',
-              helper: 'The fair market value. Common from Series A onward.',
-            },
-            {
-              value: 'discountToFMV',
-              label: 'Discount to fair market value',
-              helper: 'A stated discount off the last round price.',
-            },
-          ]}
-        />
-        {strikePolicy.kind === 'discountToFMV' ? (
-          <div className="mt-2">
+      <OptionalFieldToggle label="Add grant policy">
+        <div className="space-y-4">
+          <Field
+            label="Buffer for unplanned senior hires" htmlFor="buffer"
+            estimate
+            required={isRequired('grantPolicy.bufferPct')}
+            helper="Headroom added on top of total consumption."
+          >
             <NumberField
-              id="strike-discount"
-              ariaLabel="Discount to fair market value, percent"
-              value={strikePolicy.discountPct}
-              blank={isBlank('grantPolicy.strikePolicy.discountPct')}
-              onChange={withTouch('grantPolicy.strikePolicy.discountPct', (discountPct) =>
-                setGroup('grantPolicy', { strikePolicy: { kind: 'discountToFMV', discountPct } }),
-              )}
+              id="buffer"
+              value={grantPolicy.bufferPct}
+              blank={isBlank('grantPolicy.bufferPct')}
+              onChange={withTouch('grantPolicy.bufferPct', (bufferPct) => setGroup('grantPolicy', { bufferPct }))}
               max={100}
               suffix="%"
             />
-          </div>
-        ) : null}
-      </Field>
+          </Field>
 
-      {isHidden('grantPolicy.fairValue.theta') ? null : (
+          {isHidden('grantPolicy.compInflationPctPerYear') ? null : (
+            <Field
+              label="Comp inflation" htmlFor="comp-inflation"
+              estimate
+              required={isRequired('grantPolicy.compInflationPctPerYear')}
+              helper="Applied to rupee grant values year on year."
+            >
+              <NumberField
+                id="comp-inflation"
+                value={grantPolicy.compInflationPctPerYear}
+                blank={isBlank('grantPolicy.compInflationPctPerYear')}
+                onChange={withTouch('grantPolicy.compInflationPctPerYear', (compInflationPctPerYear) => setGroup('grantPolicy', { compInflationPctPerYear }))}
+                max={100}
+                suffix="%"
+              />
+            </Field>
+          )}
+
+          {isHidden('grantPolicy.valueBasis') ? null : (
+            <Field
+              label="Value basis"
+              estimate
+              required={isRequired('grantPolicy.valueBasis')}
+              helper="Notional is the full share price. Realisable is the price less the strike. Fair value is in between."
+            >
+              <SegmentedControl<ValueBasis>
+                value={isBlank('grantPolicy.valueBasis') ? null : valueBasis}
+                onChange={withTouch('grantPolicy.valueBasis', (next) => setGroup('grantPolicy', { valueBasis: next }))}
+                ariaLabel="Value basis"
+                options={VALUE_BASES.map((basis) => ({ value: basis, label: VALUE_BASIS_LABEL[basis] }))}
+              />
+            </Field>
+          )}
+
+          <Field label="Refresh grants" estimate required={isRequired('grantPolicy.refresh.enabled')} helper="A second grant to employees already on the plan, some years in.">
+            <ToggleSwitch
+              id="refresh-enabled"
+              checked={isBlank('grantPolicy.refresh.enabled') ? null : refreshOn}
+              onChange={withTouch('grantPolicy.refresh.enabled', (checked) =>
+                setGroup('grantPolicy', {
+                  refresh: checked
+                    ? { ...refresh, ratePct: DEFAULTS.refreshRatePct.value, sizePct: DEFAULTS.refreshSizePct.value }
+                    : { ...refresh, ratePct: 0 },
+                }),
+              )}
+              label="Refresh employees already on the plan"
+            />
+          </Field>
+
+          {refreshOn ? (
+            <>
+              <Field
+                label="Refresh: employees refreshed" htmlFor="refresh-rate"
+                estimate
+                required={isRequired('grantPolicy.refresh.ratePct')}
+                helper="Share of eligible employees refreshed each year."
+              >
+                <NumberField
+                  id="refresh-rate"
+                  value={refresh.ratePct}
+                  blank={isBlank('grantPolicy.refresh.ratePct')}
+                  onChange={withTouch('grantPolicy.refresh.ratePct', (ratePct) => setGroup('grantPolicy', { refresh: { ...refresh, ratePct } }))}
+                  max={100}
+                  suffix="%"
+                />
+              </Field>
+
+              <Field
+                label="Refresh: size of original grant" htmlFor="refresh-size"
+                estimate
+                required={isRequired('grantPolicy.refresh.sizePct')}
+                helper="Refresh size as a percentage of an initial grant."
+              >
+                <NumberField
+                  id="refresh-size"
+                  value={refresh.sizePct}
+                  blank={isBlank('grantPolicy.refresh.sizePct')}
+                  onChange={withTouch('grantPolicy.refresh.sizePct', (sizePct) => setGroup('grantPolicy', { refresh: { ...refresh, sizePct } }))}
+                  max={200}
+                  suffix="%"
+                />
+              </Field>
+            </>
+          ) : null}
+        </div>
+      </OptionalFieldToggle>
+
+      {hideStrikeAndTheta ? null : (
+        <Field
+          label="Strike price policy"
+          required={isRequired('grantPolicy.strikePolicy.kind')}
+          helper="The exercise price every employee pays."
+          note={
+            isReportOnly('grantPolicy.strikePolicy.kind')
+              ? isPercentOfEquity
+                ? "Doesn't change your pool under percent-of-equity grants — still sets what employees pay to exercise."
+                : "Doesn't change your option count under this value basis — still sets what employees pay to exercise."
+              : undefined
+          }
+        >
+          <RadioGroup<StrikePolicyKind>
+            name="strikePolicy"
+            value={isBlank('grantPolicy.strikePolicy.kind') ? null : strikePolicy.kind}
+            onChange={withTouch('grantPolicy.strikePolicy.kind', setStrikeKind)}
+            ariaLabel="Strike price policy"
+            options={[
+              {
+                value: 'faceValue',
+                label: 'Face value',
+                helper: 'Lowest exercise price, so the least tax at exercise. Common pre-Series A.',
+              },
+              {
+                value: 'lastRoundPrice',
+                label: 'Last round price',
+                helper: 'The fair market value. Common from Series A onward.',
+              },
+              {
+                value: 'discountToFMV',
+                label: 'Discount to fair market value',
+                helper: 'A stated discount off the last round price.',
+              },
+            ]}
+          />
+          {strikePolicy.kind === 'discountToFMV' ? (
+            <div className="mt-2">
+              <NumberField
+                id="strike-discount"
+                ariaLabel="Discount to fair market value, percent"
+                value={strikePolicy.discountPct}
+                blank={isBlank('grantPolicy.strikePolicy.discountPct')}
+                onChange={withTouch('grantPolicy.strikePolicy.discountPct', (discountPct) =>
+                  setGroup('grantPolicy', { strikePolicy: { kind: 'discountToFMV', discountPct } }),
+                )}
+                max={100}
+                suffix="%"
+              />
+            </div>
+          ) : null}
+        </Field>
+      )}
+
+      {hideStrikeAndTheta || isHidden('grantPolicy.fairValue.theta') ? null : (
         <Field
           label="Theta" htmlFor="fair-value-theta"
           estimate
@@ -215,57 +293,6 @@ export function GrantPolicyCard({ inputs, setGroup, touched, markTouched, requir
           />
         </Field>
       )}
-
-      <Field label="Refresh grants" estimate required={isRequired('grantPolicy.refresh.enabled')} helper="A second grant to employees already on the plan, some years in.">
-        <ToggleSwitch
-          id="refresh-enabled"
-          checked={isBlank('grantPolicy.refresh.enabled') ? null : refreshOn}
-          onChange={withTouch('grantPolicy.refresh.enabled', (checked) =>
-            setGroup('grantPolicy', {
-              refresh: checked
-                ? { ...refresh, ratePct: DEFAULTS.refreshRatePct.value, sizePct: DEFAULTS.refreshSizePct.value }
-                : { ...refresh, ratePct: 0 },
-            }),
-          )}
-          label="Refresh employees already on the plan"
-        />
-      </Field>
-
-      {refreshOn ? (
-        <>
-          <Field
-            label="Refresh: employees refreshed" htmlFor="refresh-rate"
-            estimate
-            required={isRequired('grantPolicy.refresh.ratePct')}
-            helper="Share of eligible employees refreshed each year."
-          >
-            <NumberField
-              id="refresh-rate"
-              value={refresh.ratePct}
-              blank={isBlank('grantPolicy.refresh.ratePct')}
-              onChange={withTouch('grantPolicy.refresh.ratePct', (ratePct) => setGroup('grantPolicy', { refresh: { ...refresh, ratePct } }))}
-              max={100}
-              suffix="%"
-            />
-          </Field>
-
-          <Field
-            label="Refresh: size of original grant" htmlFor="refresh-size"
-            estimate
-            required={isRequired('grantPolicy.refresh.sizePct')}
-            helper="Refresh size as a percentage of an initial grant."
-          >
-            <NumberField
-              id="refresh-size"
-              value={refresh.sizePct}
-              blank={isBlank('grantPolicy.refresh.sizePct')}
-              onChange={withTouch('grantPolicy.refresh.sizePct', (sizePct) => setGroup('grantPolicy', { refresh: { ...refresh, sizePct } }))}
-              max={200}
-              suffix="%"
-            />
-          </Field>
-        </>
-      ) : null}
     </InputCard>
   );
 }

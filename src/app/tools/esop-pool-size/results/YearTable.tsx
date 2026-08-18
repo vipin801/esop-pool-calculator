@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { PoolPlanSeries, RollForwardYear } from '@/lib/esop';
 import { CopyCsvButton } from './CopyCsvButton';
 import { crores, formatIndian, formatPct, formatShares, formatSignedShares } from '../lib/format';
@@ -14,7 +15,29 @@ const HEADERS = [
   'Pool, % of fully diluted',
 ];
 
-function rowsFor(years: readonly RollForwardYear[]): (string | number)[][] {
+function poolPct(y: RollForwardYear): number {
+  return y.fullyDilutedShares > 0 ? (y.closingAvailable / y.fullyDilutedShares) * 100 : 0;
+}
+
+/**
+ * design.md §7: the underlying value is never clamped — `poolPct` above is
+ * the same unrounded figure CSV export reads. Only the *display* changes
+ * once the pool has gone negative: "Exhausted" reads plainly, the raw
+ * percentage (which can run to -156% and further) sits behind a `title`
+ * rather than on the page, matching the master brief's "founder-facing
+ * status: Exhausted, detailed value in a tooltip" instruction.
+ */
+function poolPctCell(y: RollForwardYear): ReactNode {
+  const pct = poolPct(y);
+  if (y.closingAvailable >= 0) return formatPct(pct, 2);
+  return (
+    <span title={`${formatPct(pct, 2)} of fully diluted`} className="cursor-help font-medium text-danger">
+      Exhausted
+    </span>
+  );
+}
+
+function csvRowsFor(years: readonly RollForwardYear[]): (string | number)[][] {
   return years.map((y) => [
     `Y${y.year + 1}`,
     crores(y.valuation, 1),
@@ -24,12 +47,27 @@ function rowsFor(years: readonly RollForwardYear[]): (string | number)[][] {
     formatShares(y.refreshGrants),
     formatShares(y.returnedToPool),
     formatSignedShares(y.closingAvailable),
-    formatPct(y.fullyDilutedShares > 0 ? (y.closingAvailable / y.fullyDilutedShares) * 100 : 0, 2),
+    formatPct(poolPct(y), 2),
+  ]);
+}
+
+function displayRowsFor(years: readonly RollForwardYear[]): ReactNode[][] {
+  return years.map((y) => [
+    `Y${y.year + 1}`,
+    crores(y.valuation, 1),
+    formatIndian(y.pricePerShare, 2),
+    formatShares(y.hires),
+    formatShares(y.newHireGrants),
+    formatShares(y.refreshGrants),
+    formatShares(y.returnedToPool),
+    formatSignedShares(y.closingAvailable),
+    poolPctCell(y),
   ]);
 }
 
 function SeriesTable({ series }: { readonly series: PoolPlanSeries }) {
-  const rows = rowsFor(series.years);
+  const csvRows = csvRowsFor(series.years);
+  const displayRows = displayRowsFor(series.years);
 
   return (
     <div className="rounded-lg border border-border bg-raised">
@@ -37,7 +75,7 @@ function SeriesTable({ series }: { readonly series: PoolPlanSeries }) {
         <h3 className="text-eyebrow font-semibold text-ink">
           {series.label === 'recommended' ? 'Recommended pool' : 'Your current pool'}
         </h3>
-        <CopyCsvButton headers={HEADERS} rows={rows} />
+        <CopyCsvButton headers={HEADERS} rows={csvRows} />
       </div>
       <p className="px-3 pb-2 text-2xs leading-4 text-faint">{series.description}</p>
       <div className="overflow-auto px-3 pb-3">
@@ -58,7 +96,7 @@ function SeriesTable({ series }: { readonly series: PoolPlanSeries }) {
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, ri) => (
+            {displayRows.map((row, ri) => (
               <tr key={ri} className="border-b border-border last:border-0">
                 {row.map((cell, ci) => (
                   <td

@@ -44,14 +44,14 @@ export function ToggleSwitch({
             : unanswered
               ? 'border-dashed border-strong bg-muted'
               : checked
-                ? 'border-accent bg-accent'
+                ? 'border-ink bg-ink'
                 : 'border-strong bg-muted'
         }`}
       >
         <span
-          className={`absolute top-0.5 h-3.5 w-3.5 rounded-full transition-transform duration-150 ${
-            disabled ? 'bg-quiet' : unanswered ? 'bg-faint' : checked ? 'bg-accent-ink' : 'bg-strong'
-          } ${unanswered ? 'translate-x-[9px]' : checked ? 'translate-x-[18px]' : 'translate-x-0.5'}`}
+          className={`absolute left-0.5 top-0.5 h-3.5 w-3.5 rounded-full transition-transform duration-150 ${
+            disabled ? 'bg-quiet' : unanswered ? 'bg-faint' : checked ? 'bg-bg' : 'bg-strong'
+          } ${unanswered ? 'translate-x-2' : checked ? 'translate-x-4' : 'translate-x-0'}`}
         />
       </button>
       <span className={`text-eyebrow ${disabled ? 'text-quiet' : 'text-sub'}`}>{label}</span>

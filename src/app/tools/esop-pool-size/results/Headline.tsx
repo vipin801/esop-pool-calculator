@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react';
-import type { EsopResult, GrantBasisKind, StrikePolicyKind } from '@/lib/esop';
+import type { EsopInputs, EsopResult, GrantBasisKind, StrikePolicyKind } from '@/lib/esop';
 import { Abbr } from '../ui/Abbr';
+import { Button } from '../ui/Button';
 import { displayPoolPct, formatPct, formatShares, lakhCrore, monthLabel } from '../lib/format';
+import { heroStateFor, isAboveAdvisoryCeiling, likelyDrivers } from '../lib/heroState';
 
 const GRANT_BASIS_LABEL: Record<GrantBasisKind, string> = {
   percentOfEquity: 'percent-of-equity',
@@ -15,26 +17,35 @@ const STRIKE_LABEL: Record<StrikePolicyKind, string> = {
 };
 
 interface HeadlineProps {
+  readonly inputs: EsopInputs;
   readonly result: EsopResult;
   /** The page's one primary action, on the headline's own row to keep the
    * pinned zone short enough that the tab panel below it fits a 900px screen. */
   readonly action?: ReactNode;
+  /** design.md §5.1's extreme state: opens `Your model`, scrolled/focused to
+   *  the assumptions that produced this figure. */
+  readonly onReviewAssumptions?: () => void;
 }
 
 /**
- * The zone that never moves.
- *
- * The pool percentage, the option count behind it, the grant basis and strike
- * policy that produced it, and both exhaustion lines sit above the tab strip
- * and stay there whichever tab is open. The grant basis and strike policy
- * being here rather than in a tab is what satisfies the PROJECT.md
- * prohibition structurally: no tab can show a pool percentage without them,
- * because they are never off screen.
+ * design.md §5.1. Four states over the same underlying figures, not four
+ * different calculations: `normal` (today's layout), `adequate` (the
+ * existing pool already covers the plan), `extreme` (the solver did not
+ * converge — the spec's own signal for "no practical answer in range", not
+ * a separate ">100%" check the engine does not surface), plus a soft-warning
+ * callout on `normal` when the answer is unusually far above the advisory
+ * ceiling without actually failing to converge.
  */
-export function Headline({ result, action }: HeadlineProps) {
+export function Headline({ inputs, result, action, onReviewAssumptions }: HeadlineProps) {
+  const state = heroStateFor(result);
+  if (state === 'extreme') {
+    return <ExtremeHeadline inputs={inputs} result={result} action={action} onReviewAssumptions={onReviewAssumptions} />;
+  }
+
   const { recommendedPool, recommended, current, poolCostToFounders } = result;
   const hasExistingPool = current.openingPoolOptions > 0;
-  const topUpLabel = hasExistingPool ? 'Top-up needed' : 'Pool to create';
+  const topUpLabel = state === 'adequate' ? 'Your pool already covers this plan' : hasExistingPool ? 'Top-up needed' : 'Pool to create';
+  const softWarning = state === 'normal' && isAboveAdvisoryCeiling(result);
 
   const totalPlannedHires = recommended.years.reduce((sum, y) => sum + y.hires, 0);
 
@@ -92,6 +103,13 @@ export function Headline({ result, action }: HeadlineProps) {
         {STRIKE_LABEL[recommendedPool.selected.strikePolicyKind]}.
       </p>
 
+      {softWarning ? (
+        <p className="rounded border border-warn bg-warn-soft px-3 py-2 text-2xs leading-4 text-warn">
+          Well above the advisory benchmark for your stage. Not an error — a converged answer is never
+          wrong, but worth a second look.
+        </p>
+      ) : null}
+
       <div className="space-y-1 rounded border border-border bg-muted px-3 py-2">
         <p className="tnum text-eyebrow leading-5 text-ink">
           <span className="font-semibold">Recommended pool</span> — {recommendedRunway}
@@ -107,15 +125,17 @@ export function Headline({ result, action }: HeadlineProps) {
         <div className="bg-raised px-3 py-2">
           <dt className="text-2xs text-faint">{topUpLabel}</dt>
           <dd className="tnum mt-0.5 text-body font-semibold leading-6 text-ink">
-            {formatShares(recommendedPool.selected.poolOptions)}
+            {formatShares(recommendedPool.selected.poolOptions)}{' '}
             <span className="ml-1.5 text-2xs font-normal text-faint">
               {formatPct(recommendedPool.selected.displayPoolPctOfFullyDiluted)} of <Abbr short="FD" long="fully diluted" />
             </span>
           </dd>
           <p className="mt-0.5 text-2xs leading-4 text-faint">
-            {hasExistingPool
-              ? `On top of the ${formatShares(current.openingPoolOptions)} you already hold.`
-              : 'You hold no unallocated pool today.'}
+            {state === 'adequate'
+              ? `Your ${formatShares(current.openingPoolOptions)} already covers the plan — nothing new to reserve.`
+              : hasExistingPool
+                ? `On top of the ${formatShares(current.openingPoolOptions)} you already hold.`
+                : 'You hold no unallocated pool today.'}
           </p>
         </div>
         <div className="bg-raised px-3 py-2">
@@ -131,6 +151,64 @@ export function Headline({ result, action }: HeadlineProps) {
           <p className="mt-0.5 text-2xs leading-4 text-faint">{costStat.helper}</p>
         </div>
       </dl>
+    </div>
+  );
+}
+
+/**
+ * design.md §5.1/master brief §19. The engine's own last-stable iterate is
+ * never hidden — it's the number shown, labelled as a mathematical stopping
+ * point rather than a practical recommendation, per the brief's own required
+ * distinction. No clamping, no invented ceiling: `solver.converged === false`
+ * is the one signal this state reads.
+ */
+function ExtremeHeadline({
+  inputs,
+  result,
+  action,
+  onReviewAssumptions,
+}: {
+  readonly inputs: EsopInputs;
+  readonly result: EsopResult;
+  readonly action?: ReactNode;
+  readonly onReviewAssumptions?: () => void;
+}) {
+  const drivers = likelyDrivers(inputs);
+
+  return (
+    <div className="space-y-3 rounded-lg border border-danger bg-danger-soft p-3">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <p className="text-body font-semibold leading-6 text-ink">
+          Your assumptions don&apos;t produce a practical ESOP pool
+        </p>
+        {action}
+      </div>
+      <p className="text-eyebrow leading-5 text-sub">
+        The current model needs more equity than is practical for an ESOP pool. Nothing was clamped;
+        this is exactly where the model stopped.
+      </p>
+      <div className="rounded border border-border bg-raised px-3 py-2">
+        <p className="text-2xs text-faint">Model requirement (mathematical output, not a recommendation)</p>
+        <p className="tnum text-body font-semibold leading-6 text-danger">
+          &gt; {formatPct(displayPoolPct(result.recommended.openingPoolPctOfFullyDiluted))} of fully diluted
+        </p>
+      </div>
+      {drivers.length > 0 ? (
+        <div>
+          <p className="text-2xs font-medium text-faint">Likely drivers</p>
+          <ul className="mt-1 list-inside list-disc text-2xs leading-5 text-sub">
+            {drivers.map((driver) => (
+              <li key={driver}>{driver}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+      <p className="text-2xs leading-4 text-sub">Review your model before using this result.</p>
+      {onReviewAssumptions ? (
+        <Button size="sm" variant="secondary" onClick={onReviewAssumptions}>
+          Review assumptions
+        </Button>
+      ) : null}
     </div>
   );
 }

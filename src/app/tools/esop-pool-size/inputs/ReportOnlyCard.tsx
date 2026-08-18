@@ -16,13 +16,17 @@ import type { CardProps } from './InputCard';
  * It still feeds the compliance checklist and the ESOP expense estimate in
  * the report, which is why it exists at all rather than being dropped.
  */
-export function ReportOnlyCard({ inputs, setGroup, touched, markTouched, requiredPaths }: CardProps) {
+interface ReportOnlyCardProps extends CardProps {
+  readonly index?: string;
+}
+
+export function ReportOnlyCard({ inputs, setGroup, touched, markTouched, requiredPaths, index = '07' }: ReportOnlyCardProps) {
   const { company, compliance, employeeValue, exercise } = inputs;
   const authorisedRupees = company.authorisedCapitalShares * company.faceValuePerShare;
   const { isBlank, isRequired, withTouch } = makeTouchHelpers(touched, markTouched, requiredPaths, inputs);
 
   return (
-    <CollapsibleSection index="07" title="Doesn't change your pool, changes your report">
+    <CollapsibleSection index={index} title="Doesn't change your pool, changes your report">
       <Field
         label="Founder ownership" htmlFor="company-founder-ownership"
         estimate

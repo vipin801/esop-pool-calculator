@@ -76,7 +76,7 @@ export function NumberField({
 
   return (
     <div
-      className={`focus-ring flex items-center rounded border border-strong ${
+      className={`focus-ring flex h-11 items-center rounded border border-strong ${
         disabled ? 'bg-disabled' : 'bg-raised'
       }`}
     >

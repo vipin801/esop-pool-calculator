@@ -12,6 +12,7 @@ import { tooltipStyle } from './tooltip';
 interface HiresSupportedChartProps {
   readonly recommended: PoolPlanSeries;
   readonly current: PoolPlanSeries;
+  readonly locked?: boolean;
 }
 
 /** Both series flatten at the engine's own `hiresSupported` scalar once the
@@ -20,7 +21,7 @@ function supportedCumulative(series: PoolPlanSeries, cumulativePlanned: number):
   return Math.min(cumulativePlanned, series.exhaustion.hiresSupported);
 }
 
-export function HiresSupportedChart({ recommended, current }: HiresSupportedChartProps) {
+export function HiresSupportedChart({ recommended, current, locked = false }: HiresSupportedChartProps) {
   const { theme } = useTheme();
   const p = paletteFor(theme);
   const animate = !usePrefersReducedMotion();
@@ -55,6 +56,7 @@ export function HiresSupportedChart({ recommended, current }: HiresSupportedChar
         headers: ['Year', 'Planned (cumulative)', 'Recommended supports', 'Current supports'],
         rows: data.map((d) => [d.name, d.planned, d.recommendedSupports, d.currentSupports]),
       }}
+      locked={locked}
     >
       <div className="mt-2 h-[220px]">
         <ResponsiveContainer width="100%" height="100%">

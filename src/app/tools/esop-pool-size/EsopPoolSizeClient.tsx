@@ -11,18 +11,24 @@ import {
 import { CtaBand } from './layout/CtaBand';
 import { Footer } from './layout/Footer';
 import { Header } from './layout/Header';
+import { HelpLinksBand } from './layout/HelpLinksBand';
 import { Hero } from './layout/Hero';
 import { MobileSummaryBar } from './layout/MobileSummaryBar';
-import { InputRail } from './inputs/InputRail';
+import { ModelPanel } from './layout/ModelPanel';
+import { OnboardingWizard } from './layout/onboarding/OnboardingWizard';
+import { DEFAULT_HIRING_META, type HiringMeta } from './layout/onboarding/ScreenHiring';
+import { DEFAULT_GRANT_META, type GrantMeta } from './layout/onboarding/ScreenGrants';
 import type { EsopGroupKey } from './inputs/InputCard';
-import { IncompleteResultPlaceholder } from './results/IncompleteResultPlaceholder';
 import { LeadModal, type Lead } from './results/LeadModal';
 import { ReportCharts } from './results/ReportCharts';
 import { ResultsPanel } from './results/ResultsPanel';
+import { Sheet } from './ui/Sheet';
 import { requiredFieldPaths } from './lib/completeness';
 import { generateAndDownloadReport, postLead } from './lib/downloadReport';
+import { countChangedFields } from './lib/inputDiff';
 import { buildSeedInputs } from './lib/seedInputs';
 import { ThemeProvider } from './lib/theme';
+import { useIsDesktop } from './lib/useIsDesktop';
 
 /**
  * Two frames, so a freshly mounted `ResponsiveContainer` has measured itself
@@ -89,6 +95,32 @@ function EsopPoolSizeApp() {
     setTouched((prev) => (prev.has(path) ? prev : new Set(prev).add(path)));
   }, []);
 
+  /** Bulk variant for a derived array of paths (design.md §4.3's hiring-plan
+   *  translation touches every `hiring.hiresPerYear.*` path at once). No
+   *  scroll anchoring — this fires as a side effect of one field's change,
+   *  not a direct focus interaction. */
+  const markManyTouched = useCallback((paths: readonly string[]) => {
+    setTouched((prev) => {
+      let changed = false;
+      const next = new Set(prev);
+      for (const path of paths) {
+        if (!next.has(path)) {
+          next.add(path);
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, []);
+
+  /** design.md §4.2/§4.4: UI-only state behind the onboarding screens'
+   *  simple questions (total hires, timing, team profile, leadership hires,
+   *  grant philosophy). Lifted here, not local to the wizard, because §6.1
+   *  requires the same values to be re-editable from `Your model` later
+   *  without desyncing from the per-year array the engine actually reads. */
+  const [hiringMeta, setHiringMeta] = useState<HiringMeta>(DEFAULT_HIRING_META);
+  const [grantMeta, setGrantMeta] = useState<GrantMeta>(DEFAULT_GRANT_META);
+
   /** Runs after every commit; a no-op except the one right after a touch that
    *  moved the anchored element, so the field the founder is looking at holds
    *  its screen position through both the state-A-to-B layout switch and any
@@ -112,6 +144,49 @@ function EsopPoolSizeApp() {
   const setRounds = useCallback((rounds: readonly FundingRound[]) => {
     setInputs((prev) => ({ ...prev, rounds }));
   }, []);
+
+  /**
+   * design.md §6.2. `inputs` stays the *applied* state the engine reads;
+   * `draftInputs` is a working copy, created from `inputs` the moment a
+   * founder edits anything inside `Your model`, and is what the panel reads
+   * and writes to instead. Recalculate promotes it to `inputs` (which is what
+   * actually re-triggers `calculateEsopPool`, via the unchanged `outcome`
+   * memo above); Discard drops it. The onboarding wizard is unaffected — it
+   * still writes straight to `inputs` via `setGroup`, since D7's per-screen
+   * gate is exactly the immediate feedback a draft step would blunt.
+   */
+  const [draftInputs, setDraftInputsState] = useState<EsopInputs | null>(null);
+  const modelInputs = draftInputs ?? inputs;
+  const isDirty = draftInputs !== null;
+  const changeCount = isDirty ? countChangedFields(inputs, draftInputs) : 0;
+
+  const setDraftGroup = useCallback(<K extends EsopGroupKey>(key: K, patch: Partial<EsopInputs[K]>) => {
+    setDraftInputsState((prevDraft) => {
+      const base = prevDraft ?? inputs;
+      return { ...base, [key]: { ...base[key], ...patch } as EsopInputs[K] };
+    });
+  }, [inputs]);
+
+  const setDraftOpeningGrants = useCallback((openingGrants: readonly OpeningGrantCohortInput[]) => {
+    setDraftInputsState((prevDraft) => ({ ...(prevDraft ?? inputs), openingGrants }));
+  }, [inputs]);
+
+  const setDraftRounds = useCallback((rounds: readonly FundingRound[]) => {
+    setDraftInputsState((prevDraft) => ({ ...(prevDraft ?? inputs), rounds }));
+  }, [inputs]);
+
+  function onDiscardDraft() {
+    setDraftInputsState(null);
+  }
+
+  function onRecalculate() {
+    if (!draftInputs) return;
+    setInputs(draftInputs);
+    setDraftInputsState(null);
+  }
+
+  const [modelSheetOpen, setModelSheetOpen] = useState(false);
+  const isDesktop = useIsDesktop();
 
   const required = useMemo(() => requiredFieldPaths(inputs), [inputs]);
   const requiredPaths = useMemo(() => new Set(required), [required]);
@@ -150,11 +225,23 @@ function EsopPoolSizeApp() {
    * render this guarded set avoids. `NumberField` already syncs to an
    * external value change the same way.
    */
+  /**
+   * design.md §3, D10. Unlike the one-page form this replaces, reaching
+   * results is no longer automatic the instant the last required field is
+   * touched — it is the explicit "Calculate pool" click at the end of the
+   * onboarding wizard (`onCalculate` below), which is D7's gate evaluated
+   * once at the end of three screens rather than continuously across one.
+   * Once set, nothing here ever reads it back to false except Reset — a
+   * requirement reopened from `Your model` after this point keeps the
+   * results workspace mounted, per the paragraph above.
+   */
   const [reachedResults, setReachedResults] = useState(false);
-  if (complete && outcome.ok && !reachedResults) {
-    setReachedResults(true);
-  }
   const showResults = reachedResults;
+  const readyToCalculate = complete && outcome.ok;
+
+  function onCalculate() {
+    if (readyToCalculate) setReachedResults(true);
+  }
 
   /**
    * The lead goes first, and its failure cannot reach the founder: `postLead`
@@ -216,19 +303,32 @@ function EsopPoolSizeApp() {
     setInputs(buildSeedInputs());
     setTouched(new Set());
     setReachedResults(false);
+    setHiringMeta(DEFAULT_HIRING_META);
+    setGrantMeta(DEFAULT_GRANT_META);
+    setDraftInputsState(null);
+    setModelSheetOpen(false);
   }
 
-  const rail = (
-    <InputRail
-      inputs={inputs}
-      setGroup={setGroup}
-      openingGrants={inputs.openingGrants}
-      setOpeningGrants={setOpeningGrants}
-      rounds={inputs.rounds}
-      setRounds={setRounds}
+  const modelPanel = (
+    <ModelPanel
+      modelInputs={modelInputs}
+      setDraftGroup={setDraftGroup}
+      openingGrants={modelInputs.openingGrants}
+      setDraftOpeningGrants={setDraftOpeningGrants}
+      rounds={modelInputs.rounds}
+      setDraftRounds={setDraftRounds}
       touched={touched}
       markTouched={markTouched}
+      markManyTouched={markManyTouched}
       requiredPaths={requiredPaths}
+      hiringMeta={hiringMeta}
+      setHiringMeta={setHiringMeta}
+      grantMeta={grantMeta}
+      setGrantMeta={setGrantMeta}
+      isDirty={isDirty}
+      changeCount={changeCount}
+      onDiscard={onDiscardDraft}
+      onRecalculate={onRecalculate}
       onReset={onReset}
     />
   );
@@ -242,7 +342,7 @@ function EsopPoolSizeApp() {
         Skip to the calculator
       </a>
       <Header />
-      <Hero />
+      <Hero showResults={showResults} />
       {/*
        * Two layouts, not one grid with a placeholder in its second column.
        * Empty: a single centered column, the form filling the page, nothing
@@ -253,7 +353,7 @@ function EsopPoolSizeApp() {
        */}
       <main
         id="main"
-        className={`mx-auto px-5 pb-28 lg:pb-10 ${showResults ? 'max-w-page' : 'max-w-[680px]'}`}
+        className={`mx-auto px-6 pb-28 lg:pb-10 ${showResults ? 'max-w-page' : 'max-w-[720px]'}`}
       >
         {showResults ? (
           <div className="mt-3 grid min-w-0 gap-4 lg:grid-cols-[360px_minmax(0,1fr)] lg:items-start">
@@ -262,8 +362,13 @@ function EsopPoolSizeApp() {
                 — see the comment there. Sticking the rail near the viewport
                 top on its own still holds while the founder scrolls the
                 results column. */}
-            <div className="min-w-0 lg:sticky lg:top-4 lg:max-h-[calc(100vh-32px)] lg:overflow-y-auto lg:pr-1">
-              {rail}
+            {/* design.md §6.3: below `lg` the full model panel is not shown
+                inline — only the mobile summary bar's "Edit model" action,
+                opening the same panel in a sheet (below). `isDesktop` (JS,
+                not just CSS) keeps the two mutually exclusive: mounting both
+                at once would put two copies of every field id in the DOM. */}
+            <div id="your-model" className="hidden min-w-0 lg:block lg:sticky lg:top-4 lg:max-h-[calc(100vh-32px)] lg:overflow-y-auto lg:pr-1">
+              {isDesktop ? modelPanel : null}
             </div>
             <div className="min-w-0 animate-fade-in space-y-4">
               {outcome.ok ? (
@@ -272,8 +377,13 @@ function EsopPoolSizeApp() {
                   result={outcome.result}
                   onLoadScenario={setInputs}
                   onDownload={onDownload}
+                  onReviewAssumptions={() => {
+                    document.getElementById('your-model')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    setModelSheetOpen(true);
+                  }}
                   reportReady={!busy}
                   downloadError={downloadError}
+                  touched={touched}
                   incompleteCount={complete ? 0 : required.length - filledCount}
                 />
               ) : (
@@ -285,12 +395,29 @@ function EsopPoolSizeApp() {
             </div>
           </div>
         ) : (
-          <div className="mt-3 min-w-0 space-y-4">
-            {rail}
-            <IncompleteResultPlaceholder />
+          <div className="mt-4 min-w-0 space-y-12">
+            <OnboardingWizard
+              inputs={inputs}
+              setGroup={setGroup}
+              openingGrants={inputs.openingGrants}
+              setOpeningGrants={setOpeningGrants}
+              rounds={inputs.rounds}
+              touched={touched}
+              markTouched={markTouched}
+              markManyTouched={markManyTouched}
+              requiredPaths={requiredPaths}
+              required={required}
+              hiringMeta={hiringMeta}
+              setHiringMeta={setHiringMeta}
+              grantMeta={grantMeta}
+              setGrantMeta={setGrantMeta}
+              readyToCalculate={readyToCalculate}
+              onCalculate={onCalculate}
+            />
             <CtaBand />
           </div>
         )}
+        <HelpLinksBand />
       </main>
       <Footer />
       {showResults && outcome.ok ? (
@@ -298,7 +425,13 @@ function EsopPoolSizeApp() {
           recommended={outcome.result.recommended}
           current={outcome.result.current}
           selected={outcome.result.recommendedPool.selected}
+          onOpenModel={() => setModelSheetOpen(true)}
         />
+      ) : null}
+      {showResults && !isDesktop ? (
+        <Sheet open={modelSheetOpen} title="Your model" onClose={() => setModelSheetOpen(false)}>
+          {modelPanel}
+        </Sheet>
       ) : null}
       <LeadModal
         open={modalOpen}

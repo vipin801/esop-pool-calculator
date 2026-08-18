@@ -24,10 +24,14 @@ interface ChartFrameProps {
    * unset by `ReportCharts.tsx`'s off-screen instances, which capture the
    * real chart for the PDF the download itself produces; setting this
    * `true` there would lock the very thing downloading is supposed to
-   * unlock. Hides `keys`, `children`, `caption` and the sr-only data table
-   * alike — a legend naming "New hires"/"Refreshes" is as much a locked
-   * value as the numbers are, per the founder's own instruction to keep
-   * only the heading.
+   * unlock. Hides `keys` and the sr-only data table entirely — a legend
+   * naming "New hires"/"Refreshes", or an accessible table of exact
+   * figures, is as much a locked value as the chart itself. The chart
+   * `children` still render, per the founder's own instruction that the
+   * blur should show a real chart, not a flat placeholder — a
+   * `pointer-events-none` wrapper keeps Recharts' own hover tooltip from
+   * ever mounting over it, which would otherwise print an exact figure
+   * through the blur on hover.
    */
   readonly locked?: boolean;
 }
@@ -60,8 +64,10 @@ export function ChartFrame({ title, caption, keys, dataTable, children, id, lock
         ) : null}
       </div>
       {locked ? (
-        <div className="relative mt-2 h-[220px] overflow-hidden rounded bg-muted" aria-hidden="true">
-          <div className="absolute inset-0 bg-border blur-[3px]" />
+        <div className="relative mt-2 h-[220px] overflow-hidden rounded bg-muted">
+          <div className="pointer-events-none absolute inset-0 select-none blur-md" aria-hidden="true">
+            {children}
+          </div>
           <div className="absolute inset-0 flex items-center justify-center px-4">
             <span className="rounded border border-border bg-surface px-3 py-1.5 text-center text-2xs font-medium text-sub shadow-panel">
               Download the report to see this chart

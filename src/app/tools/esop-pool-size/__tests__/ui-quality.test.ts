@@ -317,6 +317,19 @@ describe('focus is always visible', () => {
   it('keeps a global :focus-visible outline for everything else', () => {
     expect(GLOBALS_CSS).toMatch(/:focus-visible\s*\{[\s\S]*?outline:\s*2px solid var\(--accent\)/);
   });
+
+  it('draws exactly one ring per control, never a second inside the wrapper', () => {
+    // The double border, as a rule rather than as a screenshot. A field sets
+    // `outline-none` so its wrapper can carry the ring, but `outline-none` is
+    // a layered Tailwind utility and the global `:focus-visible` above is
+    // unlayered — unlayered wins, so the control kept its own ring and drew it
+    // inside the wrapper's: two concentric blue rounded rectangles. Verified
+    // in a real browser across every route, both themes and the modal after
+    // the fix; this is what stops it coming back.
+    expect(GLOBALS_CSS).toMatch(
+      /\.focus-ring:has\(:focus-visible\)\s+:focus-visible\s*\{[^}]*outline:\s*none/,
+    );
+  });
 });
 
 /* ------------------------------------------------------------------------- *

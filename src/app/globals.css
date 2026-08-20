@@ -795,6 +795,27 @@ input[type='range']:focus-visible::-moz-range-thumb {
   box-shadow: 0 0 0 3px rgb(52 130 255 / 0.1);
 }
 
+/*
+ * ...and the control inside a wrapper that is already drawing a ring must not
+ * draw a second one.
+ *
+ * This is the fix for a real double border. A field sets `outline-none` so the
+ * wrapper can carry the focus treatment, but `outline-none` is a Tailwind
+ * utility and therefore layered, while the global `:focus-visible` rule above
+ * is not — unlayered wins, so the input kept its own 2px ring and drew it
+ * *inside* the wrapper's, two concentric blue rounded rectangles. The
+ * suppression has to be unlayered too, and has to be more specific than the
+ * bare `:focus-visible`, which is what the descendant selector buys.
+ *
+ * Scoped to `.focus-ring` wrappers on purpose: every other focusable element
+ * on the page still gets the global ring, and a wrapper holding two controls
+ * would still be wrong — but no such wrapper exists, and the tests assert one
+ * ring per control rather than trusting that.
+ */
+.focus-ring:has(:focus-visible) :focus-visible {
+  outline: none;
+}
+
 /* ------------------------------------------------------------------------- *
  * Charts
  * ------------------------------------------------------------------------- */

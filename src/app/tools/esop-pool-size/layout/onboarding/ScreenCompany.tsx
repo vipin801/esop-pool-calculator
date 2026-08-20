@@ -118,9 +118,16 @@ export function ScreenCompany({
       >
         {/* 2026-08-18: the unit toggle moved out of the label row into this
             one row with the input and "No pool yet" — same baseline, 12px
-            gaps, all 44px tall. */}
-        <div className="flex items-center gap-3">
-          <div className="min-w-0 flex-1">
+            gaps, all 44px tall.
+
+            2026-08-20: `flex-wrap` plus a floor on the input. §4's button
+            padding is `14px 28px`, which makes "No pool yet" wide enough that
+            all three controls no longer fit a 390px screen — the input was
+            being squeezed to a few pixels. Wrapping the button onto its own
+            line below is §8's own collapsing strategy for exactly this row,
+            and the desktop layout is unchanged. */}
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="min-w-[9rem] flex-1">
             {poolUnit === 'percent' ? (
               <NumberField
                 id="onb-pool-pct"

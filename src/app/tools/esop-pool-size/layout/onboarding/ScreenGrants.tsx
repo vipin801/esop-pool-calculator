@@ -130,7 +130,7 @@ export function ScreenGrants({ inputs, setGroup, meta, setMeta, touched, markTou
           {trajectory && !isBlank('company.postMoneyValuation') ? (
             <div className="rounded-lg border border-border bg-muted p-3">
               <p className="mb-1.5 text-2xs font-medium text-faint">What that means</p>
-              <p className="tnum text-2xs leading-5 text-sub">
+              <p className="figure text-2xs leading-5 text-sub">
                 {trajectory.map((point, i) => (
                   <span key={point.year}>
                     {i > 0 ? ' → ' : ''}
@@ -156,7 +156,7 @@ export function ScreenGrants({ inputs, setGroup, meta, setMeta, touched, markTou
             {BANDS.map((band) => (
               <div key={band} className="flex items-baseline justify-between gap-2">
                 <dt className="text-2xs text-faint">{BAND_LABEL[band]}</dt>
-                <dd className="tnum text-eyebrow text-ink">
+                <dd className="figure text-eyebrow text-ink">
                   {isPercentOfEquity
                     ? `${grantPctPresetFor(meta.philosophy)[band]}%`
                     : `₹${(grantValuePresetFor(meta.philosophy)[band] / 100000).toFixed(1)} L`}

@@ -71,14 +71,14 @@ function SeriesTable({ series }: { readonly series: PoolPlanSeries }) {
 
   return (
     <div className="rounded-lg border border-border bg-raised">
-      <div className="flex items-center justify-between gap-2 px-3 pt-3">
-        <h3 className="text-eyebrow font-semibold text-ink">
+      <div className="flex items-center justify-between gap-2 px-5 pt-4">
+        <h3 className="text-small font-medium tracking-tight text-ink">
           {series.label === 'recommended' ? 'Recommended pool' : 'Your current pool'}
         </h3>
         <CopyCsvButton headers={HEADERS} rows={csvRows} />
       </div>
-      <p className="px-3 pb-2 text-2xs leading-4 text-faint">{series.description}</p>
-      <div className="overflow-auto px-3 pb-3">
+      <p className="px-5 pb-3 text-2xs leading-4 text-faint">{series.description}</p>
+      <div className="overflow-auto px-5 pb-5">
         <table className="w-full border-collapse text-2xs">
           <thead className="sticky top-0 z-10 bg-muted">
             <tr>
@@ -86,7 +86,7 @@ function SeriesTable({ series }: { readonly series: PoolPlanSeries }) {
                 <th
                   key={h}
                   scope="col"
-                  className={`border-b border-border px-3 py-2 font-medium text-sub ${
+                  className={`eyebrow whitespace-nowrap border-b border-border px-3 py-2.5 text-faint ${
                     i === 0 ? 'text-left' : 'text-right'
                   }`}
                 >
@@ -101,8 +101,8 @@ function SeriesTable({ series }: { readonly series: PoolPlanSeries }) {
                 {row.map((cell, ci) => (
                   <td
                     key={ci}
-                    className={`tnum whitespace-nowrap px-3 py-2 ${
-                      ci === 0 ? 'font-medium text-ink' : 'text-right text-sub'
+                    className={`figure whitespace-nowrap px-3 py-2.5 ${
+                      ci === 0 ? 'text-ink' : 'text-right text-sub'
                     }`}
                   >
                     {cell}
@@ -124,7 +124,7 @@ interface YearTableProps {
 
 export function YearTable({ recommended, current }: YearTableProps) {
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <SeriesTable series={recommended} />
       <SeriesTable series={current} />
     </div>

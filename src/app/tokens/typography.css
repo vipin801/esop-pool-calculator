@@ -1,19 +1,35 @@
+/*
+ * 2026-08-19, re-sourced from the Incentiv design system document §1.
+ *
+ * Three typefaces in deliberate roles, as the document names them:
+ * DM Serif Display for display and section headings (always italic, always
+ * tight negative tracking), Inter with the OpenType features "cv02", "cv03",
+ * "cv04", "cv11" for all UI text and body copy, and IBM Plex Mono at weight
+ * 300 for statistics and financial figures. All three arrive self-hosted
+ * through `next/font` in `layout.tsx`; `globals.css` re-points these three
+ * stacks at those families, so the names here stay the design system's while
+ * the delivery is the app's (no render-blocking Google Fonts request).
+ *
+ * `--tracking-display` moves from -0.02em to the document's -0.03em, which
+ * it states twice as a rule rather than a measurement.
+ *
+ * The display scale is rebuilt around a genuine editorial moment: the hero
+ * and the stat sizes grow, because a serif italic at 36px does not read as
+ * display type — it reads as a heading that happens to be a serif. The
+ * step sizes (h3/h4) and the whole body ramp (body/small/eyebrow) are
+ * unchanged, so nothing below a section heading reflows.
+ */
 :root{
-  /* 2026-08-18: the live site's own headings render 'DM Serif Display',
-     Georgia, serif — the design-system export above still says Inter. See
-     tokens/colors.css's note and tokens/README.md. This app has no consumer
-     of --font-display yet (globals.css no longer forces it back to Inter),
-     so the change is currently inert; Georgia is the fallback until the
-     day something actually asks for this token and the real face gets
-     loaded through next/font. */
   --font-display:'DM Serif Display',Georgia,serif;
   --font-body:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   --font-mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace;
 
-  --t-hero-size:clamp(2.25rem,1.6rem + 2.6vw,3.5rem);
-  --t-hero-leading:1.08;
-  --t-h2-size:clamp(1.75rem,1.45rem + 1.3vw,2.5rem);
-  --t-h2-leading:1.15;
+  --font-feature-ui:"cv02","cv03","cv04","cv11";
+
+  --t-hero-size:clamp(2.75rem,1.9rem + 3.6vw,4.5rem);
+  --t-hero-leading:1.02;
+  --t-h2-size:clamp(2rem,1.5rem + 1.9vw,3rem);
+  --t-h2-leading:1.08;
   --t-h3-size:1.75rem;
   --t-h3-leading:1.25;
   --t-h4-size:1.25rem;
@@ -25,11 +41,14 @@
   --t-eyebrow-size:0.8125rem;
   --t-eyebrow-leading:1;
   --t-eyebrow-tracking:0.08em;
-  --t-stat-size:3rem;
+  --t-stat-size:clamp(3rem,2rem + 4.4vw,5rem);
   --t-stat-lead-size:4rem;
-  --t-stat-leading:1;
+  --t-stat-leading:0.95;
 
-  --tracking-display:-0.02em;
+  --t-label-size:0.6875rem;
+  --t-label-tracking:0.11em;
+
+  --tracking-display:-0.03em;
   --measure-body:62ch;
   --measure-hero:20ch;
 }

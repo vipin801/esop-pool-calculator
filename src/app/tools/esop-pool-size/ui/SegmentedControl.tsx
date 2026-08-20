@@ -13,8 +13,12 @@ interface SegmentedControlProps<T extends string> {
   readonly disabled?: boolean;
 }
 
-/** 2026-08-18 restraint pass: the selected segment is a dark fill, not the
- *  accent — `--accent` is reserved for focus rings only (PROJECT.md). */
+/** The selected segment stays a dark fill even after the 2026-08-19 accent
+ *  reversal. A rail can hold six of these at once; six blue fills beside one
+ *  blue primary action would make the action invisible, which is the failure
+ *  mode the accent exists to prevent. Selection-by-tint is the accent's job
+ *  here (`RadioGroup`, the slider presets) — a segmented control is a value
+ *  picker, and its dark fill reads as "this one", not as "do this". */
 export function SegmentedControl<T extends string>({
   value,
   options,
@@ -27,7 +31,7 @@ export function SegmentedControl<T extends string>({
     <div
       role="radiogroup"
       aria-label={ariaLabel}
-      className={`grid gap-1 rounded border border-strong ${size === 'lg' ? 'h-11 p-0.5' : 'p-1'} ${size === 'lg' ? 'max-sm:!grid-cols-3' : ''} ${disabled ? 'bg-disabled' : 'bg-muted'}`}
+      className={`grid gap-1 rounded border border-strong ${size === 'lg' ? 'h-11 p-1' : 'p-1'} ${size === 'lg' ? 'max-sm:!grid-cols-3' : ''} ${disabled ? 'bg-disabled' : 'bg-muted'}`}
       style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}
     >
       {options.map((option) => {

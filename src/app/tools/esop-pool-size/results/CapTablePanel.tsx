@@ -38,10 +38,10 @@ const HEADERS = ['Holder', 'Shares', '% of fully diluted'];
 function LockedCapTable({ label }: { readonly label: string }) {
   return (
     <div className="overflow-hidden rounded-lg border border-border bg-raised">
-      <div className="px-3 pt-3">
-        <h3 className="text-eyebrow font-semibold text-ink">{label}</h3>
+      <div className="px-5 pt-4">
+        <h3 className="text-small font-medium tracking-tight text-ink">{label}</h3>
       </div>
-      <div className="overflow-auto px-3 pb-3">
+      <div className="overflow-auto px-5 pb-5">
         <table className="w-full border-collapse text-2xs">
           <thead className="bg-muted">
             <tr>
@@ -49,7 +49,7 @@ function LockedCapTable({ label }: { readonly label: string }) {
                 <th
                   key={h}
                   scope="col"
-                  className={`border-b border-border px-3 py-2 font-medium text-sub ${
+                  className={`eyebrow whitespace-nowrap border-b border-border px-3 py-2.5 text-faint ${
                     i === 0 ? 'text-left' : 'text-right'
                   }`}
                 >
@@ -76,11 +76,11 @@ function OneCapTable({ table }: { readonly table: CapTable }) {
 
   return (
     <div className="rounded-lg border border-border bg-raised">
-      <div className="flex items-center justify-between gap-2 px-3 pt-3">
-        <h3 className="text-eyebrow font-semibold text-ink">{table.label}</h3>
+      <div className="flex items-center justify-between gap-2 px-5 pt-4">
+        <h3 className="text-small font-medium tracking-tight text-ink">{table.label}</h3>
         <CopyCsvButton headers={HEADERS} rows={rows} />
       </div>
-      <div className="overflow-auto px-3 pb-3">
+      <div className="overflow-auto px-5 pb-5">
         <table className="w-full border-collapse text-2xs">
           <thead className="bg-muted">
             <tr>
@@ -88,7 +88,7 @@ function OneCapTable({ table }: { readonly table: CapTable }) {
                 <th
                   key={h}
                   scope="col"
-                  className={`border-b border-border px-3 py-2 font-medium text-sub ${
+                  className={`eyebrow whitespace-nowrap border-b border-border px-3 py-2.5 text-faint ${
                     i === 0 ? 'text-left' : 'text-right'
                   }`}
                 >
@@ -102,9 +102,9 @@ function OneCapTable({ table }: { readonly table: CapTable }) {
               const isTotal = ri === rows.length - 1;
               return (
                 <tr key={ri} className={`border-b border-border last:border-0 ${isTotal ? 'bg-muted' : ''}`}>
-                  <td className={`px-3 py-2 ${isTotal ? 'font-semibold text-ink' : 'text-ink'}`}>{row[0]}</td>
-                  <td className="tnum px-3 py-2 text-right text-sub">{row[1]}</td>
-                  <td className={`tnum px-3 py-2 text-right ${isTotal ? 'font-semibold text-ink' : 'font-medium text-ink'}`}>
+                  <td className={`px-3 py-2.5 ${isTotal ? 'font-medium text-ink' : 'text-ink'}`}>{row[0]}</td>
+                  <td className="figure px-3 py-2.5 text-right text-sub">{row[1]}</td>
+                  <td className={`figure px-3 py-2.5 text-right text-ink ${isTotal ? 'font-medium' : ''}`}>
                     {row[2]}
                   </td>
                 </tr>
@@ -123,13 +123,13 @@ interface CapTablePanelProps {
 
 export function CapTablePanel({ capTables }: CapTablePanelProps) {
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <OneCapTable table={capTables.before} />
       <LockedCapTable label={capTables.after.label} />
       {capTables.afterModelledRound ? (
         <OneCapTable table={capTables.afterModelledRound} />
       ) : (
-        <p className="rounded-lg border border-border bg-raised px-3 py-3 text-2xs leading-4 text-faint">
+        <p className="rounded-lg border border-border bg-raised px-5 py-4 text-2xs leading-4 text-faint">
           Model a funding round in the company card to see the cap table after it closes.
         </p>
       )}

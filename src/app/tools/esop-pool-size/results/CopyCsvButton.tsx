@@ -24,7 +24,7 @@ export function CopyCsvButton({ headers, rows }: CopyCsvButtonProps) {
     <button
       type="button"
       onClick={handleClick}
-      className="inline-flex items-center gap-1 rounded border border-border px-2 py-1 text-2xs text-sub transition-colors duration-150 hover:text-ink"
+      className="inline-flex items-center gap-1.5 rounded border border-border px-2.5 py-1.5 text-2xs text-faint transition-colors duration-150 hover:border-strong hover:text-ink"
     >
       {copied ? <Check className="h-3 w-3 text-accent" /> : <Copy className="h-3 w-3" />}
       {copied ? 'Copied' : 'Copy as CSV'}

@@ -334,91 +334,104 @@ function EsopPoolSizeApp() {
   );
 
   return (
-    <div className="min-h-screen w-full bg-surface">
+    <div className="flex min-h-screen w-full flex-col bg-bg">
       <a
         href="#main"
-        className="sr-only rounded border border-strong bg-raised px-3 py-2 text-eyebrow text-ink focus:not-sr-only focus:absolute focus:left-4 focus:top-3 focus:z-50"
+        className="sr-only rounded border border-strong bg-surface px-3 py-2 text-eyebrow text-ink shadow-panel focus:not-sr-only focus:absolute focus:left-4 focus:top-3 focus:z-50"
       >
         Skip to the calculator
       </a>
       <Header />
-      <Hero showResults={showResults} />
       {/*
-       * Two layouts, not one grid with a placeholder in its second column.
-       * Empty: a single centered column, the form filling the page, nothing
-       * reserved for an answer that doesn't exist yet. Resolved: today's rail
-       * plus sticky results, latched by `showResults` so a reopened
-       * requirement doesn't collapse the page back to empty under the
-       * founder's cursor — see the `reachedResults` comment above.
+       * The design system's page-edge scan lines run down this container, not
+       * the viewport: they mark the *content* edge, which is what makes them
+       * read as infrastructure framing the work rather than as a border on
+       * the window. Header and footer sit outside it, so the lines start and
+       * stop with the page's own body. See globals.css for the two-layer
+       * hairline-plus-pulse construction.
        */}
-      <main
-        id="main"
-        className={`mx-auto px-6 pb-28 lg:pb-10 ${showResults ? 'max-w-page' : 'max-w-[720px]'}`}
-      >
-        {showResults ? (
-          <div className="mt-3 grid min-w-0 gap-4 lg:grid-cols-[360px_minmax(0,1fr)] lg:items-start">
-            {/* `top-4`/`100vh-32px`, not the old `68px`/`100vh-88px`: those
-                cleared a sticky header (Header.tsx) that no longer persists
-                — see the comment there. Sticking the rail near the viewport
-                top on its own still holds while the founder scrolls the
-                results column. */}
-            {/* design.md §6.3: below `lg` the full model panel is not shown
-                inline — only the mobile summary bar's "Edit model" action,
-                opening the same panel in a sheet (below). `isDesktop` (JS,
-                not just CSS) keeps the two mutually exclusive: mounting both
-                at once would put two copies of every field id in the DOM. */}
-            <div id="your-model" className="hidden min-w-0 lg:block lg:sticky lg:top-4 lg:max-h-[calc(100vh-32px)] lg:overflow-y-auto lg:pr-1">
-              {isDesktop ? modelPanel : null}
+      <div className="page-edge-lines mx-auto w-full max-w-page flex-1">
+        <Hero showResults={showResults} />
+        {/*
+         * Two layouts, not one grid with a placeholder in its second column.
+         * Empty: a single centered column, the form filling the page, nothing
+         * reserved for an answer that doesn't exist yet. Resolved: today's rail
+         * plus sticky results, latched by `showResults` so a reopened
+         * requirement doesn't collapse the page back to empty under the
+         * founder's cursor — see the `reachedResults` comment above.
+         */}
+        <main
+          id="main"
+          className={`mx-auto px-6 pb-32 lg:pb-20 ${showResults ? 'max-w-page' : 'max-w-[720px]'}`}
+        >
+          {showResults ? (
+            // The rail stays at 360px and the gutter at 24px: the report
+            // column carries a nine-column year table, and every pixel this
+            // side takes is a column that scrolls out of view over there.
+            <div className="mt-8 grid min-w-0 gap-6 lg:grid-cols-[360px_minmax(0,1fr)] lg:items-start">
+              {/* `top-4`/`100vh-32px`, not the old `68px`/`100vh-88px`: those
+                  cleared a sticky header (Header.tsx) that no longer persists
+                  — see the comment there. Sticking the rail near the viewport
+                  top on its own still holds while the founder scrolls the
+                  results column. */}
+              {/* design.md §6.3: below `lg` the full model panel is not shown
+                  inline — only the mobile summary bar's "Edit model" action,
+                  opening the same panel in a sheet (below). `isDesktop` (JS,
+                  not just CSS) keeps the two mutually exclusive: mounting both
+                  at once would put two copies of every field id in the DOM. */}
+              <div id="your-model" className="hidden min-w-0 lg:block lg:sticky lg:top-4 lg:max-h-[calc(100vh-32px)] lg:overflow-y-auto lg:pr-1">
+                {isDesktop ? modelPanel : null}
+              </div>
+              <div className="min-w-0 animate-fade-in space-y-8">
+                {outcome.ok ? (
+                  <ResultsPanel
+                    inputs={inputs}
+                    result={outcome.result}
+                    onLoadScenario={setInputs}
+                    onDownload={onDownload}
+                    onReviewAssumptions={() => {
+                      document.getElementById('your-model')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      setModelSheetOpen(true);
+                    }}
+                    reportReady={!busy}
+                    downloadError={downloadError}
+                    touched={touched}
+                    incompleteCount={complete ? 0 : required.length - filledCount}
+                  />
+                ) : (
+                  <div role="alert" className="rounded-lg border border-warn bg-warn-soft p-4 text-eyebrow text-warn">
+                    This plan can’t be priced yet: {outcome.message}
+                  </div>
+                )}
+                <CtaBand />
+              </div>
             </div>
-            <div className="min-w-0 animate-fade-in space-y-4">
-              {outcome.ok ? (
-                <ResultsPanel
-                  inputs={inputs}
-                  result={outcome.result}
-                  onLoadScenario={setInputs}
-                  onDownload={onDownload}
-                  onReviewAssumptions={() => {
-                    document.getElementById('your-model')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    setModelSheetOpen(true);
-                  }}
-                  reportReady={!busy}
-                  downloadError={downloadError}
-                  touched={touched}
-                  incompleteCount={complete ? 0 : required.length - filledCount}
-                />
-              ) : (
-                <div role="alert" className="rounded-lg border border-warn bg-warn-soft p-4 text-eyebrow text-warn">
-                  This plan can’t be priced yet: {outcome.message}
-                </div>
-              )}
+          ) : (
+            <div className="mt-10 min-w-0 space-y-16">
+              <OnboardingWizard
+                inputs={inputs}
+                setGroup={setGroup}
+                openingGrants={inputs.openingGrants}
+                setOpeningGrants={setOpeningGrants}
+                rounds={inputs.rounds}
+                touched={touched}
+                markTouched={markTouched}
+                markManyTouched={markManyTouched}
+                requiredPaths={requiredPaths}
+                required={required}
+                hiringMeta={hiringMeta}
+                setHiringMeta={setHiringMeta}
+                grantMeta={grantMeta}
+                setGrantMeta={setGrantMeta}
+                readyToCalculate={readyToCalculate}
+                onCalculate={onCalculate}
+              />
               <CtaBand />
             </div>
-          </div>
-        ) : (
-          <div className="mt-4 min-w-0 space-y-12">
-            <OnboardingWizard
-              inputs={inputs}
-              setGroup={setGroup}
-              openingGrants={inputs.openingGrants}
-              setOpeningGrants={setOpeningGrants}
-              rounds={inputs.rounds}
-              touched={touched}
-              markTouched={markTouched}
-              markManyTouched={markManyTouched}
-              requiredPaths={requiredPaths}
-              required={required}
-              hiringMeta={hiringMeta}
-              setHiringMeta={setHiringMeta}
-              grantMeta={grantMeta}
-              setGrantMeta={setGrantMeta}
-              readyToCalculate={readyToCalculate}
-              onCalculate={onCalculate}
-            />
-            <CtaBand />
-          </div>
-        )}
-        <HelpLinksBand />
-      </main>
+          )}
+          <HelpLinksBand />
+        </main>
+      </div>
       <Footer />
       {showResults && outcome.ok ? (
         <MobileSummaryBar

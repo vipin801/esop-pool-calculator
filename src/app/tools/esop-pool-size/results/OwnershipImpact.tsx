@@ -46,16 +46,16 @@ export function OwnershipImpact({ capTables }: OwnershipImpactProps) {
       <table className="w-full border-collapse text-2xs">
         <thead className="bg-muted">
           <tr>
-            <th scope="col" className="border-b border-border px-3 py-2 text-left font-medium text-sub">
+            <th scope="col" className="eyebrow border-b border-border px-4 py-3 text-left text-faint">
               Ownership impact
             </th>
-            <th scope="col" className="border-b border-border px-3 py-2 text-right font-medium text-sub">
+            <th scope="col" className="eyebrow border-b border-border px-4 py-3 text-right text-faint">
               Today
             </th>
-            <th scope="col" className="border-b border-border px-3 py-2 text-right font-medium text-sub">
+            <th scope="col" className="eyebrow border-b border-border px-4 py-3 text-right text-faint">
               After pool
             </th>
-            <th scope="col" className="border-b border-border px-3 py-2 text-right font-medium text-sub">
+            <th scope="col" className="eyebrow border-b border-border px-4 py-3 text-right text-faint">
               Change
             </th>
           </tr>
@@ -68,21 +68,21 @@ export function OwnershipImpact({ capTables }: OwnershipImpactProps) {
             const sign = change > 0 ? '+' : '';
             return (
               <tr key={holder} className="border-b border-border last:border-0">
-                <td className="px-3 py-2 font-medium text-ink">{label}</td>
-                <td className="tnum px-3 py-2 text-right text-sub">{formatPct(before, 1)}</td>
+                <td className="px-4 py-2.5 font-medium text-ink">{label}</td>
+                <td className="figure px-4 py-2.5 text-right text-sub">{formatPct(before, 1)}</td>
                 {locked ? (
-                  <td className="px-3 py-2 text-right" aria-hidden="true">
+                  <td className="px-4 py-2.5 text-right" aria-hidden="true">
                     <span className="ml-auto inline-block h-3 w-10 rounded bg-border blur-[1.5px]" />
                   </td>
                 ) : (
-                  <td className="tnum px-3 py-2 text-right text-ink">{formatPct(after, 1)}</td>
+                  <td className="figure px-4 py-2.5 text-right text-ink">{formatPct(after, 1)}</td>
                 )}
                 {locked ? (
-                  <td className="px-3 py-2 text-right" aria-hidden="true">
+                  <td className="px-4 py-2.5 text-right" aria-hidden="true">
                     <span className="ml-auto inline-block h-3 w-10 rounded bg-border blur-[1.5px]" />
                   </td>
                 ) : (
-                  <td className={`tnum px-3 py-2 text-right font-medium ${change === 0 ? 'text-sub' : 'text-accent'}`}>
+                  <td className={`figure px-4 py-2.5 text-right ${change === 0 ? 'text-sub' : 'text-accent'}`}>
                     {sign}
                     {change.toFixed(1)} pp
                   </td>

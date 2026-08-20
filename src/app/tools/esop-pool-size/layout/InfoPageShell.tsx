@@ -24,44 +24,44 @@ interface InfoPageShellProps {
 export function InfoPageShell({ crumbLabel, title, subtitle, children }: InfoPageShellProps) {
   return (
     <ThemeProvider>
-      <div className="min-h-screen w-full bg-surface">
+      <div className="flex min-h-screen w-full flex-col bg-bg">
         <Header />
-        <main className="mx-auto max-w-[720px] px-6 pb-16 pt-4">
-          <nav aria-label="Breadcrumb" className="text-eyebrow text-sub">
-            <Link href="/tools/esop-pool-size" className="hover:text-ink">
-              ESOP Pool Sizing
-            </Link>{' '}
-            <span aria-hidden="true">›</span>{' '}
-            <span aria-current="page" className="text-sub">
-              {crumbLabel}
-            </span>
-          </nav>
-
-          <h1 className="mt-2 font-[family-name:var(--font-display)] text-[32px] font-normal leading-[1.15] tracking-[var(--tracking-display)] text-ink sm:text-[44px]">
-            {title}
-          </h1>
-          <p className="mt-2 max-w-[52ch] text-[18px] leading-relaxed text-sub">{subtitle}</p>
-
-          <div className="mt-8 space-y-8">{children}</div>
-
-          <div className="mt-10 flex flex-wrap items-center gap-3 border-t border-border pt-6">
-            <Link
-              href="/tools/esop-pool-size"
-              className="inline-flex items-center justify-center rounded border border-strong bg-raised px-3.5 py-2 text-eyebrow font-medium text-ink hover:border-ink"
-            >
-              ← Back to the calculator
-            </Link>
-            {crumbLabel === 'How it works' ? (
-              <Link href="/tools/esop-pool-size/faqs" className="text-eyebrow text-sub hover:text-ink">
-                Read the FAQs →
+        <div className="page-edge-lines mx-auto w-full max-w-page flex-1">
+          <main className="mx-auto max-w-[720px] px-6 pb-20 pt-10 sm:pt-14">
+            <nav aria-label="Breadcrumb" className="eyebrow flex items-center gap-2 text-faint">
+              <Link href="/tools/esop-pool-size" className="hover:text-ink">
+                ESOP Pool Sizing
               </Link>
-            ) : (
-              <Link href="/tools/esop-pool-size/how-it-works" className="text-eyebrow text-sub hover:text-ink">
-                Read how it works →
+              <span aria-hidden="true">/</span>
+              <span aria-current="page" className="text-accent">
+                {crumbLabel}
+              </span>
+            </nav>
+
+            <h1 className="display mt-6 text-h2 text-ink">{title}</h1>
+            <p className="mt-5 max-w-[52ch] text-body leading-relaxed text-sub">{subtitle}</p>
+
+            <div className="mt-12 space-y-10 border-t border-border pt-10">{children}</div>
+
+            <div className="mt-12 flex flex-wrap items-center gap-4 border-t border-border pt-8">
+              <Link
+                href="/tools/esop-pool-size"
+                className="inline-flex h-11 items-center justify-center rounded border border-strong bg-surface px-5 text-eyebrow font-medium text-ink transition-colors duration-150 hover:border-ink"
+              >
+                ← Back to the calculator
               </Link>
-            )}
-          </div>
-        </main>
+              {crumbLabel === 'How it works' ? (
+                <Link href="/tools/esop-pool-size/faqs" className="eyebrow text-faint hover:text-ink">
+                  Read the FAQs →
+                </Link>
+              ) : (
+                <Link href="/tools/esop-pool-size/how-it-works" className="eyebrow text-faint hover:text-ink">
+                  Read how it works →
+                </Link>
+              )}
+            </div>
+          </main>
+        </div>
         <Footer />
       </div>
     </ThemeProvider>

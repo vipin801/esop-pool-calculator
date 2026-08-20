@@ -44,13 +44,13 @@ export function ToggleSwitch({
             : unanswered
               ? 'border-dashed border-strong bg-muted'
               : checked
-                ? 'border-ink bg-ink'
+                ? 'border-accent bg-accent'
                 : 'border-strong bg-muted'
         }`}
       >
         <span
           className={`absolute left-0.5 top-0.5 h-3.5 w-3.5 rounded-full transition-transform duration-150 ${
-            disabled ? 'bg-quiet' : unanswered ? 'bg-faint' : checked ? 'bg-bg' : 'bg-strong'
+            disabled ? 'bg-quiet' : unanswered ? 'bg-faint' : checked ? 'bg-accent-ink' : 'bg-strong'
           } ${unanswered ? 'translate-x-2' : checked ? 'translate-x-4' : 'translate-x-0'}`}
         />
       </button>

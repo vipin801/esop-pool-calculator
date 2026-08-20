@@ -1,15 +1,16 @@
 @import 'tailwindcss';
 
 /*
- * The Incentiv design tokens. `colors.css`/`shape.css`/`typography.css` were
- * vendored verbatim from `incentiv-design-system/tokens/` for the original
- * [024] swap; as of 2026-08-18 their colour, shape and display-font values
- * instead come from the live incentiv.finance/tools/* pages (computed
- * styles, both themes) — the bundle drifted from what actually shipped
- * (still `#1F4FFF`/8px-radius/Inter-only there). `spacing.css`/`motion.css`
- * are untouched, still verbatim. `src/app/tokens/README.md` has the full
- * measurement, values, and every accessibility-driven departure from what
- * was measured.
+ * The Incentiv design tokens. `spacing.css`/`motion.css` are still vendored
+ * verbatim from `incentiv-design-system/tokens/`. `colors.css`,
+ * `shape.css` and `typography.css` were re-sourced on 2026-08-19 from the
+ * Incentiv design system document (`DESIGN.md`) — the warm cream ramp, the
+ * `#3482ff` brand blue, the `#D4715D` terracotta, the uniform 4px radius and
+ * the three-typeface system (DM Serif Display italic / Inter with cv02 cv03
+ * cv04 cv11 / IBM Plex Mono 300). That document supersedes both the stale
+ * design-system export and the 2026-08-18 live-site measurement it replaced.
+ * `src/app/tokens/README.md` carries the full source table and every
+ * accessibility-driven departure from a literal document value.
  */
 @import './tokens/colors.css';
 @import './tokens/typography.css';
@@ -30,45 +31,47 @@
  * `--bg`, `--surface`, `--accent`, `--accent-hover` and `--accent-ink` are not
  * redeclared here at all — the vendored `tokens/colors.css` already defines
  * those exact names for those exact roles, so the app reads them directly and
- * a dark override lands where the design system puts it.
+ * a dark override lands where the design system puts it. As of the 2026-08-19
+ * document swap that is now true of `--accent` in *both* themes: the document
+ * blue clears 4.5:1 unmodified against the dark surfaces, and its light
+ * counterpart is corrected inside `tokens/colors.css` rather than here, so
+ * this file no longer carries a colour correction of any kind.
  *
  * Three notes on the mapping, because each was a decision rather than a
  * lookup:
  *
  * `--text-faint` reads `--ink-2`, not `--ink-3`. Incentiv's third ink measures
- * 3.25–4.24:1 across its own surfaces in both themes, under the 4.5:1 floor
- * WCAG 1.4.3 sets for text this size — the same defect [023] measured and
- * fixed, re-verified against the 2026-08-18 values. The cost is that `faint`
- * and `sub` are one colour now; the alternative was shipping helper copy that
- * fails AA on every surface.
+ * under the 4.5:1 floor WCAG 1.4.3 sets for text this size on its own warm
+ * surfaces — the same defect [023] measured and fixed, re-verified against the
+ * 2026-08-19 ramp. The cost is that `faint` and `sub` are one colour; the
+ * alternative was shipping helper copy that fails AA on every surface.
  *
  * `--border-strong` reads `--ink-3`, which clears the 3:1 floor a *control
- * boundary* carries (3.25 light, 3.56 dark, both against the tighter `muted`
- * surface) and is what Incentiv itself uses as a border on card hover.
- * `--line` is the divider family and stays there, well under 3:1, because
- * WCAG exempts a decorative separator.
+ * boundary* carries (3.36 light and 3.72 dark against the tighter `muted`
+ * surface). `--line` is the divider family and stays there, well under 3:1,
+ * because WCAG exempts a decorative separator — and at this radius and this
+ * elevation the hairline is doing most of the structural work, so it is
+ * temperature-matched to the cream rather than neutral.
  *
  * Incentiv has three neutral surfaces and this tool has five, so two pairs
  * collapse: `--surface`/`--surface-raised` and `--surface-muted`/
- * `--surface-disabled`. In light nothing moves. In dark, chart cards and stat
- * tiles stop sitting a step above the panel and are separated by their
- * hairline instead — which is Incentiv's own card anatomy, `--surface` plus a
- * 1px `--line` (now with `--shadow-panel` reinstated on top — see below).
+ * `--surface-disabled`. The document's own three names map cleanly onto the
+ * three that remain — page (`--bg`), card (`--surface`), surface
+ * (`--surface-2`) — which is why the page background is now the cream canvas
+ * and a card is white on top of it, rather than both being the same white.
  */
 :root {
-  /* Inter is self-hosted through `next/font` in layout.tsx, so `--font-body`
-     points at that rather than at the design system's Google-hosted stack.
-     Same typeface, no network request — the substitution the design
-     system's own README asks for.
-
-     `--font-display` is NOT redeclared here (2026-08-18, was until the live-
-     site retune): `tokens/typography.css` now carries the live site's own
-     'DM Serif Display', Georgia, serif directly, and nothing in this route
-     reads `--font-display` yet — grep finds zero `font-display`/`font-[...
-     --font-display]` consumers — so leaving it unaliased costs nothing
-     today and stops this file from quietly overwriting a real brand value
-     with Inter the moment a heading does ask for it. */
+  /* All three families are self-hosted through `next/font` in layout.tsx, so
+     these point at those local faces rather than at the design system's
+     Google-hosted stacks. Same typefaces, no network request — the
+     substitution the design system's own README asks for. Unlike the
+     2026-08-18 state, `--font-display` and `--font-mono` are now redeclared
+     here too, because the document puts both into real use: DM Serif Display
+     italic on every display and section heading, IBM Plex Mono 300 on every
+     statistic and financial figure. */
   --font-body: var(--font-inter), 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: var(--font-dm-serif), 'DM Serif Display', Georgia, serif;
+  --font-mono: var(--font-plex-mono), 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
   --surface-raised: var(--surface);
   --surface-muted: var(--surface-2);
@@ -83,22 +86,27 @@
   --chart-grid: var(--line);
 
   /* UNMAPPED. Incentiv ships no status colours beyond `--positive` and no
-     chart palette, so these keep the values this tool already used. Carried in
-     PROJECT.md under Open items rather than guessed at. */
-  --accent-soft: #e7f2ef;
+     chart palette, so these keep this tool's own values — re-tinted on
+     2026-08-19 so their soft fills sit in the cream family rather than the
+     cool one they were mixed for. Hue and contrast are unchanged; only the
+     temperature of the two tints moved. Carried in PROJECT.md under Open
+     items rather than guessed at. */
+  --accent-soft: #eaf1fe;
   --warn: #8a5300;
-  --warn-soft: #fdf5e7;
+  --warn-soft: #fbf3e3;
   --danger: #9e2222;
-  --danger-soft: #fceded;
-  --returned: #3f6ea3;
+  --danger-soft: #fbebe8;
+  --returned: #b85c46;
 
-  /* Real Incentiv data this time, not invented: the Funding Simulator's own
-     card (`rounded-2xl border border-border bg-card shadow-elegant`),
-     measured 2026-08-18. Feeds `--shadow-panel` below rather than living in
-     `tokens/colors.css`, because the panel/card-shadow role itself is still
-     this tool's own invention — Incentiv's `--shadow-overlay` is reserved for
-     a true overlay (the mobile sheet), a different elevation step. */
-  --panel-shadow: 0 4px 16px rgba(26, 26, 26, 0.06);
+  /*
+   * Elevation, rebuilt for a 4px world. The document's own shape rule is
+   * "intentionally flat, signalling precision over friendliness", so the
+   * panel no longer floats on a 16px-radius drop shadow — it sits on the
+   * cream page behind a hairline, with a shadow tight enough to separate the
+   * two planes and nothing more. Warm-tinted rather than black, matched to
+   * the `#1A1A1A` ink.
+   */
+  --panel-shadow: 0 1px 2px rgb(26 26 26 / 0.04), 0 10px 24px -18px rgb(26 26 26 / 0.16);
 }
 
 /*
@@ -109,30 +117,19 @@
  */
 .dark {
   /* UNMAPPED, as above. */
-  --accent-soft: #10241f;
+  --accent-soft: #101e33;
   --warn: #e0ab5f;
   --warn-soft: #241c0e;
   --danger: #e78a8a;
   --danger-soft: #241313;
-  --returned: #7fb3e0;
+  --returned: #e08a6e;
 
-  /* No `--accent` override here any more. As of the 2026-08-18 live-site
-     retune the correction lives in `tokens/colors.css` itself for BOTH
-     themes, not as a globals.css afterthought on dark alone — see that
-     file's own header note. The measured light accent (hsl(214,100%,60%),
-     #338bff) is 3.35:1 against white as text/as a button label, under the
-     4.5:1 floor; `colors.css` carries #0063e6 (45% lightness, same hue)
-     instead, 5.35:1 against `--surface` and 4.72:1 against the tighter
-     `--surface-2`. The measured dark accent (#4d9aff, 65% lightness) already
-     clears 6.59:1 against `--surface` with dark `--accent-ink` on top, so it
-     needed no correction and is taken as measured. */
-
-  /* Dark half of `--panel-shadow` above, also measured off the Funding
-     Simulator's own card, in dark. Incentiv uses a light-tinted, low-opacity
-     shadow here rather than a black one — a black drop-shadow essentially
-     disappears against a near-black panel, so this reads as a faint rim-glow
-     instead. Kept exactly, not approximated. */
-  --panel-shadow: 0 4px 16px rgba(245, 243, 240, 0.06);
+  /* No `--accent` override here in either theme any more — see the seam note
+     above. Dark half of `--panel-shadow`: Incentiv uses a light-tinted,
+     low-opacity shadow rather than a black one, because a black drop shadow
+     essentially disappears against a near-black panel. It reads as a faint
+     rim-glow instead. */
+  --panel-shadow: 0 1px 2px rgb(245 243 240 / 0.04), 0 10px 24px -18px rgb(245 243 240 / 0.14);
 }
 
 @theme inline {
@@ -157,51 +154,51 @@
   --color-danger-soft: var(--danger-soft);
   --color-ok: var(--ok);
   --color-returned: var(--returned);
+  /* Display-scale only. Both clear 3:1 on every surface but neither clears
+     4.5:1, so nothing under 24px may take them — see tokens/colors.css. */
+  --color-brand: var(--brand);
+  --color-brand-2: var(--brand-2);
 
   --font-sans: var(--font-body);
+  /* `font-serif` is the display face. Named for the CSS generic rather than
+     for the role, because `--font-display` is already the design system's own
+     token name and a `@theme` entry of the same name would define itself. */
+  --font-serif: var(--font-display);
 
   /*
-   * Three of this tool's six type sizes are already exactly the Incentiv
-   * scale — 13px is `--t-eyebrow-size`, 15px is `--t-small-size`, 17px is
-   * `--t-body-size` — so they become named utilities reading the token
-   * instead of `text-[13px]` literals. Identical rendered sizes; the change
-   * is where the number comes from.
+   * Three of this tool's six type sizes are exactly the Incentiv scale —
+   * 13px is `--t-eyebrow-size`, 15px is `--t-small-size`, 17px is
+   * `--t-body-size` — so they are named utilities reading the token instead
+   * of `text-[13px]` literals.
    *
-   * No line-height is paired with them, because `text-[13px]` set none and
-   * this must not move a single line box.
-   *
-   * UNMAPPED: `text-2xs` (11px, 82 uses) sits below anything Incentiv ships —
-   * its scale stops at the 13px eyebrow. So do the 22px, 26px and 38px
-   * headline sizes. Promoting them would reflow the rail and the result
-   * object, which is a layout change and not a token swap.
+   * `--text-2xs` (11px) is the document's own micro-label size and is now
+   * paired with `.eyebrow` below for the tracked, uppercase treatment Ramp-
+   * grade financial chrome asks of a label that small.
    */
   --text-2xs: 0.6875rem;
   --text-2xs--line-height: 1rem;
   --text-eyebrow: var(--t-eyebrow-size);
   --text-small: var(--t-small-size);
   --text-body: var(--t-body-size);
+  /* The display ramp, so a headline reads a token rather than an arbitrary
+     bracket. `text-hero` is the page's one H1; `text-h2` its one big
+     sectional moment; `text-stat` the result figure itself. */
+  --text-hero: var(--t-hero-size);
+  --text-hero--line-height: var(--t-hero-leading);
+  --text-h2: var(--t-h2-size);
+  --text-h2--line-height: var(--t-h2-leading);
+  --text-h4: var(--t-h4-size);
+  --text-h4--line-height: var(--t-h4-leading);
+  --text-stat: var(--t-stat-size);
+  --text-stat--line-height: var(--t-stat-leading);
 
-  /* `--radius-DEFAULT`/`--radius-md` read `--r-button`/`--r-input` (4px,
-     2026-08-18 — see tokens/shape.css). `--radius-lg` now reads `--r-card`
-     (16px) directly too: it used to hold a literal 10px, UNMAPPED against
-     Incentiv's then-12px `--r-card`, but 16px is the live Funding Simulator
-     card's own radius, so the gap is closed rather than carried. This is the
-     one radius `rounded-lg` in the route resolves to, everywhere it's used —
-     the result panel, `Your model`'s footer bar, the lead modal and the
-     mobile sheet all move together.
-
-     UNMAPPED, unrelated to shape: `--container-page` is 1240px against
-     Incentiv's 1200px `--content-max` — a layout width, not a token this
-     pass touches. */
+  /* Every radius in the app is the document's uniform 4px now (see
+     tokens/shape.css). The three names are kept because the roles are still
+     distinct — a future softening of cards alone stays a one-token change. */
   --radius-DEFAULT: var(--r-button);
   --radius-md: var(--r-input);
   --radius-lg: var(--r-card);
 
-  /* Reads `--panel-shadow` above — real Incentiv data (the Funding
-     Simulator's own card shadow), not the "cards are flat" UNMAPPED gap this
-     used to be. Still used on the result object, `Your model`'s footer bar
-     and the lead modal; `--shadow-overlay` (the mobile sheet) is a separate,
-     stronger elevation step and is untouched. */
   --shadow-panel: var(--panel-shadow);
 
   --container-page: 1240px;
@@ -224,6 +221,11 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-sans);
+  /* The four OpenType features the design system calls essential to
+     Incentiv's Inter variant: a single-storey-adjacent `a`/`g`, the open `l`
+     and the straight-tailed `1`. Set once on `body` so every UI string
+     inherits them; `.figure` overrides with Plex Mono's own set. */
+  font-feature-settings: 'cv02' 1, 'cv03' 1, 'cv04' 1, 'cv11' 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -237,9 +239,157 @@ a {
   text-decoration: none;
 }
 
-.tnum {
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: 'tnum' 1;
+::selection {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+/* ------------------------------------------------------------------------- *
+ * The three type roles, as classes.
+ *
+ * The design system names them as rules rather than as sizes ("always
+ * italic, always tight tracking"; "weight 300 for stats and financial
+ * figures"), so they are classes and not utilities — a heading picks its
+ * size from the scale and its *voice* from here, and the two cannot drift
+ * apart at a call site.
+ * ------------------------------------------------------------------------- */
+
+/*
+ * All four live in `@layer components`, deliberately. An unlayered rule beats
+ * every Tailwind utility, so `.figure` written outside a layer would silently
+ * win over a `tracking-*` or `font-*` utility set beside it at the call site —
+ * the class would stop being a starting point and become a lock. In the
+ * components layer a utility still overrides one property without the call
+ * site having to abandon the whole voice.
+ */
+@layer components {
+  /** DM Serif Display, always italic, always -0.03em. Every display and
+   *  section heading in the app. */
+  .display {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: var(--tracking-display);
+  }
+
+  /** IBM Plex Mono 300: statistics, financial figures, anything the eye
+   *  compares down a column. Tabular by construction, so a figure never
+   *  reflows as its digits change. */
+  .figure {
+    font-family: var(--font-mono);
+    font-weight: 300;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+    letter-spacing: -0.01em;
+  }
+
+  /**
+   * The same face at display scale. Plex Mono's advance width is set for a
+   * column of code, and at 48–80px the gaps either side of a `.` or a `,`
+   * open up until "7.0%" reads as three separate glyphs. -0.05em closes them
+   * back to a single figure without touching the tabular metrics that make
+   * the digits line up.
+   */
+  .figure-display {
+    font-family: var(--font-mono);
+    font-weight: 300;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+    letter-spacing: -0.05em;
+  }
+
+  /** The micro label that names a zone: 11px Inter, uppercase, widely tracked.
+   *  Pair with `text-faint` for a quiet one and `text-accent` for a section
+   *  marker — the design system's "section labels" are the one small place the
+   *  accent is allowed to be text. */
+  .eyebrow {
+    font-size: var(--t-label-size);
+    line-height: 1;
+    font-weight: 500;
+    letter-spacing: var(--t-label-tracking);
+    text-transform: uppercase;
+  }
+
+  /** The document's one gradient: brand blue to terracotta, reserved for
+   *  high-impact display moments. Both stops are display-scale colours, so
+   *  this may only ever be set on text of 24px or more. */
+  .gradient-text {
+    background-image: linear-gradient(102deg, var(--accent) 0%, var(--brand-2) 92%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    /* The clipped box has no ink of its own; give the text an outline colour so
+       a forced-colours mode still renders it. */
+    -webkit-text-fill-color: transparent;
+  }
+}
+
+@media (forced-colors: active) {
+  .gradient-text {
+    -webkit-text-fill-color: currentColor;
+    color: currentColor;
+  }
+}
+
+/* ------------------------------------------------------------------------- *
+ * The page-edge scan lines — the design system's own infrastructural
+ * signature. Two hairlines down the outer container edges, each carrying a
+ * slow blue pulse travelling top to bottom.
+ *
+ * Both layers live in one background image per pseudo-element rather than in
+ * four elements: the static hairline underneath, the `--brand` gradient over
+ * it, sized to a fifth of the container and animated by background-position.
+ * The reduced-motion block at the bottom of this file flattens the animation
+ * to ~0ms, which parks the pulse past the end of the track and leaves the
+ * static hairline alone — the correct degraded state, not a frozen glow.
+ * ------------------------------------------------------------------------- */
+.page-edge-lines {
+  position: relative;
+}
+
+.page-edge-lines::before,
+.page-edge-lines::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--line), var(--line)),
+    linear-gradient(180deg, transparent 0%, var(--brand) 45%, var(--brand) 55%, transparent 100%);
+  background-repeat: no-repeat, no-repeat;
+  background-size:
+    100% 100%,
+    100% 18%;
+  background-position:
+    0 0,
+    0 -20%;
+  animation: edge-scan 9s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+.page-edge-lines::before {
+  left: 0;
+}
+
+.page-edge-lines::after {
+  right: 0;
+  /* Offset so the two edges never pulse in lockstep, which reads as a loading
+     bar rather than as an instrument idling. */
+  animation-delay: -4.5s;
+}
+
+@keyframes edge-scan {
+  from {
+    background-position:
+      0 0,
+      0 -20%;
+  }
+  to {
+    background-position:
+      0 0,
+      0 120%;
+  }
 }
 
 input[type='number']::-webkit-outer-spin-button,
@@ -259,26 +409,29 @@ input[type='range'] {
   background: transparent;
 }
 
+/* A 2px track on a 2px radius, not a 3px pill: the document's flat-radius
+   rule reaches the controls too, and the accent thumb is what carries the
+   value now. */
 input[type='range']::-webkit-slider-runnable-track {
-  height: 3px;
-  border-radius: 999px;
+  height: 2px;
+  border-radius: 2px;
   background: var(--border-strong);
 }
 
 input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
-  height: 14px;
-  width: 14px;
-  margin-top: -5.5px;
-  border-radius: 999px;
+  height: 16px;
+  width: 16px;
+  margin-top: -7px;
+  border-radius: 2px;
   background: var(--accent);
   border: 2px solid var(--surface-raised);
   cursor: pointer;
 }
 
 input[type='range']::-moz-range-track {
-  height: 3px;
-  border-radius: 999px;
+  height: 2px;
+  border-radius: 2px;
   background: var(--border-strong);
 }
 
@@ -286,7 +439,7 @@ input[type='range']::-moz-range-thumb {
   height: 12px;
   width: 12px;
   border: 2px solid var(--surface-raised);
-  border-radius: 999px;
+  border-radius: 2px;
   background: var(--accent);
   cursor: pointer;
 }
@@ -318,7 +471,7 @@ input[type='range']:focus-visible::-moz-range-thumb {
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: 2px;
 }
 
 /*
@@ -335,13 +488,17 @@ input[type='range']:focus-visible::-moz-range-thumb {
  * Recharts 3 renders tick labels as `.recharts-cartesian-axis-tick-value`,
  * not as a `text` inside `.recharts-cartesian-axis-tick`. The old selector
  * matched nothing, so every axis in the app was rendering Recharts' own
- * `fill="#666"` presentation attribute — 5.74:1 on the light panel, which
- * passes, and 3.24:1 on the dark one, which does not. Both selectors are
- * kept: the old one costs nothing and survives a version that moves back.
+ * `fill="#666"` presentation attribute. Both selectors are kept: the old one
+ * costs nothing and survives a version that moves back.
+ *
+ * Ticks are set in Plex Mono now, because an axis is a column of figures and
+ * the design system puts figures in the mono face.
  */
 .recharts-cartesian-axis-tick-value,
 .recharts-cartesian-axis-tick text {
   fill: var(--text-faint);
+  font-family: var(--font-mono);
+  font-weight: 300;
   font-variant-numeric: tabular-nums;
 }
 
@@ -363,14 +520,16 @@ input[type='range']:focus-visible::-moz-range-thumb {
 @keyframes fade-in {
   from {
     opacity: 0;
+    transform: translateY(4px);
   }
   to {
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
 .animate-fade-in {
-  animation: fade-in 200ms ease-out;
+  animation: fade-in var(--dur-base) var(--ease);
 }
 
 @media (prefers-reduced-motion: reduce) {

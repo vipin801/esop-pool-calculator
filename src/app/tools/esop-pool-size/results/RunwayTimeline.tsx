@@ -26,8 +26,8 @@ export function RunwayTimeline({ current, horizonYears }: RunwayTimelineProps) {
     return (
       <div>
         <p className="text-eyebrow text-ink">Your current pool lasts the full plan.</p>
-        <div className="mt-2 h-1.5 rounded-full bg-accent" />
-        <div className="mt-1 flex justify-between text-2xs text-faint">
+        <div className="mt-3 h-1.5 rounded-[1px] bg-accent" />
+        <div className="eyebrow mt-2 flex justify-between text-faint">
           <span>Today</span>
           <span>Horizon end</span>
         </div>
@@ -43,16 +43,16 @@ export function RunwayTimeline({ current, horizonYears }: RunwayTimelineProps) {
       <p className="text-eyebrow text-ink">
         Expected to run out around <span className="font-semibold">{monthLabel(monthIndex)}</span>.
       </p>
-      <div className="relative mt-3 h-1.5 rounded-full bg-border">
-        <div className="absolute inset-y-0 left-0 rounded-full bg-accent" style={{ width: `${fraction * 100}%` }} />
+      <div className="relative mt-3 h-1.5 rounded-[1px] bg-border">
+        <div className="absolute inset-y-0 left-0 rounded-[1px] bg-accent" style={{ width: `${fraction * 100}%` }} />
         <div
-          className="absolute -top-1 h-3.5 w-[3px] rounded-full bg-danger"
+          className="absolute -top-1 h-3.5 w-[2px] rounded-[1px] bg-danger"
           style={{ left: `${fraction * 100}%` }}
           role="img"
           aria-label={`Pool exhausted at ${monthLabel(monthIndex)}`}
         />
       </div>
-      <div className="mt-1 flex justify-between text-2xs text-faint">
+      <div className="eyebrow mt-2 flex justify-between text-faint">
         <span>Today</span>
         <span className="text-danger">Pool exhausted</span>
         <span>Horizon end</span>

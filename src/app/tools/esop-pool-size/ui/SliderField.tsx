@@ -53,7 +53,7 @@ export function SliderField({
           className={`w-full ${blank ? 'opacity-40' : ''}`}
         />
         <span
-          className={`tnum w-14 shrink-0 rounded border border-strong px-1.5 py-1 text-right text-eyebrow ${
+          className={`figure w-16 shrink-0 rounded border border-strong px-2 py-1.5 text-right text-eyebrow ${
             disabled ? 'bg-disabled text-quiet' : blank ? 'bg-raised text-faint' : 'bg-raised text-ink'
           }`}
         >
@@ -68,8 +68,10 @@ export function SliderField({
               type="button"
               disabled={disabled}
               onClick={() => onChange(preset.value)}
-              className={`rounded border px-1.5 py-0.5 text-2xs font-medium transition-colors duration-150 disabled:cursor-not-allowed disabled:text-quiet ${
-                !blank && preset.value === value ? 'border-accent text-accent' : 'border-strong text-sub hover:text-ink'
+              className={`rounded border px-2 py-1 text-2xs font-medium transition-colors duration-150 disabled:cursor-not-allowed disabled:text-quiet ${
+                !blank && preset.value === value
+                  ? 'border-accent bg-accent-soft text-accent'
+                  : 'border-strong text-sub hover:border-ink hover:text-ink'
               }`}
             >
               {preset.label}

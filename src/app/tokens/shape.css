@@ -1,8 +1,16 @@
-/* 2026-08-18: re-sourced from the live site, see tokens/colors.css's own
-   note. --r-card matches the Funding Simulator's card; --r-button/--r-input
-   match both live tools exactly (4px, no disagreement between them). */
+/*
+ * 2026-08-19, from the design system document's own shape rule: "Radius:
+ * uniformly 4px — intentionally flat, signalling precision over friendliness."
+ *
+ * This replaces the 2026-08-18 live-site measurement, where the Funding
+ * Simulator's card was a soft 16px and the two live tools disagreed with each
+ * other. The document settles that disagreement in one direction, so
+ * `--r-card` joins `--r-button`/`--r-input` at 4px and every panel, card,
+ * modal and sheet in the app flattens with it. `--r-screenshot` stays apart:
+ * it frames a captured image rather than a surface of this design system.
+ */
 :root{
-  --r-card:16px;
+  --r-card:4px;
   --r-button:4px;
   --r-input:4px;
   --r-screenshot:12px;

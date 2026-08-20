@@ -36,11 +36,13 @@ interface InputCardProps {
 export function InputCard({ index, title, children }: InputCardProps) {
   return (
     <div className="rounded-lg border border-border bg-raised">
-      <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
-        <span className="tnum text-2xs font-semibold text-faint">{index}</span>
-        <h3 className="text-eyebrow font-semibold text-ink">{title}</h3>
+      <div className="flex items-center gap-2.5 border-b border-border px-5 py-3">
+        {/* The index is a figure, so it takes the figure face — and the accent,
+            because a numbered step is the one place a rail label earns it. */}
+        <span className="figure text-2xs text-accent">{index}</span>
+        <h3 className="text-small font-medium tracking-tight text-ink">{title}</h3>
       </div>
-      <div className="space-y-4 px-4 py-4">{children}</div>
+      <div className="space-y-5 px-5 py-5">{children}</div>
     </div>
   );
 }

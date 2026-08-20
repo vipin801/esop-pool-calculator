@@ -66,13 +66,15 @@ export function ModelPanel({
   const cardProps = { inputs: modelInputs, setGroup: setDraftGroup, touched, markTouched, requiredPaths };
 
   return (
-    <div className="space-y-3">
-      <div>
-        <h2 className="text-eyebrow font-semibold text-ink">Your model</h2>
-        <p className="text-2xs leading-4 text-faint">Inputs and assumptions used for this recommendation.</p>
+    <div className="space-y-5">
+      <div className="border-b border-border pb-4">
+        <h2 className="eyebrow text-accent">Your model</h2>
+        <p className="mt-2.5 text-2xs leading-4 text-faint">
+          Inputs and assumptions used for this recommendation.
+        </p>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         <GrantBasisCard {...cardProps} />
         <CompanyTodayCard
           {...cardProps}
@@ -114,7 +116,7 @@ export function ModelPanel({
       </div>
 
       {isDirty ? (
-        <div className="sticky bottom-0 flex items-center justify-between gap-3 rounded-lg border border-strong bg-raised p-3 shadow-panel">
+        <div className="sticky bottom-0 flex items-center justify-between gap-3 rounded-lg border border-strong bg-raised p-3.5 shadow-panel">
           <p className="text-2xs font-medium text-ink">
             {changeCount} {changeCount === 1 ? 'change' : 'changes'} not applied
           </p>

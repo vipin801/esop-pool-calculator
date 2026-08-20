@@ -40,28 +40,28 @@ export function BenchmarkStrip({ benchmarkComparison }: BenchmarkStripProps) {
   const pos = (v: number) => `${Math.min(100, Math.max(0, (v / scaleMax) * 100))}%`;
 
   return (
-    <section className="rounded-lg border border-border bg-raised p-4">
+    <section className="rounded-lg border border-border bg-raised p-5">
       <div className="flex items-baseline justify-between gap-3">
-        <h3 className="text-eyebrow font-semibold text-ink">Benchmark comparison</h3>
-        <span className="tnum text-2xs font-semibold text-accent">You {formatPct(poolPctOfFullyDiluted)}</span>
+        <h3 className="text-small font-medium tracking-tight text-ink">Benchmark comparison</h3>
+        <span className="figure text-small text-accent">You {formatPct(poolPctOfFullyDiluted)}</span>
       </div>
 
       <div className="mt-4 space-y-4">
         {tracks.map((track: BenchmarkTrackComparison) => (
           <div key={track.trackId}>
-            <p className="text-2xs font-medium text-sub">
+            <p className="eyebrow text-faint">
               {track.trackLabel}
               {track.band ? ` · ${track.band.label}` : ''}
             </p>
-            <div className="relative mt-2 h-2 rounded-full bg-muted">
+            <div className="relative mt-3 h-1.5 rounded-[1px] bg-muted">
               {track.band ? (
                 <div
-                  className="absolute inset-y-0 rounded-full bg-strong"
+                  className="absolute inset-y-0 rounded-[1px] bg-strong"
                   style={{ left: pos(bandExtent(track.band).low), right: `${100 - parseFloat(pos(bandExtent(track.band).high))}%` }}
                 />
               ) : null}
               <div
-                className="absolute -top-1 h-4 w-[3px] rounded-full bg-accent"
+                className="absolute -top-1 h-3.5 w-[2px] rounded-[1px] bg-accent"
                 style={{ left: pos(poolPctOfFullyDiluted) }}
                 role="img"
                 aria-label={`Your pool, ${formatPct(poolPctOfFullyDiluted)} of fully diluted`}
@@ -72,7 +72,7 @@ export function BenchmarkStrip({ benchmarkComparison }: BenchmarkStripProps) {
         ))}
       </div>
 
-      <p className="mt-3 text-2xs leading-4 text-faint">
+      <p className="mt-5 border-t border-border pt-4 text-2xs leading-4 text-faint">
         Both tracks are shown together on purpose. Advisory consensus is opinion; observed data is a dated, directional
         study. Neither is presented as the truth.
       </p>

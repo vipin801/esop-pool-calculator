@@ -18,19 +18,19 @@ interface HowCalculatedProps {
 export function HowCalculated({ solver }: HowCalculatedProps) {
   return (
     <details className="rounded border border-border bg-muted">
-      <summary className="cursor-pointer px-4 py-2.5 text-eyebrow font-semibold text-ink">
+      <summary className="cursor-pointer px-5 py-4 text-small font-medium tracking-tight text-ink">
         How this is calculated
       </summary>
-      <div className="border-t border-border px-4 py-3">
-        <ul className="space-y-1.5">
+      <div className="border-t border-border px-5 py-5">
+        <ul className="space-y-2.5">
           {POINTS.map((point) => (
-            <li key={point} className="flex gap-2 text-2xs leading-4 text-sub">
-              <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-strong" />
+            <li key={point} className="flex gap-2.5 text-2xs leading-4 text-sub">
+              <span className="mt-1.5 h-1 w-1 shrink-0 rounded-[1px] bg-accent" />
               {point}
             </li>
           ))}
         </ul>
-        <p className="mt-3 text-2xs leading-4 text-faint">
+        <p className="mt-4 border-t border-border pt-4 text-2xs leading-4 text-faint">
           Solved in {solver.iterations} iteration{solver.iterations === 1 ? '' : 's'}, rounded up to the nearest 0.5%.
           <EstimateMarker label="Model output" />
         </p>

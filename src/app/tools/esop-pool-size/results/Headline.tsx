@@ -35,6 +35,13 @@ interface HeadlineProps {
  * a separate ">100%" check the engine does not surface), plus a soft-warning
  * callout on `normal` when the answer is unusually far above the advisory
  * ceiling without actually failing to converge.
+ *
+ * 2026-08-19: this is the instrument face. The answer is set in IBM Plex Mono
+ * 300 at the document's stat size — the design system puts financial figures
+ * in the mono face, and at 48–80px that is the one element on the page that
+ * outranks the H1. Everything under it is hairline-ruled rather than boxed:
+ * a stat tile with its own border and its own fill reads as three cards, and
+ * three cards read as three unrelated facts.
  */
 export function Headline({ inputs, result, action, onReviewAssumptions }: HeadlineProps) {
   const state = heroStateFor(result);
@@ -79,7 +86,7 @@ export function Headline({ inputs, result, action, onReviewAssumptions }: Headli
       };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-6">
       {/*
         The percentage and the option count must describe one pool. Both come
         off `recommended`, the run's own opening pool. `PoolSizing`'s figures
@@ -87,50 +94,59 @@ export function Headline({ inputs, result, action, onReviewAssumptions }: Headli
         that percentage with this count reads 3.0% beside 6,72,995 options for
         a company already holding 4,00,000 — AUDIT_P4 defect 2, in the UI.
       */}
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-        <div className="flex flex-wrap items-baseline gap-x-3">
-          <p className="tnum text-[38px] font-semibold leading-none tracking-tight text-ink">
+      <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
+        <div className="min-w-0">
+          <p className="eyebrow text-accent">Recommended pool</p>
+          <p className="figure-display mt-4 text-stat text-ink">
             {formatPct(displayPoolPct(recommended.openingPoolPctOfFullyDiluted))}
           </p>
-          <p className="text-small text-sub">of fully diluted, recommended</p>
+          <p className="mt-2 text-small text-sub">of fully diluted</p>
         </div>
-        {action}
+        <div className="shrink-0 pt-1">{action}</div>
       </div>
 
-      <p className="tnum text-eyebrow leading-5 text-sub">
-        {formatShares(recommended.openingPoolOptions)} options, under{' '}
+      <p className="border-t border-border pt-4 text-eyebrow leading-5 text-sub">
+        <span className="figure text-ink">{formatShares(recommended.openingPoolOptions)}</span> options, under{' '}
         {GRANT_BASIS_LABEL[recommendedPool.selected.grantBasisKind]} grants struck at{' '}
         {STRIKE_LABEL[recommendedPool.selected.strikePolicyKind]}.
       </p>
 
       {softWarning ? (
-        <p className="rounded border border-warn bg-warn-soft px-3 py-2 text-2xs leading-4 text-warn">
+        <p className="rounded border-l-2 border-warn bg-warn-soft px-3 py-2 text-2xs leading-4 text-warn">
           Well above the advisory benchmark for your stage. Not an error — a converged answer is never
           wrong, but worth a second look.
         </p>
       ) : null}
 
-      <div className="space-y-1 rounded border border-border bg-muted px-3 py-2">
-        <p className="tnum text-eyebrow leading-5 text-ink">
-          <span className="font-semibold">Recommended pool</span> — {recommendedRunway}
-        </p>
-        <p className="tnum text-eyebrow leading-5 text-ink">
-          <span className="font-semibold">Your current pool</span>
-          {hasExistingPool ? ` (${formatPct(current.openingPoolPctOfFullyDiluted)} of fully diluted)` : ''} —{' '}
-          {currentRunway}
-        </p>
-      </div>
+      <dl className="grid grid-cols-1 border-t border-border sm:grid-cols-2">
+        <div className="border-b border-border py-4 sm:border-r sm:pr-6">
+          <dt className="eyebrow text-faint">Recommended pool</dt>
+          <dd className="mt-2 text-eyebrow leading-5 text-ink">{recommendedRunway}</dd>
+        </div>
+        <div className="border-b border-border py-4 sm:pl-6">
+          <dt className="eyebrow text-faint">
+            Your current pool
+            {hasExistingPool ? ` · ${formatPct(current.openingPoolPctOfFullyDiluted)} of FD` : ''}
+          </dt>
+          <dd className="mt-2 text-eyebrow leading-5 text-ink">{currentRunway}</dd>
+        </div>
+      </dl>
 
-      <dl className="grid grid-cols-1 gap-px overflow-hidden rounded border border-border bg-border sm:grid-cols-3">
-        <div className="bg-raised px-3 py-2">
-          <dt className="text-2xs text-faint">{topUpLabel}</dt>
-          <dd className="tnum mt-0.5 text-body font-semibold leading-6 text-ink">
-            {formatShares(recommendedPool.selected.poolOptions)}{' '}
-            <span className="ml-1.5 text-2xs font-normal text-faint">
-              {formatPct(recommendedPool.selected.displayPoolPctOfFullyDiluted)} of <Abbr short="FD" long="fully diluted" />
-            </span>
+      {/*
+        Three facts on one hairline grid, not three bordered tiles: the rules
+        between them carry the grouping, and the figures carry the weight.
+      */}
+      <dl className="grid grid-cols-1 gap-y-6 sm:grid-cols-3 sm:gap-x-6 sm:gap-y-0">
+        <div className="sm:border-r sm:border-border sm:pr-6">
+          <dt className="eyebrow text-faint">{topUpLabel}</dt>
+          <dd className="figure mt-3 text-h4 text-ink">
+            {formatShares(recommendedPool.selected.poolOptions)}
           </dd>
-          <p className="mt-0.5 text-2xs leading-4 text-faint">
+          <p className="mt-1.5 text-2xs leading-4 text-sub">
+            {formatPct(recommendedPool.selected.displayPoolPctOfFullyDiluted)} of{' '}
+            <Abbr short="FD" long="fully diluted" />
+          </p>
+          <p className="mt-2 text-2xs leading-4 text-faint">
             {state === 'adequate'
               ? `Your ${formatShares(current.openingPoolOptions)} already covers the plan — nothing new to reserve.`
               : hasExistingPool
@@ -138,17 +154,18 @@ export function Headline({ inputs, result, action, onReviewAssumptions }: Headli
                 : 'You hold no unallocated pool today.'}
           </p>
         </div>
-        <div className="bg-raised px-3 py-2">
-          <dt className="text-2xs text-faint">Hires your current pool supports</dt>
-          <dd className="tnum mt-0.5 text-body font-semibold leading-6 text-ink">
-            {formatShares(current.exhaustion.hiresSupported)} of {formatShares(totalPlannedHires)}
+        <div className="sm:border-r sm:border-border sm:pr-6">
+          <dt className="eyebrow text-faint">Hires your current pool supports</dt>
+          <dd className="figure mt-3 text-h4 text-ink">
+            {formatShares(current.exhaustion.hiresSupported)}
+            <span className="text-sub"> / {formatShares(totalPlannedHires)}</span>
           </dd>
-          <p className="mt-0.5 text-2xs leading-4 text-faint">From the unallocated pool you hold right now.</p>
+          <p className="mt-2 text-2xs leading-4 text-faint">From the unallocated pool you hold right now.</p>
         </div>
-        <div className="bg-raised px-3 py-2">
-          <dt className="text-2xs text-faint">{costStat.label}</dt>
-          <dd className="tnum mt-0.5 text-body font-semibold leading-6 text-ink">{costStat.value}</dd>
-          <p className="mt-0.5 text-2xs leading-4 text-faint">{costStat.helper}</p>
+        <div>
+          <dt className="eyebrow text-faint">{costStat.label}</dt>
+          <dd className="figure mt-3 text-h4 text-ink">{costStat.value}</dd>
+          <p className="mt-2 text-2xs leading-4 text-faint">{costStat.helper}</p>
         </div>
       </dl>
     </div>
@@ -176,9 +193,9 @@ function ExtremeHeadline({
   const drivers = likelyDrivers(inputs);
 
   return (
-    <div className="space-y-3 rounded-lg border border-danger bg-danger-soft p-3">
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-        <p className="text-body font-semibold leading-6 text-ink">
+    <div className="space-y-4 rounded border-l-2 border-danger bg-danger-soft p-4">
+      <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+        <p className="display max-w-[24ch] text-h4 text-ink">
           Your assumptions don&apos;t produce a practical ESOP pool
         </p>
         {action}
@@ -187,16 +204,16 @@ function ExtremeHeadline({
         The current model needs more equity than is practical for an ESOP pool. Nothing was clamped;
         this is exactly where the model stopped.
       </p>
-      <div className="rounded border border-border bg-raised px-3 py-2">
-        <p className="text-2xs text-faint">Model requirement (mathematical output, not a recommendation)</p>
-        <p className="tnum text-body font-semibold leading-6 text-danger">
+      <div className="border-t border-border pt-3">
+        <p className="eyebrow text-faint">Model requirement, not a recommendation</p>
+        <p className="figure mt-2 text-h4 text-danger">
           &gt; {formatPct(displayPoolPct(result.recommended.openingPoolPctOfFullyDiluted))} of fully diluted
         </p>
       </div>
       {drivers.length > 0 ? (
-        <div>
-          <p className="text-2xs font-medium text-faint">Likely drivers</p>
-          <ul className="mt-1 list-inside list-disc text-2xs leading-5 text-sub">
+        <div className="border-t border-border pt-3">
+          <p className="eyebrow text-faint">Likely drivers</p>
+          <ul className="mt-2 list-inside list-disc text-2xs leading-5 text-sub">
             {drivers.map((driver) => (
               <li key={driver}>{driver}</li>
             ))}

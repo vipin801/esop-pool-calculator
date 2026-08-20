@@ -76,21 +76,21 @@ export function Sheet({ open, title, onClose, children, footer }: SheetProps) {
         aria-labelledby={titleId}
         className="mt-auto flex max-h-[92vh] min-h-0 flex-col rounded-t-lg border-t border-border bg-surface shadow-[var(--shadow-overlay)]"
       >
-        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border px-4 py-3">
-          <h2 id={titleId} className="text-small font-semibold text-ink">
+        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border px-5 py-4">
+          <h2 id={titleId} className="eyebrow text-accent">
             {title}
           </h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="rounded border border-strong p-1 text-sub hover:text-ink"
+            className="rounded border border-border p-1.5 text-faint transition-colors duration-150 hover:border-strong hover:text-ink"
           >
             <X className="h-3.5 w-3.5" />
           </button>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">{children}</div>
-        {footer ? <div className="shrink-0 border-t border-border px-4 py-3">{footer}</div> : null}
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">{children}</div>
+        {footer ? <div className="shrink-0 border-t border-border px-5 py-4">{footer}</div> : null}
       </div>
     </div>
   );

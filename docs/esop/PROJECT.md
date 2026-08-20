@@ -287,6 +287,72 @@ Raised in [024], the Incentiv token swap. No engine change; `src/lib/esop` was n
 seam is `src/app/globals.css`, aliasing onto the tokens vendored at `src/app/tokens/`; see
 `src/app/tokens/README.md` for what was and was not vendored.
 
+### 2026-08-19 — the design system document swap
+
+The Incentiv design system document (`DESIGN.md` §1) replaced the live-site
+measurement as the source for `colors.css`, `shape.css` and `typography.css`,
+and this pass took it as a design brief rather than as a colour list.
+`src/app/tokens/README.md` carries the full mapping table and the two
+accessibility departures. What changed at the *design* level, and what it
+closed or opened:
+
+- **Closed: the chart series regression below.** `returned` is now the
+  document's terracotta, deepened to `#b85c46` for 4.51:1 on the panel, and
+  `accentSoft` is the accent's own hue at a higher lightness. The three
+  stacked series in `PoolRunwayChart` are a real ladder in two hues —
+  5.35 / 3.29 / 4.51 — and blue-against-orange is the one two-hue pair that
+  survives every common colour-vision deficiency. `neutral`/`neutralSoft`
+  moved from cool grey to the warm grey the cream ramp is built on.
+- **Closed: the dark-accent correction.** The document blue `#3482ff`
+  measures 5.35:1 on the dark card and 4.79:1 on the tighter dark surface, so
+  dark mode now carries the literal brand colour and `globals.css` overrides
+  the accent in neither theme. Only the *light* accent is corrected, and that
+  correction lives in `tokens/colors.css` beside the value it corrects.
+- **Closed: `--font-mono` and the display type scale had no consumer.** All
+  three typefaces are loaded through `next/font` and all three are in use:
+  DM Serif Display italic on the H1, the CTA band, the info-page headings,
+  the wordmark and the lead modal's title; IBM Plex Mono 300 on every
+  statistic, every table figure, every form number and every chart axis tick.
+  `--tracking-display`, the hero/h2/h4/stat sizes and `--ease`/`--dur-base`
+  are consumed now too.
+- **Reversed deliberately: the 2026-08-18 "accent for focus rings only"
+  restraint pass.** The document names CTAs, primary interactive elements and
+  section labels as the accent's own job — it is "the only chromatic color in
+  UI chrome" — and an achromatic build is not a restrained reading of that,
+  it is a different design. `Button`'s `primary` is an accent fill again, and
+  the accent also carries section eyebrows, the active report-nav rule, the
+  card index numbers, selection tints and links. `SegmentedControl` keeps its
+  dark fill on purpose: a rail can hold six at once, and six blue fills
+  beside one blue action makes the action invisible.
+- **Still open: "Incentiv spends the accent once per viewport."** Fewer
+  places than before this pass in the chrome sense — one *filled* action per
+  viewport — but the accent is now also text in every section label. That is
+  the document's own instruction, so the old note below is superseded rather
+  than resolved; if the one-per-viewport rule is meant literally including
+  text, the section eyebrows are what would have to go quiet.
+- **Still open: `--accent-soft` gained a consumer but the status colours did
+  not.** `--accent-soft` now tints a selected radio option and an active
+  slider preset. `--warn`/`--danger` and their soft fills are still
+  `UNMAPPED`; they were re-tinted into the cream family (hue and contrast
+  unchanged, temperature moved) but the document still ships no status colour
+  beyond `--positive`.
+- **Radius is uniformly 4px now**, including `--r-card`, which settles the
+  disagreement the two live tool pages had with each other. `--shadow-panel`
+  was rebuilt rather than re-measured: a 16px drop shadow under a 4px corner
+  reads as a mistake, so it is a tight two-stop warm shadow that separates
+  the card from the cream page and nothing more.
+- **The page background is the cream canvas now.** The route's shell was
+  `bg-surface` — the same white as a card — so the three-surface ramp was
+  rendering as two. It is `bg-bg` (`#FDFCF9`), cards are `--surface`, and the
+  warm `--surface-2` is the muted fill. Header and footer sit on the canvas;
+  the panels float on it.
+- **`.tnum` was retired.** Every one of its call sites was a number, and
+  every number is now `.figure` (Plex Mono 300, tabular by construction), so
+  the utility had no remaining consumer.
+
+The notes below are the 2026-08-18 state. Where this section contradicts one,
+this section is current.
+
 - **Nine values have no Incentiv token and keep what this tool already used.** Every one is marked
   `UNMAPPED` at its declaration. `--warn`, `--warn-soft`, `--danger` and `--danger-soft` carry the
   compliance `warn` and `blocked` rows and every field validation error; Incentiv ships no status

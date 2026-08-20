@@ -41,21 +41,21 @@ export function ScenarioStrip({ inputs, baseResult, onLoad }: ScenarioStripProps
 
   return (
     <section className="rounded-lg border border-border bg-raised">
-      <div className="flex items-baseline justify-between gap-3 border-b border-border px-4 py-2.5">
-        <h3 className="text-eyebrow font-semibold text-ink">Scenarios</h3>
+      <div className="flex items-baseline justify-between gap-3 border-b border-border px-5 py-3">
+        <h3 className="text-small font-medium tracking-tight text-ink">Scenarios</h3>
       </div>
       <div className="grid grid-cols-1 gap-px bg-border sm:grid-cols-3">
         {results.map(({ key, label, note, result }) => (
-          <div key={key} className="bg-raised px-4 py-3">
+          <div key={key} className="bg-raised px-5 py-4">
             <div className="flex items-center justify-between gap-2">
-              <span className="text-eyebrow font-semibold text-ink">{label}</span>
+              <span className="eyebrow text-faint">{label}</span>
               {key === 'base' ? (
                 <span className="text-2xs text-accent">Current</span>
               ) : result === 'error' ? null : (
                 <button
                   type="button"
                   onClick={() => onLoad(applyScenario(inputs, key))}
-                  className="text-2xs text-faint hover:text-sub"
+                  className="text-2xs text-accent transition-colors duration-150 hover:text-accent-hover"
                 >
                   Load
                 </button>
@@ -67,7 +67,7 @@ export function ScenarioStrip({ inputs, baseResult, onLoad }: ScenarioStripProps
               </p>
             ) : (
               <>
-                <p className="tnum mt-2 text-[22px] font-semibold leading-7 text-ink">
+                <p className="figure mt-3 text-h4 text-ink">
                   {formatPct(result.recommendedPool.selected.displayPoolPctOfFullyDiluted)}
                 </p>
                 {key === 'base' ? (
@@ -75,11 +75,11 @@ export function ScenarioStrip({ inputs, baseResult, onLoad }: ScenarioStripProps
                     <dl className="mt-2 space-y-1">
                       <div className="flex justify-between gap-2">
                         <dt className="text-2xs text-faint">Current pool</dt>
-                        <dd className="tnum text-2xs text-sub">{currentPoolRunwayLabel(result.current)}</dd>
+                        <dd className="figure text-2xs text-sub">{currentPoolRunwayLabel(result.current)}</dd>
                       </div>
                       <div className="flex justify-between gap-2">
                         <dt className="text-2xs text-faint">Founder cost</dt>
-                        <dd className="tnum text-2xs text-sub">{poolCostFor(result)}</dd>
+                        <dd className="figure text-2xs text-sub">{poolCostFor(result)}</dd>
                       </div>
                     </dl>
                     <p className="mt-2 text-2xs leading-4 text-faint">{note}</p>

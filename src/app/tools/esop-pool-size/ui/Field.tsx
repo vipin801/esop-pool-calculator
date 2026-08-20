@@ -46,13 +46,13 @@ export function Field({
   const asGroup = group === true || htmlFor === undefined;
 
   const heading = asGroup ? (
-    <span id={labelId} className="text-small font-medium text-ink">
+    <span id={labelId} className="text-small font-medium tracking-tight text-ink">
       {label}
       {required ? <RequiredMarker /> : null}
       {estimate ? <EstimateMarker /> : null}
     </span>
   ) : (
-    <label htmlFor={htmlFor} className="text-small font-medium text-ink">
+    <label htmlFor={htmlFor} className="text-small font-medium tracking-tight text-ink">
       {label}
       {required ? <RequiredMarker /> : null}
       {estimate ? <EstimateMarker /> : null}
@@ -73,7 +73,7 @@ export function Field({
       {helper || readout ? (
         <div className="flex items-baseline justify-between gap-3">
           {helper ? <p className="text-eyebrow leading-4 text-faint">{helper}</p> : <span />}
-          {readout ? <p className="tnum whitespace-nowrap text-eyebrow font-medium text-sub">{readout}</p> : null}
+          {readout ? <p className="figure whitespace-nowrap text-eyebrow text-sub">{readout}</p> : null}
         </div>
       ) : null}
       {note ? <p className="text-eyebrow leading-4 text-warn">{note}</p> : null}

@@ -66,19 +66,19 @@ export function WhyThisNumber({ inputs, onDownload, reportReady = true, touched 
   }
 
   return (
-    <section className="rounded-lg border border-border bg-raised p-4">
-      <h3 className="text-eyebrow font-semibold text-ink">Why this number</h3>
-      <div className="mt-3 grid gap-4 sm:grid-cols-2">
+    <section className="rounded-lg border border-border bg-raised p-5">
+      <h3 className="text-small font-medium tracking-tight text-ink">Why this number</h3>
+      <div className="mt-5 grid gap-6 sm:grid-cols-2">
         <div>
-          <p className="text-2xs font-semibold uppercase tracking-wide text-faint">You told us</p>
-          <ul className="mt-1.5 space-y-1 text-eyebrow leading-5 text-ink">
+          <p className="eyebrow text-faint">You told us</p>
+          <ul className="mt-3 space-y-1.5 text-eyebrow leading-5 text-ink">
             {founderInputs.map((line) => (
               <li key={line}>{line}</li>
             ))}
           </ul>
         </div>
         <div>
-          <p className="text-2xs font-semibold uppercase tracking-wide text-faint">Model assumptions</p>
+          <p className="eyebrow text-faint">Model assumptions</p>
           <ul className="mt-1.5 space-y-2" aria-hidden="true">
             {LOCKED_BAR_WIDTHS.map((width, i) => (
               <li key={i} className="h-2.5 rounded-full bg-border blur-[1.5px]" style={{ width }} />
@@ -88,13 +88,13 @@ export function WhyThisNumber({ inputs, onDownload, reportReady = true, touched 
         </div>
       </div>
 
-      <div className="mt-4 border-t border-border pt-4 text-center">
-        <p className="text-eyebrow font-semibold text-ink">Full model explanation</p>
-        <p className="mx-auto mt-1 max-w-[42ch] text-2xs leading-4 text-faint">
+      <div className="mt-6 border-t border-border pt-6 text-center">
+        <p className="text-small font-medium tracking-tight text-ink">Full model explanation</p>
+        <p className="mx-auto mt-2 max-w-[42ch] text-2xs leading-4 text-faint">
           See the assumptions, scenarios and calculations supporting your ESOP pool recommendation.
         </p>
         {onDownload ? (
-          <Button size="sm" className="mt-3" onClick={onDownload} disabled={!reportReady}>
+          <Button size="sm" className="mt-4" onClick={onDownload} disabled={!reportReady}>
             {reportReady ? 'Download full report' : 'Preparing report…'}
           </Button>
         ) : null}

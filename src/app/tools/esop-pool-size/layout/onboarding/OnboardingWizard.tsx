@@ -77,46 +77,39 @@ export function OnboardingWizard({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/*
-        2026-08-18 restraint pass: three equal, joined segments — no "/"
-        separators — differentiated by weight and fill, not hue (PROJECT.md).
-        Display-only progress, matching the wizard's existing behaviour
-        (navigation is still Back/Continue alone): `role="tab"` here names the
-        state for assistive tech without adding a click-to-jump interaction
-        this pass does not otherwise add.
+        2026-08-19: a progress rule, not three chips. Each step is a 2px rule
+        over a micro-label — the rule fills with the accent once the step is
+        reached, so progress is read left to right in one glance instead of
+        from three competing fills. Display-only, matching the wizard's
+        existing behaviour (navigation is still Back/Continue alone):
+        `role="tab"` names the state for assistive tech without adding a
+        click-to-jump interaction this pass does not otherwise add.
       */}
-      <div role="tablist" aria-label="Onboarding progress" className="grid grid-cols-3 gap-2">
+      <div role="tablist" aria-label="Onboarding progress" className="grid grid-cols-3 gap-3">
         {STEPS.map((s) => {
           const done = requiredPathsForScreen(s.screen, required).every((p) => touched.has(p));
           const current = s.screen === step;
-          const state = current ? 'current' : done ? 'completed' : 'upcoming';
+          const reached = current || done;
           return (
-            <div
-              key={s.screen}
-              role="tab"
-              aria-selected={current}
-              className={`flex h-11 items-center justify-center gap-1.5 rounded-[12px] text-eyebrow font-medium leading-tight ${
-                state === 'current'
-                  ? 'bg-ink text-bg'
-                  : state === 'completed'
-                    ? 'bg-muted text-ink'
-                    : 'border border-border text-sub'
-              }`}
-            >
-              {state === 'completed' ? <Check aria-hidden="true" className="h-3.5 w-3.5" /> : null}
-              {s.label}
+            <div key={s.screen} role="tab" aria-selected={current} className="flex flex-col gap-3">
+              <span aria-hidden="true" className={`h-0.5 w-full rounded-[1px] ${reached ? 'bg-accent' : 'bg-border'}`} />
+              <span className={`eyebrow flex items-center gap-1.5 ${reached ? 'text-ink' : 'text-faint'}`}>
+                {done && !current ? <Check aria-hidden="true" className="h-3 w-3 shrink-0" /> : null}
+                {s.label}
+              </span>
             </div>
           );
         })}
       </div>
-      <p className="text-eyebrow text-sub">All fields required</p>
+      <p className="eyebrow text-faint">All fields required</p>
 
       <div aria-live="polite" className="sr-only">
         Step {step + 1} of {STEPS.length}: {STEPS[step]!.label}
       </div>
 
-      <div className="rounded-[12px] border border-border bg-raised p-8">
+      <div className="rounded-lg border border-border bg-raised p-6 shadow-panel sm:p-10">
         <div className="space-y-8">
           {step === 0 ? (
             <ScreenCompany
@@ -154,7 +147,7 @@ export function OnboardingWizard({
 
         {/* Footer nav, moved inside the card: a hairline divider, then the
             same 32px group rhythm above it, 16px below it to the buttons. */}
-        <div className="mt-8 border-t border-border pt-4">
+        <div className="mt-10 border-t border-border pt-6">
           <div className="flex flex-col-reverse items-center gap-4 sm:flex-row sm:justify-between">
             <Button variant="ghost" size="md" className="w-full sm:w-auto" onClick={goBack} disabled={step === 0}>
               ← Back

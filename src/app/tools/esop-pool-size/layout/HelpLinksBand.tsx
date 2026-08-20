@@ -23,20 +23,20 @@ const ITEMS: readonly { readonly href: string; readonly title: string; readonly 
  */
 export function HelpLinksBand() {
   return (
-    <section aria-label="Learn more" className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
+    <section aria-label="Learn more" className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2">
       {ITEMS.map((item) => (
         <Link
           key={item.href}
           href={item.href}
-          className="group flex items-center justify-between gap-3 rounded-lg border border-border bg-raised px-4 py-3.5 hover:border-strong"
+          className="group flex items-start justify-between gap-4 rounded-lg border border-border bg-raised px-5 py-5 transition-colors duration-150 hover:border-strong"
         >
           <span>
-            <span className="block text-eyebrow font-semibold text-ink">{item.title}</span>
-            <span className="mt-0.5 block text-2xs leading-4 text-sub">{item.description}</span>
+            <span className="eyebrow block text-accent">{item.title}</span>
+            <span className="mt-3 block text-2xs leading-4 text-sub">{item.description}</span>
           </span>
           <span
             aria-hidden="true"
-            className="shrink-0 text-faint transition-transform group-hover:translate-x-0.5"
+            className="shrink-0 text-faint transition-transform duration-150 group-hover:translate-x-0.5"
           >
             →
           </span>

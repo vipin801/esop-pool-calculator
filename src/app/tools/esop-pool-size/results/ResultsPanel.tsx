@@ -121,7 +121,7 @@ export function ResultsPanel({
 
   return (
     <article id="result" className="scroll-mt-[64px] rounded-lg border border-border bg-surface shadow-panel">
-      <div className="space-y-2.5 border-b border-border p-4">
+      <div className="space-y-4 border-b border-border p-6 sm:p-8">
         <h2 className="sr-only">Your ESOP pool</h2>
 
         <Headline
@@ -156,9 +156,15 @@ export function ResultsPanel({
         ) : null}
       </div>
 
+      {/*
+        An underlined rail rather than a row of pills. A pill is a control; a
+        section marker is a place — the 2px accent rule under the in-view
+        label says where you are without adding seven boxes to a panel whose
+        whole job is to stay quiet under the figures.
+      */}
       <nav
         aria-label="Report sections"
-        className="sticky top-0 z-10 flex flex-wrap gap-x-1 gap-y-1 border-b border-border bg-surface/95 px-3 py-2 backdrop-blur-sm"
+        className="sticky top-0 z-10 flex flex-wrap gap-x-5 border-b border-border bg-surface/95 px-6 backdrop-blur-sm sm:px-8"
       >
         {NAV_SECTIONS.map((s) => (
           <button
@@ -166,8 +172,8 @@ export function ResultsPanel({
             type="button"
             aria-current={activeSection === s.id ? 'location' : undefined}
             onClick={() => scrollToSection(s.id)}
-            className={`rounded px-2 py-1 text-2xs font-medium transition-colors duration-150 hover:text-ink ${
-              activeSection === s.id ? 'bg-muted text-ink' : 'text-sub'
+            className={`eyebrow -mb-px border-b-2 py-3 transition-colors duration-150 hover:text-ink ${
+              activeSection === s.id ? 'border-accent text-ink' : 'border-transparent text-faint'
             }`}
           >
             {s.label}
@@ -175,34 +181,34 @@ export function ResultsPanel({
         ))}
       </nav>
 
-      <div className="space-y-4 p-3">
+      <div className="space-y-12 p-6 sm:p-8">
         <div id="why-this-number">
           <WhyThisNumber inputs={inputs} onDownload={onDownload} reportReady={reportReady} touched={touched} />
         </div>
 
         <ScenarioStrip inputs={inputs} baseResult={result} onLoad={onLoadScenario} />
 
-        <section id="runway" className="scroll-mt-[52px] space-y-3">
-          <h3 className="text-eyebrow font-semibold text-ink">Current pool &amp; runway</h3>
-          <div className="rounded-lg border border-border bg-raised p-4">
+        <section id="runway" className="scroll-mt-[52px] space-y-4">
+          <h3 className="eyebrow text-accent">Current pool &amp; runway</h3>
+          <div className="rounded-lg border border-border bg-raised p-5">
             <RunwayTimeline current={result.current} horizonYears={inputs.hiring.horizonYears} />
           </div>
           <PoolRunwayChart recommended={result.recommended} current={result.current} locked />
           <PoolPctChart recommended={result.recommended} current={result.current} locked />
         </section>
 
-        <section id="hiring" className="scroll-mt-[52px] space-y-3">
-          <h3 className="text-eyebrow font-semibold text-ink">Hiring coverage</h3>
+        <section id="hiring" className="scroll-mt-[52px] space-y-4">
+          <h3 className="eyebrow text-accent">Hiring coverage</h3>
           <HiresSupportedChart recommended={result.recommended} current={result.current} locked />
 
-          <h3 className="text-eyebrow font-semibold text-ink">Hiring economics</h3>
+          <h3 className="eyebrow text-accent">Hiring economics</h3>
           <GrantCostChart
             years={result.recommended.years}
             grantBasisKind={result.recommendedPool.selected.grantBasisKind}
             locked
           />
           {takeaway ? (
-            <p className="rounded border border-border bg-muted px-3 py-2 text-2xs leading-4 text-sub">{takeaway}</p>
+            <p className="rounded border-l-2 border-accent bg-muted px-4 py-3 text-2xs leading-5 text-sub">{takeaway}</p>
           ) : null}
         </section>
 
@@ -210,21 +216,21 @@ export function ResultsPanel({
           <BenchmarkStrip benchmarkComparison={result.benchmarkComparison} />
         </section>
 
-        <section id="year-by-year" className="scroll-mt-[52px] space-y-3">
-          <h3 className="text-eyebrow font-semibold text-ink">Year by year</h3>
+        <section id="year-by-year" className="scroll-mt-[52px] space-y-4">
+          <h3 className="eyebrow text-accent">Year by year</h3>
           <YearTable recommended={result.recommended} current={result.current} />
         </section>
 
-        <section id="cap-table" className="scroll-mt-[52px] space-y-3">
-          <h3 className="text-eyebrow font-semibold text-ink">Cap table</h3>
+        <section id="cap-table" className="scroll-mt-[52px] space-y-4">
+          <h3 className="eyebrow text-accent">Cap table</h3>
           <OwnershipImpact capTables={result.capTables} />
           <CapTablePanel capTables={result.capTables} />
         </section>
 
         <FundingRoundImpact result={result} onModelRound={onReviewAssumptions} />
 
-        <section className="space-y-3">
-          <h3 className="text-eyebrow font-semibold text-ink">Employee economics</h3>
+        <section className="space-y-4">
+          <h3 className="eyebrow text-accent">Employee economics</h3>
           <MedianEmployeeValue value={result.medianEmployeeValue} />
         </section>
 

@@ -6,30 +6,40 @@
  * Five keys are the Incentiv tokens, held here as literals for that reason
  * and annotated with the token each one is:
  *
- *   accent  = --accent  (2026-08-18 live-site retune; light is a11y-corrected,
- *             dark is the measured value as-is — see globals.css)
+ *   accent  = --accent  (2026-08-19 document swap; light is the hue-preserving
+ *             a11y correction of `#3482ff`, dark is the document blue as-is)
  *   surface = --surface, which is also this app's --surface-raised
  *   text    = --ink
  *   axis    = --ink-2, the same token --text-faint reads
  *   grid    = --line
  *
- * **The other six are UNMAPPED.** Incentiv ships no chart palette, so
- * `accentSoft`, `accentFaint`, `neutral`, `neutralSoft`, `returned` and `warn`
- * keep the values this tool already used. Two consequences are real and are
- * carried in PROJECT.md rather than quietly absorbed:
+ * **The other six are still UNMAPPED** — Incentiv ships no chart palette —
+ * but two of them are no longer arbitrary, and the 2026-08-19 pass closed the
+ * two defects PROJECT.md carried against this file:
  *
- * - `returned` (#3f6ea3 light) was chosen in [021] to sit apart from a *mint*
- *   accent. Against the Incentiv blue it is the same hue family at nearly the
- *   same lightness — 1.10:1 between the two marks in light — and the pool
- *   runway chart plots them together.
- * - `accentSoft` is still the desaturated mint that matched the old accent,
- *   so the refresh bars no longer read as a soft version of the new one.
+ * - `returned` was `#3f6ea3`, chosen in [021] to sit apart from a *mint*
+ *   accent, and against a blue accent it had become the same hue family at
+ *   nearly the same lightness — 1.10:1 between two marks `PoolRunwayChart`
+ *   plots together. It is now the design system's own terracotta, deepened
+ *   from the `#D4715D` display value to `#b85c46` so it clears 4.51:1 on the
+ *   white panel rather than 3.32:1. Blue against orange is the one two-hue
+ *   pair that survives every common colour-vision deficiency, which is what
+ *   these two marks needed and did not have.
+ * - `accentSoft` was a desaturated mint left over from the old accent, so the
+ *   refresh bars did not read as a soft version of anything. It is now the
+ *   accent's own hue at a higher lightness, and the three stacked series in
+ *   `PoolRunwayChart` form a real ladder: 5.35 / 3.29 / 4.51 against the
+ *   panel, in two hues.
  *
- * Every series colour still clears 3:1 against the panel it is drawn on, in
- * both themes — WCAG 1.4.11, which covers a bar or a line because the mark
- * *is* the information. Re-measured against the 2026-08-18 retune: light
- * 5.35/3.33/4.91/3.27/5.29/6.33, dark 6.59/4.40/7.27/3.51/8.41/9.06, axis 5.74
- * and 6.58 against its 4.5 text floor.
+ * `neutral`/`neutralSoft` moved from cool grey to the warm grey the cream
+ * ramp is built on, so the "current pool" and "planned" series stop reading
+ * as a different temperature from every surface around them.
+ *
+ * Every series colour clears 3:1 against the panel it is drawn on, in both
+ * themes — WCAG 1.4.11, which covers a bar or a line because the mark *is*
+ * the information. Measured 2026-08-19: light 5.35/3.29/5.77/3.73/4.51/6.33,
+ * dark 5.35/10.90/7.61/4.41/7.43/9.40, axis 6.84 and 6.47 against its 4.5
+ * text floor.
  *
  * `grid` is the exception and is deliberately below 3:1. Grid lines are not
  * required to read the chart — the axis ticks carry the values and every
@@ -51,29 +61,29 @@ export interface ChartPalette {
 }
 
 export const LIGHT_PALETTE: ChartPalette = {
-  accent: '#0063e6', // --accent (2026-08-18 live-site retune, a11y-corrected — see globals.css)
-  accentSoft: '#55998a', // UNMAPPED
-  accentFaint: '#cfe6df', // UNMAPPED, and no consumer
-  neutral: '#6b7273', // UNMAPPED
-  neutralSoft: '#8b8f8f', // UNMAPPED
-  returned: '#3f6ea3', // UNMAPPED
-  grid: '#e5e1dc', // --line
-  axis: '#666666', // --ink-2
+  accent: '#0063e6', // --accent (2026-08-19 document swap, hue-preserving a11y correction)
+  accentSoft: '#5b8fd9', // UNMAPPED, but now the accent's own hue
+  accentFaint: '#d9e6fb', // UNMAPPED, and no consumer
+  neutral: '#6b655c', // UNMAPPED, warm grey
+  neutralSoft: '#8c8378', // UNMAPPED, warm grey
+  returned: '#b85c46', // UNMAPPED, the design system's terracotta deepened for 4.5:1
+  grid: '#e5e2dc', // --line
+  axis: '#5f5a52', // --ink-2
   surface: '#ffffff', // --surface
   text: '#1a1a1a', // --ink
   warn: '#8a5300', // UNMAPPED
 };
 
 export const DARK_PALETTE: ChartPalette = {
-  accent: '#4d9aff', // --accent (2026-08-18 live-site retune — measured value, no correction needed)
-  accentSoft: '#1f8a72', // UNMAPPED
-  accentFaint: '#1b3c35', // UNMAPPED, and no consumer
-  neutral: '#9aa3a4', // UNMAPPED
-  neutralSoft: '#666c6d', // UNMAPPED
-  returned: '#7fb3e0', // UNMAPPED
-  grid: '#2e2e2e', // --line
-  axis: '#999999', // --ink-2
-  surface: '#121212', // --surface
+  accent: '#3482ff', // --accent (the document blue as-is; it clears 4.5:1 on dark)
+  accentSoft: '#9dc4ff', // UNMAPPED, but now the accent's own hue
+  accentFaint: '#16233a', // UNMAPPED, and no consumer
+  neutral: '#a8a199', // UNMAPPED, warm grey
+  neutralSoft: '#7e7770', // UNMAPPED, warm grey
+  returned: '#e08a6e', // UNMAPPED, the design system's terracotta lifted for dark
+  grid: '#2c2a28', // --line
+  axis: '#9a948c', // --ink-2
+  surface: '#0d0d0d', // --surface
   text: '#f5f3f0', // --ink
   warn: '#e0ab5f', // UNMAPPED
 };

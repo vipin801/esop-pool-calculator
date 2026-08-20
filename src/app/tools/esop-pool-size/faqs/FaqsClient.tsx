@@ -11,13 +11,13 @@ interface FaqItemProps {
 function FaqItem({ question, children }: FaqItemProps) {
   return (
     <details className="group rounded-lg border border-border bg-raised">
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-2.5 text-eyebrow font-semibold text-ink [&::-webkit-details-marker]:hidden">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 text-small font-medium tracking-tight text-ink [&::-webkit-details-marker]:hidden">
         {question}
         <span aria-hidden="true" className="shrink-0 text-faint transition-transform group-open:rotate-180">
           ⌄
         </span>
       </summary>
-      <div className="space-y-1.5 border-t border-border px-4 py-3 text-eyebrow leading-5 text-sub">{children}</div>
+      <div className="space-y-2.5 border-t border-border px-5 py-4 text-small leading-relaxed text-sub">{children}</div>
     </details>
   );
 }

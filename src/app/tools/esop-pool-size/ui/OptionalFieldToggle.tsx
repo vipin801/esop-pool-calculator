@@ -35,7 +35,7 @@ export function OptionalFieldToggle({ label, children, onAdd }: OptionalFieldTog
         onAdd?.();
         setAdded(true);
       }}
-      className="text-small font-medium text-sub hover:text-ink"
+      className="text-small font-medium text-accent transition-colors duration-150 hover:text-accent-hover"
     >
       + {label}
     </button>

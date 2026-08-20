@@ -33,19 +33,19 @@ export function CollapsibleSection({ index, title, hint, defaultOpen = false, ch
       open={open}
       onToggle={(event) => setOpen(event.currentTarget.open)}
     >
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-2.5 [&::-webkit-details-marker]:hidden">
-        <span className="flex items-center gap-2">
-          <span className="tnum text-2xs font-semibold text-faint">{index}</span>
-          <span className="text-eyebrow font-semibold text-ink">{title}</span>
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-5 py-3 [&::-webkit-details-marker]:hidden">
+        <span className="flex items-center gap-2.5">
+          <span className="figure text-2xs text-accent">{index}</span>
+          <span className="text-small font-medium tracking-tight text-ink">{title}</span>
         </span>
         <span aria-hidden="true" className={`text-faint transition-transform ${open ? 'rotate-180' : ''}`}>
           ⌄
         </span>
       </summary>
       {open ? (
-        <div className="space-y-4 border-t border-border px-4 py-4">{children}</div>
+        <div className="space-y-5 border-t border-border px-5 py-5">{children}</div>
       ) : hint ? (
-        <p className="border-t border-border px-4 py-3 text-2xs leading-4 text-faint">{hint}</p>
+        <p className="border-t border-border px-5 py-3.5 text-2xs leading-4 text-faint">{hint}</p>
       ) : null}
     </details>
   );

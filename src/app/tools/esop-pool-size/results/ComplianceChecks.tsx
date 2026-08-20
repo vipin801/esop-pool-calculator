@@ -30,14 +30,14 @@ function StatusIcon({ status }: { readonly status: ComplianceStatus }) {
 
 function CheckRow({ check }: { readonly check: ComplianceCheck }) {
   return (
-    <li className="flex gap-2.5 px-4 py-3">
+    <li className="flex gap-3 px-5 py-4">
       <StatusIcon status={check.status} />
       <div className="min-w-0">
-        <p className="text-eyebrow leading-5 text-ink">{check.finding}</p>
-        <p className="mt-0.5 text-2xs leading-4 text-sub">{check.action}</p>
-        <details className="mt-1">
-          <summary className="cursor-pointer text-2xs text-faint">Details</summary>
-          <p className="mt-0.5 text-2xs leading-4 text-faint">
+        <p className="text-small leading-5 text-ink">{check.finding}</p>
+        <p className="mt-1 text-2xs leading-4 text-sub">{check.action}</p>
+        <details className="mt-2">
+          <summary className="cursor-pointer text-2xs text-faint hover:text-sub">Details</summary>
+          <p className="mt-1.5 text-2xs leading-4 text-faint">
             {check.statutoryReference} · {check.disclaimer}
           </p>
         </details>
@@ -73,10 +73,10 @@ export function ComplianceChecks({ checks }: ComplianceChecksProps) {
 
   return (
     <details className="group rounded-lg border border-border bg-raised">
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-2.5 [&::-webkit-details-marker]:hidden">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-5 py-4 [&::-webkit-details-marker]:hidden">
         <span>
-          <h3 className="text-eyebrow font-semibold text-ink">Compliance checks (India)</h3>
-          {summary.length > 0 ? <p className="mt-0.5 text-2xs leading-4 text-sub">{summary.join(', ')}.</p> : null}
+          <h3 className="text-small font-medium tracking-tight text-ink">Compliance checks (India)</h3>
+          {summary.length > 0 ? <p className="mt-1 text-2xs leading-4 text-sub">{summary.join(', ')}.</p> : null}
         </span>
         <span aria-hidden="true" className="shrink-0 text-faint transition-transform group-open:rotate-180">
           ⌄
@@ -88,7 +88,7 @@ export function ComplianceChecks({ checks }: ComplianceChecksProps) {
           if (rows.length === 0) return null;
           return (
             <div key={status} className="border-b border-border last:border-0">
-              <p className="px-4 pt-2.5 text-2xs font-semibold uppercase tracking-wide text-faint">{GROUP_TITLE[status]}</p>
+              <p className="eyebrow px-5 pt-4 text-faint">{GROUP_TITLE[status]}</p>
               <ul className="divide-y divide-border">
                 {rows.map((check) => (
                   <CheckRow key={check.id} check={check} />

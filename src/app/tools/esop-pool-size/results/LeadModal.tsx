@@ -27,7 +27,7 @@ interface LeadModalProps {
 }
 
 const INPUT_CLASSES =
-  'focus-ring w-full rounded border border-strong bg-surface px-2.5 py-2 text-eyebrow text-ink outline-none';
+  'focus-ring h-11 w-full rounded border border-strong bg-surface px-3 text-small text-ink outline-none transition-colors duration-150 hover:border-ink';
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -135,11 +135,11 @@ export function LeadModal({ open, stage, busy, onClose, onSubmit }: LeadModalPro
         role="dialog"
         aria-modal="true"
         aria-labelledby={`${fieldId}-title`}
-        className="w-full max-w-md rounded-lg border border-border bg-raised p-5 shadow-panel"
+        className="w-full max-w-md rounded-lg border border-border bg-raised p-6 shadow-[var(--shadow-overlay)]"
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h2 id={`${fieldId}-title`} className="text-small font-semibold text-ink">
+            <h2 id={`${fieldId}-title`} className="display text-h4 text-ink">
               Download the detailed report
             </h2>
             <p className="mt-1 text-2xs leading-4 text-faint">
@@ -151,15 +151,15 @@ export function LeadModal({ open, stage, busy, onClose, onSubmit }: LeadModalPro
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="rounded border border-strong p-1 text-sub hover:text-ink"
+            className="rounded border border-border p-1.5 text-faint transition-colors duration-150 hover:border-strong hover:text-ink"
           >
             <X className="h-3.5 w-3.5" />
           </button>
         </div>
 
-        <form className="mt-4 space-y-3" onSubmit={handleSubmit} noValidate>
+        <form className="mt-6 space-y-4" onSubmit={handleSubmit} noValidate>
           <div>
-            <label htmlFor={`${fieldId}-name`} className="mb-1 block text-2xs font-medium text-sub">
+            <label htmlFor={`${fieldId}-name`} className="eyebrow mb-2 block text-faint">
               Full name
             </label>
             <input
@@ -180,7 +180,7 @@ export function LeadModal({ open, stage, busy, onClose, onSubmit }: LeadModalPro
           </div>
 
           <div>
-            <label htmlFor={`${fieldId}-email`} className="mb-1 block text-2xs font-medium text-sub">
+            <label htmlFor={`${fieldId}-email`} className="eyebrow mb-2 block text-faint">
               Work email
             </label>
             <input
@@ -205,7 +205,7 @@ export function LeadModal({ open, stage, busy, onClose, onSubmit }: LeadModalPro
           </div>
 
           <div>
-            <label htmlFor={`${fieldId}-company`} className="mb-1 block text-2xs font-medium text-sub">
+            <label htmlFor={`${fieldId}-company`} className="eyebrow mb-2 block text-faint">
               Company name
             </label>
             <input
@@ -226,7 +226,7 @@ export function LeadModal({ open, stage, busy, onClose, onSubmit }: LeadModalPro
           </div>
 
           <div>
-            <label htmlFor={`${fieldId}-stage`} className="mb-1 block text-2xs font-medium text-sub">
+            <label htmlFor={`${fieldId}-stage`} className="eyebrow mb-2 block text-faint">
               Stage
             </label>
             <SelectField
@@ -257,7 +257,7 @@ export function LeadModal({ open, stage, busy, onClose, onSubmit }: LeadModalPro
           <button
             type="submit"
             disabled={!valid || busy}
-            className="w-full rounded border border-accent bg-accent px-3.5 py-2 text-eyebrow font-medium text-accent-ink transition-colors duration-150 hover:bg-accent-hover disabled:cursor-not-allowed disabled:border-strong disabled:bg-disabled disabled:text-quiet"
+            className="h-11 w-full rounded border border-accent bg-accent px-5 text-eyebrow font-medium text-accent-ink transition-colors duration-150 hover:border-accent-hover hover:bg-accent-hover disabled:cursor-not-allowed disabled:border-border disabled:bg-disabled disabled:text-quiet"
           >
             {busy ? 'Preparing the PDF…' : 'Download report'}
           </button>

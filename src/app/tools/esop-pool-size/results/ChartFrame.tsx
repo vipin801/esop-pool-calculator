@@ -49,14 +49,14 @@ function cellText(cell: string | number): string {
 
 export function ChartFrame({ title, caption, keys, dataTable, children, id, locked = false }: ChartFrameProps) {
   return (
-    <section className="min-w-0 rounded-lg border border-border bg-raised p-3" data-chart={id}>
-      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <h3 className="text-eyebrow font-semibold text-ink">{title}</h3>
+    <section className="min-w-0 rounded-lg border border-border bg-raised p-5" data-chart={id}>
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1.5">
+        <h3 className="text-small font-medium tracking-tight text-ink">{title}</h3>
         {!locked && keys ? (
           <ul className="flex flex-wrap items-center gap-x-3 gap-y-1">
             {keys.map((k) => (
               <li key={k.label} className="flex items-center gap-1.5 text-2xs text-sub">
-                <span className="h-1.5 w-3 shrink-0 rounded-sm" style={{ background: k.color }} />
+                <span className="h-2 w-2 shrink-0 rounded-[1px]" style={{ background: k.color }} />
                 {k.label}
               </li>
             ))}
@@ -64,12 +64,12 @@ export function ChartFrame({ title, caption, keys, dataTable, children, id, lock
         ) : null}
       </div>
       {locked ? (
-        <div className="relative mt-2 h-[220px] overflow-hidden rounded bg-muted">
+        <div className="relative mt-3 h-[240px] overflow-hidden rounded bg-muted">
           <div className="pointer-events-none absolute inset-0 select-none blur-md" aria-hidden="true">
             {children}
           </div>
           <div className="absolute inset-0 flex items-center justify-center px-4">
-            <span className="rounded border border-border bg-surface px-3 py-1.5 text-center text-2xs font-medium text-sub shadow-panel">
+            <span className="rounded border border-border bg-surface px-3.5 py-2 text-center text-2xs font-medium text-sub shadow-panel">
               Download the report to see this chart
             </span>
           </div>
@@ -77,7 +77,7 @@ export function ChartFrame({ title, caption, keys, dataTable, children, id, lock
       ) : (
         <>
           {children}
-          {caption ? <p className="mt-2 text-2xs leading-4 text-faint">{caption}</p> : null}
+          {caption ? <p className="mt-3 text-2xs leading-4 text-faint">{caption}</p> : null}
           {/*
             `sr-only` goes on a wrapping div, not on the table.
             `display: table` treats `width: 1px` as a minimum and grows to fit its

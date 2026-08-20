@@ -68,22 +68,22 @@ export const LIGHT_PALETTE: ChartPalette = {
   neutralSoft: '#8c8378', // UNMAPPED, warm grey
   returned: '#b85c46', // UNMAPPED, the design system's terracotta deepened for 4.5:1
   grid: '#e5e2dc', // --line
-  axis: '#5f5a52', // --ink-2
+  axis: '#666666', // --ink-2
   surface: '#ffffff', // --surface
   text: '#1a1a1a', // --ink
   warn: '#8a5300', // UNMAPPED
 };
 
 export const DARK_PALETTE: ChartPalette = {
-  accent: '#3482ff', // --accent (the document blue as-is; it clears 4.5:1 on dark)
+  accent: '#3482ff', // --accent (the document blue as-is; it clears 5.16:1 on dark)
   accentSoft: '#9dc4ff', // UNMAPPED, but now the accent's own hue
   accentFaint: '#16233a', // UNMAPPED, and no consumer
-  neutral: '#a8a199', // UNMAPPED, warm grey
-  neutralSoft: '#7e7770', // UNMAPPED, warm grey
+  neutral: '#a8a8a8', // UNMAPPED, neutral grey to match the dark ramp
+  neutralSoft: '#7e7e7e', // UNMAPPED, neutral grey to match the dark ramp
   returned: '#e08a6e', // UNMAPPED, the design system's terracotta lifted for dark
-  grid: '#2c2a28', // --line
-  axis: '#9a948c', // --ink-2
-  surface: '#0d0d0d', // --surface
+  grid: '#2e2e2e', // --line
+  axis: '#9a9a9a', // --ink-2
+  surface: '#121212', // --surface (document §2 dark card, hsl(0 0% 7%))
   text: '#f5f3f0', // --ink
   warn: '#e0ab5f', // UNMAPPED
 };

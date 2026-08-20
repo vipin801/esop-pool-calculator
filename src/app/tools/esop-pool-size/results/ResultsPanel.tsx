@@ -172,7 +172,7 @@ export function ResultsPanel({
             type="button"
             aria-current={activeSection === s.id ? 'location' : undefined}
             onClick={() => scrollToSection(s.id)}
-            className={`eyebrow -mb-px border-b-2 py-3 transition-colors duration-150 hover:text-ink ${
+            className={`section-label -mb-px border-b-2 py-3 transition-colors duration-150 hover:text-ink ${
               activeSection === s.id ? 'border-accent text-ink' : 'border-transparent text-faint'
             }`}
           >
@@ -181,7 +181,14 @@ export function ResultsPanel({
         ))}
       </nav>
 
-      <div className="space-y-12 p-6 sm:p-8">
+      {/*
+        §5/§7: "Use `.section-divider` between every major section — it
+        provides rhythm without visual heaviness." The report is one
+        continuous scroll of eight sections, so the hairline is what tells a
+        reader where one ends, in place of the boxes an earlier pass used.
+        `space-y-12` still owns the gap; the divider only draws the rule.
+      */}
+      <div className="space-y-12 p-6 [&>*+*]:relative [&>*+*]:before:absolute [&>*+*]:before:-top-6 [&>*+*]:before:left-0 [&>*+*]:before:right-0 [&>*+*]:before:border-t [&>*+*]:before:border-border/60 sm:p-8">
         <div id="why-this-number">
           <WhyThisNumber inputs={inputs} onDownload={onDownload} reportReady={reportReady} touched={touched} />
         </div>
@@ -189,7 +196,7 @@ export function ResultsPanel({
         <ScenarioStrip inputs={inputs} baseResult={result} onLoad={onLoadScenario} />
 
         <section id="runway" className="scroll-mt-[52px] space-y-4">
-          <h3 className="eyebrow text-accent">Current pool &amp; runway</h3>
+          <h3 className="section-label text-accent">Current pool &amp; runway</h3>
           <div className="rounded-lg border border-border bg-raised p-5">
             <RunwayTimeline current={result.current} horizonYears={inputs.hiring.horizonYears} />
           </div>
@@ -198,10 +205,10 @@ export function ResultsPanel({
         </section>
 
         <section id="hiring" className="scroll-mt-[52px] space-y-4">
-          <h3 className="eyebrow text-accent">Hiring coverage</h3>
+          <h3 className="section-label text-accent">Hiring coverage</h3>
           <HiresSupportedChart recommended={result.recommended} current={result.current} locked />
 
-          <h3 className="eyebrow text-accent">Hiring economics</h3>
+          <h3 className="section-label text-accent">Hiring economics</h3>
           <GrantCostChart
             years={result.recommended.years}
             grantBasisKind={result.recommendedPool.selected.grantBasisKind}
@@ -217,12 +224,12 @@ export function ResultsPanel({
         </section>
 
         <section id="year-by-year" className="scroll-mt-[52px] space-y-4">
-          <h3 className="eyebrow text-accent">Year by year</h3>
+          <h3 className="section-label text-accent">Year by year</h3>
           <YearTable recommended={result.recommended} current={result.current} />
         </section>
 
         <section id="cap-table" className="scroll-mt-[52px] space-y-4">
-          <h3 className="eyebrow text-accent">Cap table</h3>
+          <h3 className="section-label text-accent">Cap table</h3>
           <OwnershipImpact capTables={result.capTables} />
           <CapTablePanel capTables={result.capTables} />
         </section>
@@ -230,7 +237,7 @@ export function ResultsPanel({
         <FundingRoundImpact result={result} onModelRound={onReviewAssumptions} />
 
         <section className="space-y-4">
-          <h3 className="eyebrow text-accent">Employee economics</h3>
+          <h3 className="section-label text-accent">Employee economics</h3>
           <MedianEmployeeValue value={result.medianEmployeeValue} />
         </section>
 

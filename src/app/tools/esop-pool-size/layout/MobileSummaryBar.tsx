@@ -50,7 +50,7 @@ export function MobileSummaryBar({ recommended, current, selected, onOpenModel }
         className="flex min-w-0 flex-1 items-center justify-between gap-3 text-left"
       >
         <div className="min-w-0">
-          <p className="figure-display text-h4 leading-6 text-ink">
+          <p className="number-display leading-6 text-ink">
             {formatPct(displayPoolPct(recommended.openingPoolPctOfFullyDiluted))}{' '}
             <span className="font-sans text-2xs font-normal text-faint">
               of <Abbr short="FD" long="fully diluted" />

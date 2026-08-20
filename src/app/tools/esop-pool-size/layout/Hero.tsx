@@ -19,11 +19,11 @@ interface HeroProps {
 export function Hero({ showResults = false }: HeroProps) {
   return (
     <div
-      className={`mx-auto flex flex-col px-6 pb-2 ${
+      className={`mx-auto flex flex-col px-6 pb-2 lg:px-16 ${
         showResults ? 'max-w-page pt-8' : 'max-w-[720px] pt-10 sm:pt-14'
       }`}
     >
-      <nav aria-label="Breadcrumb" className="eyebrow flex items-center gap-2 text-faint">
+      <nav aria-label="Breadcrumb" className="section-label flex items-center gap-2 text-faint">
         <span>Resources</span>
         <span aria-hidden="true">/</span>
         <span>Tools</span>
@@ -32,13 +32,13 @@ export function Hero({ showResults = false }: HeroProps) {
           ESOP Pool Sizing
         </span>
       </nav>
-      <h1 className={`display text-ink ${showResults ? 'mt-4 text-h2' : 'mt-6 text-hero'}`}>
-        How big should your <span className="gradient-text">ESOP pool</span> be?
+      <h1 className={`text-ink ${showResults ? 'heading-section mt-4' : 'heading-hero mt-6'}`}>
+        How big should your <span className="text-gradient">ESOP pool</span> be?
       </h1>
       <p className={`max-w-[46ch] leading-relaxed text-sub ${showResults ? 'mt-3 text-small' : 'mt-5 text-body'}`}>
         Sized against your hiring plan, not a rule of thumb.
       </p>
-      <hr className={`border-0 border-t border-border ${showResults ? 'mt-6' : 'mt-8'}`} />
+      <hr className={`section-divider ${showResults ? 'mt-6' : 'mt-10'}`} />
     </div>
   );
 }

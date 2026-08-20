@@ -1,18 +1,30 @@
 /*
- * 2026-08-19, from the design system document's own shape rule: "Radius:
- * uniformly 4px — intentionally flat, signalling precision over friendliness."
+ * 2026-08-20, the document's §5 "Border Radius Scale" table.
  *
- * This replaces the 2026-08-18 live-site measurement, where the Funding
- * Simulator's card was a soft 16px and the two live tools disagreed with each
- * other. The document settles that disagreement in one direction, so
- * `--r-card` joins `--r-button`/`--r-input` at 4px and every panel, card,
- * modal and sheet in the app flattens with it. `--r-screenshot` stays apart:
- * it frames a captured image rather than a surface of this design system.
+ * "All interactive and card-like elements use the same 4px radius system —
+ * this flat consistency is intentional." §7 repeats it as a Don't: no radius
+ * beyond 4px on buttons, cards or inputs.
+ *
+ * The table names exactly four exceptions, and only those four exist here:
+ * the hero lead row wrapper (8px) and its inner button (6px), the pill
+ * (100px) for persona chips and status tags, and the modal (16px, from §6's
+ * elevation table). `--r-screenshot` is not a document radius — it frames a
+ * captured image, not a surface of this system.
  */
 :root{
+  --r-sm:4px;
+  --r-md:4px;
+  --r-lg:4px;
   --r-card:4px;
   --r-button:4px;
   --r-input:4px;
+
+  /* The four documented exceptions. */
+  --r-hero-btn:6px;
+  --r-hero-row:8px;
+  --r-pill:100px;
+  --r-modal:16px;
+
   --r-screenshot:12px;
   --border-w:1px;
   --hit-min:44px;

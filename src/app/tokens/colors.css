@@ -1,74 +1,125 @@
 /*
- * 2026-08-19: re-sourced from the Incentiv design system document
- * (`DESIGN.md` §1, "Visual Theme & Atmosphere" + Key Characteristics), which
- * supersedes both the `incentiv-design-system/` export and the 2026-08-18
- * live-site measurement for the neutral ramp. The document names the surfaces
- * exactly — `#FDFCF9` page, `#F5F2ED` surface, `#FFFFFF` card in light;
- * `#0A0A0A` page, `#0D0D0D` card, `#1A1A1A` surface in dark — and names the
- * warm border `#E5E2DC`, the brand blue `#3482ff`, the terracotta `#D4715D`
- * and the semantic green `#22C55E`. Those are carried here verbatim except
- * where a value cannot clear the contrast floor the app's own matrix asserts;
- * every such departure is named below and in `src/app/tokens/README.md`.
+ * 2026-08-20: re-sourced from the COMPLETE Incentiv design system document
+ * (§2 "Color Palette & Roles" and §9's Quick Color Reference). The earlier
+ * pass only had §1, which named the surfaces and the brand blue but shipped
+ * none of the extended palette, none of the dark-mode luminance ladder, and
+ * none of the gradients.
  *
- * Role mapping, because the document's three names and this app's three
- * tokens are not spelled the same:
+ * Where the document gives both a hex and an `hsl()` for the same role and
+ * the two disagree by a shade (`#FDFCF9` vs `hsl(40 33% 98%)` -> `#FCFAF8`;
+ * `#3482ff` vs `hsl(214 100% 60%)` -> `#338BFF`), the **hex** is taken: it is
+ * what §2 leads with and what §9's reference table repeats. The `hsl()` form
+ * is used only where the document gives no hex — the dark ladder, the light
+ * elevated surface, and `--primary-hover`.
  *
- *   document "page background" -> --bg      (the cream canvas)
- *   document "card"            -> --surface (also this app's --surface-raised)
- *   document "surface"         -> --surface-2 (this app's muted/disabled fill)
+ * Role mapping, because the document's names and this app's tokens are not
+ * spelled the same:
  *
- * Two accessibility-driven departures, both of them a lightness move along
- * the document's own hue, never a different colour:
+ *   document --background / "page"  -> --bg
+ *   document --card                 -> --surface  (also this app's --surface-raised)
+ *   document --surface              -> --surface-2 (this app's muted/disabled fill)
+ *   document --surface-elevated     -> --surface-elevated (new; see below)
+ *   document --foreground           -> --ink
+ *   document --muted-foreground     -> --ink-2
+ *   document --border               -> --line
+ *   document --primary              -> --brand, and --accent in dark (see below)
  *
- * `--accent` is NOT the document's `#3482ff` / `hsl(214 100% 60%)`. That blue
- * measures 3.63:1 against the `#FFFFFF` card and 3.54:1 against the cream
- * page — under the 4.5:1 WCAG 1.4.3 sets for text at this app's sizes, and
- * the accent here is text (links, section labels) and a button label, not
- * only a fill. `#0063E6` is the same hue at 45% lightness: 5.35:1 on the
- * card, 5.21:1 on the page, 4.79:1 on the tighter `--surface-2`. The
- * document's literal blue is kept, unmodified, as `--brand` — see below.
+ * THE ONE DEPARTURE, and it is a colour change the brief explicitly permits.
  *
- * `--positive` is not the document's `#22C55E` in light: that green is
- * 2.09:1 on white, which would put a financial figure below the floor on the
- * one surface it is most often read against. `#0F7A4A` is the same hue,
- * darkened to 5.38:1. Dark mode takes a lifted mint (`#34D399`, 10.11:1)
- * for the same reason in the other direction.
+ * `--accent` in light is `#0063E6`, not the document's `#3482ff`. The document
+ * puts the brand blue on button labels (§4: white text on `--primary`) and on
+ * `.section-label`, which is **10px** type (§3). `#3482ff` measures 3.63:1 on
+ * the white card and 3.54:1 on the cream page — WCAG 1.4.3 asks 4.5:1 for
+ * text at those sizes, and this app's own contrast matrix
+ * (`__tests__/ui-quality.test.ts`) asserts it on every surface in both themes.
+ * `#0063E6` is the same hue (214 degrees) at 45% lightness: 5.35 / 5.21 / 4.79
+ * across the three light surfaces. **In dark the document blue is used
+ * unmodified** — `#3482ff` is 5.16:1 on the dark card — so dark mode carries
+ * the literal brand colour.
  *
- * `--brand` and `--brand-2` are the document's literal `#3482ff` and
- * `#D4715D`, carried unaltered and reserved for display-scale moments — the
- * page-edge scan lines, the gradient headline, decorative rules. Both clear
- * the 3:1 large-text floor (3.63:1 and 3.32:1 on the card) at the >=24px
- * sizes they are used at, and nothing smaller may use them.
+ * `--brand` carries `#3482ff` untouched in both themes for the places the
+ * document reserves it where the 3:1 large-text/non-text floor applies
+ * instead: the page-edge scan lines, the gradient's first stop, and display-
+ * scale brand moments. `--brand-2` is the terracotta gradient endpoint,
+ * likewise untouched in light.
+ *
+ * `--positive` is not the document's `#22C55E` in light (2.09:1 on white, so a
+ * green financial figure would be unreadable on the surface it is most often
+ * read against). Same hue, darkened to `#0F7A4A` at 5.38:1. The literal is
+ * kept as `--success-brand` for a non-text indicator dot.
+ * `--destructive` is the document's `hsl(0 84% 60%)` literal, again non-text
+ * only; `--danger` in globals.css is the readable text counterpart.
  */
 :root{
+  /* Surfaces — document §2 "Background Surfaces (Light Mode)" */
   --bg:#FDFCF9;
   --surface:#FFFFFF;
   --surface-2:#F5F2ED;
-  --ink:#1A1A1A;
-  --ink-2:#5F5A52;
-  --ink-3:#8A8378;
+  --surface-elevated:#F7F5F3;
   --line:#E5E2DC;
+
+  /* Text & content — document §2 "Text & Content" */
+  --ink:#1A1A1A;
+  --ink-2:#666666;
+  --ink-3:#8A8378;
+  --ink-inverted:#F5F3F0;
+
+  /* Brand & accent — document §2 "Brand & Accent" */
   --accent:#0063E6;
-  --accent-hover:#004DB3;
+  --accent-hover:#0052C4;
   --accent-ink:#FFFFFF;
   --brand:#3482FF;
+  --brand-hover:#006FFF;
   --brand-2:#D4715D;
+  --accent-blue:#3B82F6;
+  --navy:#0D2D78;
+  --purple:#6B5CE7;
+
+  /* Status & financial — document §2 "Status & Financial" */
   --positive:#0F7A4A;
-  --shadow-overlay:0 8px 32px rgb(26 26 26 / 0.12);
+  --success-brand:#22C55E;
+  --destructive:#EF4444;
+
+  /* Gradients — document §2 "Gradient" */
+  --gradient-primary:linear-gradient(135deg,#3482FF 0%,#5A9CFF 100%);
+  --gradient-text:linear-gradient(135deg,var(--brand) 0%,var(--brand-2) 100%);
+  --gradient-subtle:linear-gradient(180deg,#F5F2ED 0%,#FDFCF9 100%);
+
+  --shadow-overlay:0 24px 48px rgb(0 0 0 / 0.15);
 }
 [data-theme="dark"]{
+  /* Document §2 "Background Surfaces (Dark Mode)" — a luminance ladder at
+     4% / 7% / 10% / 14% / 18%, which is the elevation system in dark: each
+     raised layer is lighter, never shadowed. */
   --bg:#0A0A0A;
-  --surface:#0D0D0D;
+  --surface:#121212;
   --surface-2:#1A1A1A;
+  --surface-elevated:#242424;
+  --line:#2E2E2E;
+
   --ink:#F5F3F0;
-  --ink-2:#9A948C;
-  --ink-3:#7A736A;
-  --line:#2C2A28;
+  --ink-2:#9A9A9A;
+  --ink-3:#7A7A7A;
+  --ink-inverted:#1A1A1A;
+
+  /* The document blue as-is: 5.16:1 on the dark card, so no correction. */
   --accent:#3482FF;
   --accent-hover:#6FA9FF;
   --accent-ink:#0A0A0A;
   --brand:#3482FF;
+  --brand-hover:#6FA9FF;
   --brand-2:#E89078;
+  --accent-blue:#60A5FA;
+  --navy:#7B9AE0;
+  --purple:#9E90F5;
+
   --positive:#34D399;
-  --shadow-overlay:0 8px 32px rgb(0 0 0 / 0.6);
+  --success-brand:#34D399;
+  --destructive:#F08A8A;
+
+  --gradient-primary:linear-gradient(135deg,#3482FF 0%,#5A9CFF 100%);
+  --gradient-text:linear-gradient(135deg,var(--brand) 0%,var(--brand-2) 100%);
+  --gradient-subtle:linear-gradient(180deg,#1A1A1A 0%,#0A0A0A 100%);
+
+  --shadow-overlay:0 24px 48px rgb(0 0 0 / 0.5);
 }

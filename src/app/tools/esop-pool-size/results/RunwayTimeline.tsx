@@ -27,7 +27,7 @@ export function RunwayTimeline({ current, horizonYears }: RunwayTimelineProps) {
       <div>
         <p className="text-eyebrow text-ink">Your current pool lasts the full plan.</p>
         <div className="mt-3 h-1.5 rounded-[1px] bg-accent" />
-        <div className="eyebrow mt-2 flex justify-between text-faint">
+        <div className="section-label mt-2 flex justify-between text-faint">
           <span>Today</span>
           <span>Horizon end</span>
         </div>
@@ -52,7 +52,7 @@ export function RunwayTimeline({ current, horizonYears }: RunwayTimelineProps) {
           aria-label={`Pool exhausted at ${monthLabel(monthIndex)}`}
         />
       </div>
-      <div className="eyebrow mt-2 flex justify-between text-faint">
+      <div className="section-label mt-2 flex justify-between text-faint">
         <span>Today</span>
         <span className="text-danger">Pool exhausted</span>
         <span>Horizon end</span>

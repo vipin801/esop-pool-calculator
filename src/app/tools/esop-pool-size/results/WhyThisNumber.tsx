@@ -70,7 +70,7 @@ export function WhyThisNumber({ inputs, onDownload, reportReady = true, touched 
       <h3 className="text-small font-medium tracking-tight text-ink">Why this number</h3>
       <div className="mt-5 grid gap-6 sm:grid-cols-2">
         <div>
-          <p className="eyebrow text-faint">You told us</p>
+          <p className="section-label text-faint">You told us</p>
           <ul className="mt-3 space-y-1.5 text-eyebrow leading-5 text-ink">
             {founderInputs.map((line) => (
               <li key={line}>{line}</li>
@@ -78,7 +78,7 @@ export function WhyThisNumber({ inputs, onDownload, reportReady = true, touched 
           </ul>
         </div>
         <div>
-          <p className="eyebrow text-faint">Model assumptions</p>
+          <p className="section-label text-faint">Model assumptions</p>
           <ul className="mt-1.5 space-y-2" aria-hidden="true">
             {LOCKED_BAR_WIDTHS.map((width, i) => (
               <li key={i} className="h-2.5 rounded-full bg-border blur-[1.5px]" style={{ width }} />

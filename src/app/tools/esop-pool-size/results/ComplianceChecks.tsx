@@ -88,7 +88,7 @@ export function ComplianceChecks({ checks }: ComplianceChecksProps) {
           if (rows.length === 0) return null;
           return (
             <div key={status} className="border-b border-border last:border-0">
-              <p className="eyebrow px-5 pt-4 text-faint">{GROUP_TITLE[status]}</p>
+              <p className="section-label px-5 pt-4 text-faint">{GROUP_TITLE[status]}</p>
               <ul className="divide-y divide-border">
                 {rows.map((check) => (
                   <CheckRow key={check.id} check={check} />

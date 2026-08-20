@@ -95,7 +95,7 @@ export function OnboardingWizard({
           return (
             <div key={s.screen} role="tab" aria-selected={current} className="flex flex-col gap-3">
               <span aria-hidden="true" className={`h-0.5 w-full rounded-[1px] ${reached ? 'bg-accent' : 'bg-border'}`} />
-              <span className={`eyebrow flex items-center gap-1.5 ${reached ? 'text-ink' : 'text-faint'}`}>
+              <span className={`section-label flex items-center gap-1.5 ${reached ? 'text-ink' : 'text-faint'}`}>
                 {done && !current ? <Check aria-hidden="true" className="h-3 w-3 shrink-0" /> : null}
                 {s.label}
               </span>
@@ -103,7 +103,7 @@ export function OnboardingWizard({
           );
         })}
       </div>
-      <p className="eyebrow text-faint">All fields required</p>
+      <p className="section-label text-faint">All fields required</p>
 
       <div aria-live="polite" className="sr-only">
         Step {step + 1} of {STEPS.length}: {STEPS[step]!.label}

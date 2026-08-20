@@ -96,8 +96,8 @@ export function Headline({ inputs, result, action, onReviewAssumptions }: Headli
       */}
       <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
         <div className="min-w-0">
-          <p className="eyebrow text-accent">Recommended pool</p>
-          <p className="figure-display mt-4 text-stat text-ink">
+          <p className="section-label text-accent">Recommended pool</p>
+          <p className="number-large mt-4 text-ink">
             {formatPct(displayPoolPct(recommended.openingPoolPctOfFullyDiluted))}
           </p>
           <p className="mt-2 text-small text-sub">of fully diluted</p>
@@ -120,11 +120,11 @@ export function Headline({ inputs, result, action, onReviewAssumptions }: Headli
 
       <dl className="grid grid-cols-1 border-t border-border sm:grid-cols-2">
         <div className="border-b border-border py-4 sm:border-r sm:pr-6">
-          <dt className="eyebrow text-faint">Recommended pool</dt>
+          <dt className="section-label text-faint">Recommended pool</dt>
           <dd className="mt-2 text-eyebrow leading-5 text-ink">{recommendedRunway}</dd>
         </div>
         <div className="border-b border-border py-4 sm:pl-6">
-          <dt className="eyebrow text-faint">
+          <dt className="section-label text-faint">
             Your current pool
             {hasExistingPool ? ` · ${formatPct(current.openingPoolPctOfFullyDiluted)} of FD` : ''}
           </dt>
@@ -138,8 +138,8 @@ export function Headline({ inputs, result, action, onReviewAssumptions }: Headli
       */}
       <dl className="grid grid-cols-1 gap-y-6 sm:grid-cols-3 sm:gap-x-6 sm:gap-y-0">
         <div className="sm:border-r sm:border-border sm:pr-6">
-          <dt className="eyebrow text-faint">{topUpLabel}</dt>
-          <dd className="figure mt-3 text-h4 text-ink">
+          <dt className="section-label text-faint">{topUpLabel}</dt>
+          <dd className="number-display mt-3 text-ink">
             {formatShares(recommendedPool.selected.poolOptions)}
           </dd>
           <p className="mt-1.5 text-2xs leading-4 text-sub">
@@ -155,16 +155,16 @@ export function Headline({ inputs, result, action, onReviewAssumptions }: Headli
           </p>
         </div>
         <div className="sm:border-r sm:border-border sm:pr-6">
-          <dt className="eyebrow text-faint">Hires your current pool supports</dt>
-          <dd className="figure mt-3 text-h4 text-ink">
+          <dt className="section-label text-faint">Hires your current pool supports</dt>
+          <dd className="number-display mt-3 text-ink">
             {formatShares(current.exhaustion.hiresSupported)}
             <span className="text-sub"> / {formatShares(totalPlannedHires)}</span>
           </dd>
           <p className="mt-2 text-2xs leading-4 text-faint">From the unallocated pool you hold right now.</p>
         </div>
         <div>
-          <dt className="eyebrow text-faint">{costStat.label}</dt>
-          <dd className="figure mt-3 text-h4 text-ink">{costStat.value}</dd>
+          <dt className="section-label text-faint">{costStat.label}</dt>
+          <dd className="number-display mt-3 text-ink">{costStat.value}</dd>
           <p className="mt-2 text-2xs leading-4 text-faint">{costStat.helper}</p>
         </div>
       </dl>
@@ -195,7 +195,7 @@ function ExtremeHeadline({
   return (
     <div className="space-y-4 rounded border-l-2 border-danger bg-danger-soft p-4">
       <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
-        <p className="display max-w-[24ch] text-h4 text-ink">
+        <p className="heading-section max-w-[24ch] text-ink">
           Your assumptions don&apos;t produce a practical ESOP pool
         </p>
         {action}
@@ -205,14 +205,14 @@ function ExtremeHeadline({
         this is exactly where the model stopped.
       </p>
       <div className="border-t border-border pt-3">
-        <p className="eyebrow text-faint">Model requirement, not a recommendation</p>
-        <p className="figure mt-2 text-h4 text-danger">
+        <p className="section-label text-faint">Model requirement, not a recommendation</p>
+        <p className="number-display mt-2 text-danger">
           &gt; {formatPct(displayPoolPct(result.recommended.openingPoolPctOfFullyDiluted))} of fully diluted
         </p>
       </div>
       {drivers.length > 0 ? (
         <div className="border-t border-border pt-3">
-          <p className="eyebrow text-faint">Likely drivers</p>
+          <p className="section-label text-faint">Likely drivers</p>
           <ul className="mt-2 list-inside list-disc text-2xs leading-5 text-sub">
             {drivers.map((driver) => (
               <li key={driver}>{driver}</li>

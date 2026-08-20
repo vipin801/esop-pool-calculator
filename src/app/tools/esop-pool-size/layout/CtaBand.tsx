@@ -8,8 +8,8 @@ import { Button } from '../ui/Button';
 export function CtaBand() {
   return (
     <section className="rounded-lg border border-border bg-muted px-6 py-14 text-center sm:px-12">
-      <p className="eyebrow text-accent">Tabulate</p>
-      <h2 className="display mx-auto mt-5 max-w-[22ch] text-h2 text-ink">
+      <p className="section-label text-accent">Tabulate</p>
+      <h2 className="heading-section mx-auto mt-5 max-w-[24ch] text-ink">
         This model runs on assumptions. Tabulate runs on your actual cap table.
       </h2>
       <p className="mx-auto mt-5 max-w-[48ch] text-small leading-relaxed text-sub">

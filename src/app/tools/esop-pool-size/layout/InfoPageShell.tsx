@@ -27,8 +27,8 @@ export function InfoPageShell({ crumbLabel, title, subtitle, children }: InfoPag
       <div className="flex min-h-screen w-full flex-col bg-bg">
         <Header />
         <div className="page-edge-lines mx-auto w-full max-w-page flex-1">
-          <main className="mx-auto max-w-[720px] px-6 pb-20 pt-10 sm:pt-14">
-            <nav aria-label="Breadcrumb" className="eyebrow flex items-center gap-2 text-faint">
+          <main className="mx-auto max-w-[720px] px-6 pb-20 pt-10 sm:pt-14 lg:px-0">
+            <nav aria-label="Breadcrumb" className="section-label flex items-center gap-2 text-faint">
               <Link href="/tools/esop-pool-size" className="hover:text-ink">
                 ESOP Pool Sizing
               </Link>
@@ -38,12 +38,14 @@ export function InfoPageShell({ crumbLabel, title, subtitle, children }: InfoPag
               </span>
             </nav>
 
-            <h1 className="display mt-6 text-h2 text-ink">{title}</h1>
+            <h1 className="heading-hero mt-6 text-ink">{title}</h1>
             <p className="mt-5 max-w-[52ch] text-body leading-relaxed text-sub">{subtitle}</p>
 
-            <div className="mt-12 space-y-10 border-t border-border pt-10">{children}</div>
+            <div className="section-divider mt-12" />
+            <div className="mt-10 space-y-10">{children}</div>
 
-            <div className="mt-12 flex flex-wrap items-center gap-4 border-t border-border pt-8">
+            <div className="section-divider mt-12" />
+            <div className="mt-8 flex flex-wrap items-center gap-4">
               <Link
                 href="/tools/esop-pool-size"
                 className="inline-flex h-11 items-center justify-center rounded border border-strong bg-surface px-5 text-eyebrow font-medium text-ink transition-colors duration-150 hover:border-ink"
@@ -51,11 +53,11 @@ export function InfoPageShell({ crumbLabel, title, subtitle, children }: InfoPag
                 ← Back to the calculator
               </Link>
               {crumbLabel === 'How it works' ? (
-                <Link href="/tools/esop-pool-size/faqs" className="eyebrow text-faint hover:text-ink">
+                <Link href="/tools/esop-pool-size/faqs" className="section-label text-faint hover:text-ink">
                   Read the FAQs →
                 </Link>
               ) : (
-                <Link href="/tools/esop-pool-size/how-it-works" className="eyebrow text-faint hover:text-ink">
+                <Link href="/tools/esop-pool-size/how-it-works" className="section-label text-faint hover:text-ink">
                   Read how it works →
                 </Link>
               )}

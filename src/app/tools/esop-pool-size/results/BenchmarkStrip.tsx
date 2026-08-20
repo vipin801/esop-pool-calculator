@@ -49,7 +49,7 @@ export function BenchmarkStrip({ benchmarkComparison }: BenchmarkStripProps) {
       <div className="mt-4 space-y-4">
         {tracks.map((track: BenchmarkTrackComparison) => (
           <div key={track.trackId}>
-            <p className="eyebrow text-faint">
+            <p className="section-label text-faint">
               {track.trackLabel}
               {track.band ? ` · ${track.band.label}` : ''}
             </p>

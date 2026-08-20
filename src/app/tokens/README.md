@@ -1,55 +1,93 @@
 # Incentiv design tokens
 
-## 2026-08-19: the design system document is now the source
+## 2026-08-20: the COMPLETE design system document is the source
 
-`colors.css`, `shape.css` and `typography.css` are re-sourced from the
-**Incentiv design system document** (`DESIGN.md` §1 — "Visual Theme &
-Atmosphere" plus its Key Characteristics list). That document supersedes both
-the `incentiv-design-system/` export and the 2026-08-18 live-site measurement
-described below, because it states the system as *rules* rather than as
-whatever a given page happened to render on a given day:
+`colors.css`, `typography.css`, `spacing.css` and `shape.css` are sourced from
+the full Incentiv design system document (§1–§9). The 2026-08-19 pass had only
+§1, which names the surfaces and the brand blue but ships none of the extended
+palette, none of the dark-mode luminance ladder, none of the typography
+hierarchy, and none of the component stylings. Everything below §2 is new to
+this pass.
 
-| What the document states | Where it lands |
+### What each section became
+
+| Document section | Where it lands |
 |---|---|
-| Light: `#FDFCF9` page, `#F5F2ED` surface, `#FFFFFF` card | `--bg`, `--surface-2`, `--surface` |
-| Dark: `#0A0A0A` page, `#0D0D0D` card, `#1A1A1A` surface | `--bg`, `--surface`, `--surface-2` |
-| Warm borders `#E5E2DC`, "never cool gray" | `--line` |
-| Brand blue `#3482ff` / `hsl(214 100% 60%)` | `--brand`, and `--accent` in dark |
-| Terracotta `#D4715D`, gradient's second stop | `--brand-2` |
-| Semantic green `#22C55E` for positive values | `--positive` (corrected, see below) |
-| Radius uniformly 4px, "precision over friendliness" | `--r-card`/`--r-button`/`--r-input` |
-| DM Serif Display, **always italic**, tracking -0.03em | `--font-display`, `--tracking-display`, `.display` |
-| Inter with `"cv02" "cv03" "cv04" "cv11"` for all UI text | `--font-body`, `body { font-feature-settings }` |
-| IBM Plex Mono **weight 300** for stats and financial figures | `--font-mono`, `.figure`/`.figure-display` |
-| Animated page-edge scan lines as the infrastructural signature | `.page-edge-lines` in globals.css |
+| §2 Colour palette & roles | `tokens/colors.css` — surfaces, text, brand, extended accents, status, gradients |
+| §3 Typography hierarchy | `tokens/typography.css` + the named classes in `globals.css` |
+| §4 Component stylings | the `.btn-*` / `.card-*` / `.badge` / `.icon-box` / `.persona-chip` / `.bg-*` / `.page-edge-lines` classes in `globals.css` |
+| §5 Layout principles | `tokens/spacing.css` (8px scale, 1312px container, 80/40px sections) + `tokens/shape.css` |
+| §6 Depth & elevation | `--shadow-elevated`, `--panel-shadow`, `--surface-elevated`, the dark luminance ladder |
+| §8 Responsive behaviour | the stepped `@media` blocks under the type classes |
 
-### The two departures from a literal document value
+### §3's hierarchy, as classes
 
-Both are a lightness move along the document's own hue. Neither is a
-different colour, and both exist because the app's own contrast matrix
-(`__tests__/ui-quality.test.ts`) asserts WCAG 1.4.3/1.4.11 on every
-foreground/surface pair in both themes.
+Every row of the document's own table is one class, all in `@layer
+components` so a Tailwind utility at the call site can still override a single
+property:
 
-- **`--accent` in light is `#0063E6`, not `#3482ff`.** The document blue is
-  3.63:1 on the white card and 3.54:1 on the cream page — under the 4.5:1
-  floor for text at this app's sizes, and the accent here is a link, a
-  section label and a button label, not only a fill. `#0063E6` is the same
-  hue (214°) at 45% lightness: 5.35:1 / 5.21:1 / 4.79:1 across the three
-  surfaces. **In dark the document blue is used unmodified** — it measures
-  5.35:1 on `#0D0D0D` — so dark mode carries the literal brand colour and
-  `globals.css` no longer overrides the accent in either theme.
-- **`--positive` in light is `#0F7A4A`, not `#22C55E`.** The document green is
-  2.09:1 on white, which would put a financial figure below the floor on the
-  surface it is most often read against. Same hue, darkened to 5.38:1. Dark
-  takes a lifted mint (`#34D399`, 10.11:1) for the mirror-image reason.
+`.heading-hero` (30/36/48/60px), `.heading-section` (20/24/30/36px),
+`.heading-sub`, `.text-body-lg`, `.text-body`, `.text-nav`, `.section-label`,
+`.number-display` (20/24/28px), `.number-large` (32/40/48px), `.text-gradient`.
 
-`--brand` and `--brand-2` carry the document's literal `#3482ff` and
-`#D4715D` untouched, reserved for display-scale use only — the scan lines,
-the gradient headline, decorative rules. Both clear the 3:1 large-text floor
-at the ≥24px sizes they appear at; nothing smaller may take them.
-`lib/chartTheme.ts` deepens the terracotta to `#b85c46` for the `returned`
-series, which is a plotted mark at small size and needs 3:1 as a mark plus
-real separation from the accent — the note in that file has the measurements.
+The responsive steps are the document's own two scaling tables, declared as
+discrete sizes at the named breakpoints rather than as a `clamp()` — a clamp
+would land between the specified steps at most viewport widths.
+
+`.figure` is the one class here with no row in §3: it is the mono face at body
+scale, for a table cell or an inline figure, where `.number-display` at 20px+
+would be too large. It is the direct consequence of §3's "Monospace for
+financial truth" principle applied below 20px.
+
+### Where a document value could not be taken literally
+
+Three, all of them a lightness move along the document's own hue, and all
+forced by the contrast matrix this app's own test suite asserts
+(`__tests__/ui-quality.test.ts`, WCAG 1.4.3 for text and 1.4.11 for control
+boundaries and plotted marks, in both themes).
+
+- **`--accent` in light is `#0063E6`, not `#3482ff`.** §4 puts the brand blue
+  behind white button labels and §3 puts it on `.section-label`, which is
+  **10px** type. `#3482ff` measures 3.63:1 on the white card and 3.54:1 on the
+  cream page. `#0063E6` is the same hue (214°) at 45% lightness — 5.35 / 5.21 /
+  4.79 across the three light surfaces. **In dark the document blue is used
+  unmodified** (5.16:1 on the dark card), so dark mode carries the literal.
+- **`--positive` in light is `#0F7A4A`, not `#22C55E`** (2.09:1 on white). Same
+  hue, darkened to 5.38:1. The literal is kept as `--success-brand` for a
+  non-text indicator dot.
+- **`--danger` in light is `#c22626`, not `hsl(0 84% 60%)`** (3.76:1 on white).
+  The document's literal is kept as `--destructive`, non-text only.
+
+`--brand` and `--brand-2` carry `#3482ff` and `#D4715D` untouched, for the
+places §2 and §7 reserve them where the 3:1 large-text / non-text floor
+applies instead: the page-edge scan lines, the gradient's stops, and
+display-scale brand moments. `lib/chartTheme.ts` deepens the terracotta to
+`#b85c46` for the `returned` series, which is a small plotted mark and needs
+3:1 as a mark plus real separation from the accent.
+
+### Where the document disagrees with itself
+
+§1's Key Characteristics list gives the dark card as `#0D0D0D`; §2's Background
+Surfaces table gives it as `hsl(0 0% 7%)` = `#121212`. §2 is taken, because it
+is the systematic palette section and because its value is part of a
+deliberate 4% / 7% / 10% / 14% / 18% luminance ladder that §6 then names as the
+dark-mode elevation mechanism. Taking §1's value would break the ladder's
+even stepping.
+
+The same rule settles `#FDFCF9` vs `hsl(40 33% 98%)` (`#FCFAF8`) and `#3482ff`
+vs `hsl(214 100% 60%)` (`#338BFF`): where a hex and an `hsl()` are both given
+for one role, the **hex** is taken, because it is what §2 leads with and what
+§9's Quick Color Reference repeats.
+
+### One documented behaviour not adopted
+
+§4 Navigation says "Light **sticky** header". This app's header is
+deliberately not sticky, and that predates the document: a sticky header over
+a scrolling form painted over the first field label, verified by measuring
+both elements' `getBoundingClientRect()` after a 300px scroll. The reasoning
+is in `layout/Header.tsx`'s own comment. Every other line of §4's navigation
+spec — the logomark, `.text-nav` links, the brand-blue CTA, the hairline
+bottom separator — is implemented.
 
 ## Earlier: the 2026-08-18 live-site measurement
 

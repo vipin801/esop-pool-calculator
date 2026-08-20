@@ -11,7 +11,7 @@ interface SectionProps {
 function Section({ title, children }: SectionProps) {
   return (
     <section className="space-y-3">
-      <h2 className="display text-h4 text-ink">{title}</h2>
+      <h2 className="heading-section text-ink">{title}</h2>
       <div className="space-y-3 text-small leading-relaxed text-sub">{children}</div>
     </section>
   );

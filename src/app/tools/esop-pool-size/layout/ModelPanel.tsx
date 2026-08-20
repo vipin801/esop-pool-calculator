@@ -68,7 +68,7 @@ export function ModelPanel({
   return (
     <div className="space-y-5">
       <div className="border-b border-border pb-4">
-        <h2 className="eyebrow text-accent">Your model</h2>
+        <h2 className="section-label text-accent">Your model</h2>
         <p className="mt-2.5 text-2xs leading-4 text-faint">
           Inputs and assumptions used for this recommendation.
         </p>

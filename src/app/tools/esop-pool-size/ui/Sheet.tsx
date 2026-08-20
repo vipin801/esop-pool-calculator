@@ -66,7 +66,7 @@ export function Sheet({ open, title, onClose, children, footer }: SheetProps) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-black/40" onMouseDown={(event) => {
+    <div className="fixed inset-0 z-50 flex flex-col bg-black/45 backdrop-blur-[4px]" onMouseDown={(event) => {
       if (event.target === event.currentTarget) onClose();
     }}>
       <div
@@ -74,10 +74,10 @@ export function Sheet({ open, title, onClose, children, footer }: SheetProps) {
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="mt-auto flex max-h-[92vh] min-h-0 flex-col rounded-t-lg border-t border-border bg-surface shadow-[var(--shadow-overlay)]"
+        className="mt-auto flex max-h-[92vh] min-h-0 flex-col rounded-t-modal border-t border-border bg-surface shadow-[var(--shadow-overlay)]"
       >
         <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border px-5 py-4">
-          <h2 id={titleId} className="eyebrow text-accent">
+          <h2 id={titleId} className="section-label text-accent">
             {title}
           </h2>
           <button

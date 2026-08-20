@@ -125,7 +125,7 @@ export function LeadModal({ open, stage, busy, onClose, onSubmit }: LeadModalPro
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 p-4 backdrop-blur-[4px] sm:items-center"
       onMouseDown={(event) => {
         if (!dialogRef.current?.contains(event.target as Node)) onClose();
       }}
@@ -135,11 +135,11 @@ export function LeadModal({ open, stage, busy, onClose, onSubmit }: LeadModalPro
         role="dialog"
         aria-modal="true"
         aria-labelledby={`${fieldId}-title`}
-        className="w-full max-w-md rounded-lg border border-border bg-raised p-6 shadow-[var(--shadow-overlay)]"
+        className="w-full max-w-md rounded-modal border border-border bg-raised p-6 shadow-[var(--shadow-overlay)]"
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h2 id={`${fieldId}-title`} className="display text-h4 text-ink">
+            <h2 id={`${fieldId}-title`} className="heading-section text-ink">
               Download the detailed report
             </h2>
             <p className="mt-1 text-2xs leading-4 text-faint">
@@ -159,7 +159,7 @@ export function LeadModal({ open, stage, busy, onClose, onSubmit }: LeadModalPro
 
         <form className="mt-6 space-y-4" onSubmit={handleSubmit} noValidate>
           <div>
-            <label htmlFor={`${fieldId}-name`} className="eyebrow mb-2 block text-faint">
+            <label htmlFor={`${fieldId}-name`} className="section-label mb-2 block text-faint">
               Full name
             </label>
             <input
@@ -180,7 +180,7 @@ export function LeadModal({ open, stage, busy, onClose, onSubmit }: LeadModalPro
           </div>
 
           <div>
-            <label htmlFor={`${fieldId}-email`} className="eyebrow mb-2 block text-faint">
+            <label htmlFor={`${fieldId}-email`} className="section-label mb-2 block text-faint">
               Work email
             </label>
             <input
@@ -205,7 +205,7 @@ export function LeadModal({ open, stage, busy, onClose, onSubmit }: LeadModalPro
           </div>
 
           <div>
-            <label htmlFor={`${fieldId}-company`} className="eyebrow mb-2 block text-faint">
+            <label htmlFor={`${fieldId}-company`} className="section-label mb-2 block text-faint">
               Company name
             </label>
             <input
@@ -226,7 +226,7 @@ export function LeadModal({ open, stage, busy, onClose, onSubmit }: LeadModalPro
           </div>
 
           <div>
-            <label htmlFor={`${fieldId}-stage`} className="eyebrow mb-2 block text-faint">
+            <label htmlFor={`${fieldId}-stage`} className="section-label mb-2 block text-faint">
               Stage
             </label>
             <SelectField

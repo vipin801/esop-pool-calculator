@@ -46,16 +46,16 @@ export function OwnershipImpact({ capTables }: OwnershipImpactProps) {
       <table className="w-full border-collapse text-2xs">
         <thead className="bg-muted">
           <tr>
-            <th scope="col" className="eyebrow border-b border-border px-4 py-3 text-left text-faint">
+            <th scope="col" className="section-label border-b border-border px-4 py-3 text-left text-faint">
               Ownership impact
             </th>
-            <th scope="col" className="eyebrow border-b border-border px-4 py-3 text-right text-faint">
+            <th scope="col" className="section-label border-b border-border px-4 py-3 text-right text-faint">
               Today
             </th>
-            <th scope="col" className="eyebrow border-b border-border px-4 py-3 text-right text-faint">
+            <th scope="col" className="section-label border-b border-border px-4 py-3 text-right text-faint">
               After pool
             </th>
-            <th scope="col" className="eyebrow border-b border-border px-4 py-3 text-right text-faint">
+            <th scope="col" className="section-label border-b border-border px-4 py-3 text-right text-faint">
               Change
             </th>
           </tr>

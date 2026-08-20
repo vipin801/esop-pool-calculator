@@ -6,50 +6,53 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 /**
- * The accent is a fill again (2026-08-19 document swap), reversing the
- * 2026-08-18 restraint pass's `bg-ink`/`text-bg` primary. The design system
- * names CTAs and primary interactive elements as the accent's own job — it is
- * "the only chromatic color in UI chrome", and reserving it for focus rings
- * left the whole app achromatic and the brand unreadable from a screenshot.
- * `--accent`/`--accent-ink` invert per theme (5.35:1 light, 5.45:1 dark), so
- * this is still one rule in both themes rather than a hardcoded colour.
+ * The document's §4 "Buttons" block, as the four variants this app already
+ * had. Each maps onto one of §4's named styles:
  *
- * Every other variant stays achromatic, so a viewport still has exactly one
- * blue fill in it: the action that viewport is for.
+ *   primary   -> `.btn-primary`   brand fill, white label, hover lift + glow
+ *   secondary -> `.btn-secondary` transparent, warm border, hover lift
+ *   ghost     -> `.btn-ghost`     no border, muted, hover darkens + nudges
+ *   outline   -> `.btn-secondary` with a resting border, for a second action
  *
- * Disabled states are a fill and a colour rather than `opacity-50`, which
- * took the same label to 2.09:1 in light mode. WCAG exempts inactive
- * controls; a label nobody can read is still a defect — dimmed only when
- * genuinely disabled, never as the resting state.
+ * The hover lift (`translateY(-2px)`) and the active settle
+ * (`translateY(0) scale(0.98)`) are §4's own interaction language, and §6
+ * names them as how elevation is communicated on the cream canvas instead of
+ * drop shadows. They live in the `.btn-*` classes in globals.css so the
+ * transition timing is declared once.
+ *
+ * `--accent`/`--accent-ink` invert per theme, so the fill is one rule in both
+ * themes rather than a hardcoded colour. Disabled states are a fill and a
+ * colour rather than `opacity-50`, which took the label to 2.09:1 in light —
+ * WCAG exempts inactive controls; a label nobody can read is still a defect.
  */
 const VARIANT_CLASSES: Record<NonNullable<ButtonProps['variant']>, string> = {
   primary:
-    'bg-accent text-accent-ink border border-accent hover:bg-accent-hover hover:border-accent-hover disabled:cursor-not-allowed disabled:border-border disabled:bg-disabled disabled:text-quiet',
+    'btn-primary disabled:cursor-not-allowed disabled:border-border disabled:bg-disabled disabled:text-quiet disabled:transform-none disabled:shadow-none',
   secondary:
-    'bg-surface text-ink border border-strong hover:border-ink hover:bg-muted disabled:cursor-not-allowed disabled:bg-disabled disabled:text-quiet',
-  ghost:
-    'bg-transparent text-sub border border-transparent hover:text-ink hover:bg-muted disabled:cursor-not-allowed disabled:text-quiet',
-  /** "Ghost with a border" — a visible outline, no fill, for a page's second
-   *  action next to a `primary` first one (the Tabulate CTA band). */
-  outline:
-    'bg-transparent text-ink border border-strong hover:border-ink hover:bg-muted disabled:cursor-not-allowed disabled:text-quiet',
+    'btn-secondary bg-surface disabled:cursor-not-allowed disabled:bg-disabled disabled:text-quiet disabled:transform-none',
+  ghost: 'btn-ghost disabled:cursor-not-allowed disabled:text-quiet disabled:transform-none',
+  /** §4's secondary, kept as its own name because it is the page's *second*
+   *  action beside a primary one (the Tabulate CTA band) rather than a
+   *  standalone alternative. */
+  outline: 'btn-secondary disabled:cursor-not-allowed disabled:text-quiet disabled:transform-none',
 };
 
+/**
+ * §4 gives one padding for `.btn-primary`/`.btn-secondary` — `14px 28px`,
+ * which §8 notes is what carries them past the 44px touch-target floor. That
+ * is `md`, the default. `sm` is this app's own compact variant for the
+ * header and the results chrome, where a 44px button would not fit beside a
+ * 48px figure; it keeps the same voice at a smaller box.
+ */
 const SIZE_CLASSES: Record<NonNullable<ButtonProps['size']>, string> = {
-  /** 32px tall. The header's and the results screen's small secondaries —
-   *  compact enough to sit on the headline's own row beside a 72px figure. */
-  sm: 'h-8 px-3 text-2xs',
-  /** 44px tall — this redesign's touch-target floor for the wizard's own
-   *  Back/Continue and the CTA-band buttons, and wider than it was: at a 4px
-   *  radius a button is read by its box, so the box needs real horizontal
-   *  room to stop looking like an input. */
-  md: 'h-11 px-5 text-eyebrow',
+  sm: '!px-3 !py-1.5 text-2xs',
+  md: '',
 };
 
 export function Button({ variant = 'primary', size = 'md', className = '', ...rest }: ButtonProps) {
   return (
     <button
-      className={`inline-flex items-center justify-center gap-1.5 rounded font-medium tracking-[-0.005em] transition-colors duration-150 ${VARIANT_CLASSES[variant]} ${SIZE_CLASSES[size]} ${className}`}
+      className={`inline-flex items-center justify-center gap-1.5 ${VARIANT_CLASSES[variant]} ${SIZE_CLASSES[size]} ${className}`}
       {...rest}
     />
   );

@@ -86,7 +86,7 @@ function SeriesTable({ series }: { readonly series: PoolPlanSeries }) {
                 <th
                   key={h}
                   scope="col"
-                  className={`eyebrow whitespace-nowrap border-b border-border px-3 py-2.5 text-faint ${
+                  className={`section-label whitespace-nowrap border-b border-border px-3 py-2.5 text-faint ${
                     i === 0 ? 'text-left' : 'text-right'
                   }`}
                 >

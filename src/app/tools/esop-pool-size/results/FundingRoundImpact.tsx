@@ -44,15 +44,15 @@ export function FundingRoundImpact({ result, onModelRound }: FundingRoundImpactP
           measurement taken two ways, and the rule between them says so. */}
       <dl className="mt-5 grid grid-cols-1 border-t border-border sm:grid-cols-2">
         <div className="border-b border-border py-4 sm:border-r sm:pr-6">
-          <dt className="eyebrow text-faint">Pool created pre-money</dt>
-          <dd className="figure mt-3 text-h4 text-ink">
+          <dt className="section-label text-faint">Pool created pre-money</dt>
+          <dd className="number-display mt-3 text-ink">
             {lakhCrore(preMoneyPool.founderDilutionCostRupees)}
           </dd>
           <p className="mt-2 text-2xs text-faint">{preMoneyPool.founderDilutionFromPoolPctPoints.toFixed(2)} pp to founders.</p>
         </div>
         <div className="border-b border-border py-4 sm:pl-6">
-          <dt className="eyebrow text-faint">Pool created post-money</dt>
-          <dd className="figure mt-3 text-h4 text-ink">
+          <dt className="section-label text-faint">Pool created post-money</dt>
+          <dd className="number-display mt-3 text-ink">
             {lakhCrore(postMoneyPool.founderDilutionCostRupees)}
           </dd>
           <p className="mt-2 text-2xs text-faint">{postMoneyPool.founderDilutionFromPoolPctPoints.toFixed(2)} pp to founders.</p>

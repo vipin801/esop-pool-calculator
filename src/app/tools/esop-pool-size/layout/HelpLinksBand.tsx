@@ -28,10 +28,10 @@ export function HelpLinksBand() {
         <Link
           key={item.href}
           href={item.href}
-          className="group flex items-start justify-between gap-4 rounded-lg border border-border bg-raised px-5 py-5 transition-colors duration-150 hover:border-strong"
+          className="card-elevated card-hover group flex items-start justify-between gap-4 px-5 py-5"
         >
           <span>
-            <span className="eyebrow block text-accent">{item.title}</span>
+            <span className="section-label block text-accent">{item.title}</span>
             <span className="mt-3 block text-2xs leading-4 text-sub">{item.description}</span>
           </span>
           <span

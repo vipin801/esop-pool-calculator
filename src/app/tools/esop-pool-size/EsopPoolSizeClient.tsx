@@ -362,7 +362,7 @@ function EsopPoolSizeApp() {
          */}
         <main
           id="main"
-          className={`mx-auto px-6 pb-32 lg:pb-20 ${showResults ? 'max-w-page' : 'max-w-[720px]'}`}
+          className={`mx-auto px-6 pb-32 lg:px-16 lg:pb-20 ${showResults ? 'max-w-page' : 'max-w-[720px]'}`}
         >
           {showResults ? (
             // The rail stays at 360px and the gutter at 24px: the report

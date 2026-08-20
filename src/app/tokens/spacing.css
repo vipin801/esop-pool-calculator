@@ -1,22 +1,36 @@
+/*
+ * 2026-08-20, the document's §5 "Spacing System" and "Grid & Container".
+ * Replaces the vendored design-system export, whose 1200px `--content-max`
+ * and 24px gutter predate the document's own 1312px container.
+ *
+ * "Base unit: 8px. Scale: 4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 80, 96, 128."
+ */
 :root{
   --space-4:4px;
   --space-8:8px;
   --space-12:12px;
   --space-16:16px;
+  --space-20:20px;
   --space-24:24px;
   --space-32:32px;
+  --space-40:40px;
   --space-48:48px;
   --space-64:64px;
+  --space-80:80px;
   --space-96:96px;
   --space-128:128px;
-  --space-160:160px;
 
-  --space-section:clamp(80px,7vw + 40px,128px);
-  --space-block:clamp(48px,3vw + 32px,64px);
-  --space-card:clamp(24px,1.5vw + 16px,32px);
+  /* §5: "Section vertical padding: 80px on desktop, 40px on mobile." */
+  --space-section:80px;
+  --space-section-mobile:40px;
+  --space-block:48px;
+  --space-card:24px;
   --space-stack:16px;
 
-  --content-max:1200px;
-  --gutter:24px;
+  /* §5/§8: 1312px `container-full`, 64px horizontal padding on desktop,
+     24px on mobile. The page-edge lines are positioned off this same width. */
+  --content-max:1312px;
+  --gutter:64px;
+  --gutter-mobile:24px;
   --margin-mobile:24px;
 }

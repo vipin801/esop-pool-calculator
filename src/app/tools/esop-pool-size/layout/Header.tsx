@@ -27,19 +27,19 @@ export function Header() {
     // canvas and the panels are what float on it, which is the whole point
     // of a three-surface warm ramp.
     <header className="border-b border-border bg-bg">
-      <div className="mx-auto flex max-w-page items-center justify-between gap-6 px-6 py-4">
+      <div className="mx-auto flex max-w-page items-center justify-between gap-6 px-6 py-4 lg:px-16">
         <Link href="/" className="flex items-baseline gap-0.5">
           {/* The wordmark is the design system's display face doing what it is
               for — italic serif, tight tracking — with the accent spent on a
               single full stop. */}
-          <span className="display text-h4 text-ink">incentiv</span>
-          <span aria-hidden="true" className="display text-h4 text-accent">
+          <span className="font-serif text-[22px] italic leading-none tracking-[-0.03em] text-ink">incentiv</span>
+          <span aria-hidden="true" className="font-serif text-[22px] italic leading-none tracking-[-0.03em] text-accent">
             .
           </span>
         </Link>
         <nav className="hidden items-center gap-7 md:flex">
           {NAV.map((item) => (
-            <a key={item} href="#" className="eyebrow text-faint transition-colors duration-150 hover:text-ink">
+            <a key={item} href="#" className="text-nav text-sub transition-colors duration-150 hover:text-ink">
               {item}
             </a>
           ))}

@@ -47,19 +47,19 @@ export function MedianEmployeeValue({ value }: MedianEmployeeValueProps) {
             <summary className="cursor-pointer text-2xs text-faint">Show the raw figures</summary>
             <dl className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-4">
               <div>
-                <dt className="eyebrow text-faint">Notional value</dt>
+                <dt className="section-label text-faint">Notional value</dt>
                 <dd className="figure mt-2 text-small text-ink">{lakhCrore(value.notionalValueRupees)}</dd>
               </div>
               <div>
-                <dt className="eyebrow text-faint">Exercise cost</dt>
+                <dt className="section-label text-faint">Exercise cost</dt>
                 <dd className="figure mt-2 text-small text-ink">{lakhCrore(value.exerciseCostRupees)}</dd>
               </div>
               <div>
-                <dt className="eyebrow text-faint">Tax at exercise</dt>
+                <dt className="section-label text-faint">Tax at exercise</dt>
                 <dd className="figure mt-2 text-small text-ink">{lakhCrore(value.perquisiteTaxRupees)}</dd>
               </div>
               <div>
-                <dt className="eyebrow text-faint">Realisable (signed)</dt>
+                <dt className="section-label text-faint">Realisable (signed)</dt>
                 <dd className="figure mt-2 text-small text-danger">{lakhCrore(value.realisableValueRupees)}</dd>
               </div>
             </dl>
@@ -68,19 +68,19 @@ export function MedianEmployeeValue({ value }: MedianEmployeeValueProps) {
       ) : (
         <div className="mt-5 grid grid-cols-2 gap-5 border-t border-border pt-5 sm:grid-cols-4">
           <div>
-            <dt className="eyebrow text-faint">Vested at horizon</dt>
+            <dt className="section-label text-faint">Vested at horizon</dt>
             <dd className="figure mt-2 text-small text-ink">{formatShares(value.vestedAtHorizon)}</dd>
           </div>
           <div>
-            <dt className="eyebrow text-faint">Notional value</dt>
+            <dt className="section-label text-faint">Notional value</dt>
             <dd className="figure mt-2 text-small text-ink">{lakhCrore(value.notionalValueRupees)}</dd>
           </div>
           <div>
-            <dt className="eyebrow text-faint">Realisable, after tax</dt>
+            <dt className="section-label text-faint">Realisable, after tax</dt>
             <dd className="figure mt-2 text-small text-ink">{lakhCrore(value.realisableValueRupees)}</dd>
           </div>
           <div>
-            <dt className="eyebrow text-faint">Tax at exercise</dt>
+            <dt className="section-label text-faint">Tax at exercise</dt>
             <dd className="figure mt-2 text-small text-ink">{lakhCrore(value.perquisiteTaxRupees)}</dd>
           </div>
         </div>

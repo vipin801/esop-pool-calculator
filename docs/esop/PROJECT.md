@@ -287,6 +287,67 @@ Raised in [024], the Incentiv token swap. No engine change; `src/lib/esop` was n
 seam is `src/app/globals.css`, aliasing onto the tokens vendored at `src/app/tokens/`; see
 `src/app/tokens/README.md` for what was and was not vendored.
 
+### 2026-08-20 — the COMPLETE design system document
+
+The 2026-08-19 pass below worked from a truncated upload that ended at §2's
+heading. The full document (§1–§9) arrived on 2026-08-20 and this pass
+implements the rest of it. `src/app/tokens/README.md` carries the section-by-
+section mapping, the three values that could not be taken literally, and the
+two places the document disagrees with itself. What changed at the design
+level:
+
+- **§3's hierarchy replaced the classes the §1-only pass had to invent.**
+  `.eyebrow` (11px/500/0.11em, a guess) became `.section-label` — the
+  document's own 10px / Inter 700 / uppercase / 0.15em / primary blue, which
+  §3 calls "the most distinctive repeated element in the system" and §7 and §9
+  both call mandatory above every major heading. `.display` split into
+  `.heading-hero` and `.heading-section` at the document's own stepped sizes.
+  `.figure-display` became `.number-large`. `.gradient-text` was renamed
+  `.text-gradient`, which is what §2 and §7 actually call it — the old name
+  matched nothing, so the hero gradient had silently stopped rendering.
+- **The type scale is now the document's, not a clamp of my own.** §3 gives
+  two explicit responsive tables; those are declared as discrete sizes at the
+  named breakpoints. `text-small` and `text-body` moved 15px→14px and
+  17px→16px onto §3's Body row.
+- **§2's extended palette exists for the first time**: `--surface-elevated`,
+  `--accent-blue`, `--navy`, `--purple`, `--success-brand`, `--destructive`,
+  and the three named gradients. The dark ramp is now §2's deliberate
+  4/7/10/14/18% luminance ladder, which §6 names as the dark-mode elevation
+  mechanism — so the dark card moved `#0D0D0D`→`#121212` and the chart panel
+  followed it.
+- **§4's component stylings are real classes now**: `.btn-primary` /
+  `.btn-secondary` / `.btn-ghost` with the document's `14px 28px` padding and
+  its hover-lift/active-settle interaction language, `.cta-arrow`,
+  `.card-elevated` / `.card-hover`, `.section-divider`, `.badge`,
+  `.icon-box`, `.persona-chip`, and the `.bg-grid` / `.bg-grid-fade` /
+  `.bg-lines` patterns.
+- **`.page-edge-lines` was rebuilt to §4's actual spec**: positioned off the
+  1312px container via `max(16px, calc((100vw - 1312px) / 2))`, fixed at the
+  layout level rather than absolute on a content div, and animated
+  `scanLine 5s ease-in-out infinite`.
+- **§5's layout numbers replaced the vendored export's.** Container 1200→1312px,
+  gutter 24→64px on desktop, and the 8px spacing scale gained the 20/40/80px
+  steps the document lists.
+- **§6's elevation ladder**: modals take the document's 16px radius, its
+  `0 24px 48px rgb(0 0 0 / 0.15)` shadow and its 45%-opacity backdrop with
+  `backdrop-filter: blur(4px)`. Focus gained the specified 3px 0.1-alpha ring.
+
+Open items from this pass:
+
+- **`.badge`, `.icon-box` and `.persona-chip` have no consumer.** They are
+  defined to spec because §4 defines them, but this tool has no trust
+  indicator, no feature-card icon and no audience selector — adding one would
+  be inventing UI the brief explicitly did not ask for ("not the design
+  overall or format").
+- **§4's "sticky header" is the one behaviour not adopted**, and it predates
+  the document: a sticky header painted over the first field label, measured
+  and recorded in `layout/Header.tsx`. Every other line of §4's navigation
+  spec is implemented.
+- **`--surface-elevated` in dark is `#242424`, where the accent measures
+  4.27:1** — under the text floor. It is a container surface (§2 assigns it to
+  popovers and dropdowns, which this app has none of); accent text must not be
+  placed on it without darkening the surface or lifting the accent.
+
 ### 2026-08-19 — the design system document swap
 
 The Incentiv design system document (`DESIGN.md` §1) replaced the live-site

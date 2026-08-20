@@ -48,7 +48,7 @@ export function ScenarioStrip({ inputs, baseResult, onLoad }: ScenarioStripProps
         {results.map(({ key, label, note, result }) => (
           <div key={key} className="bg-raised px-5 py-4">
             <div className="flex items-center justify-between gap-2">
-              <span className="eyebrow text-faint">{label}</span>
+              <span className="section-label text-faint">{label}</span>
               {key === 'base' ? (
                 <span className="text-2xs text-accent">Current</span>
               ) : result === 'error' ? null : (
@@ -67,7 +67,7 @@ export function ScenarioStrip({ inputs, baseResult, onLoad }: ScenarioStripProps
               </p>
             ) : (
               <>
-                <p className="figure mt-3 text-h4 text-ink">
+                <p className="number-display mt-3 text-ink">
                   {formatPct(result.recommendedPool.selected.displayPoolPctOfFullyDiluted)}
                 </p>
                 {key === 'base' ? (

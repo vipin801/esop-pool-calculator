@@ -1,13 +1,38 @@
 import { describe, expect, it } from 'vitest';
 import { sourceFiles, withoutComments } from './ui-source';
 
-describe('CtaBand: content is centered, not left-aligned', () => {
+/**
+ * Rewritten 2026-08-20. The original asserted a single centered layout with a
+ * literal `className="... text-center ..."`, which was right while `CtaBand`
+ * had one presentation. It now has two: the `band` below the report, still
+ * centered on the warm surface, and the `aside` in the pre-results left rail,
+ * left aligned under the masthead — a deliberate layout change, so the
+ * assertion follows it rather than being deleted, the way LOG [020] rewrote a
+ * test whose scope an architecture change had overtaken.
+ *
+ * What is still asserted, and is the point: the two presentations cannot
+ * collapse into one. `band` must stay centered, `aside` must stay left, and
+ * the button row must follow whichever it is in.
+ */
+describe('CtaBand: the band is centered, the aside is left-aligned', () => {
   const FILE = sourceFiles(['.tsx']).find((f) => f.rel === '/layout/CtaBand.tsx')!;
   const CODE = withoutComments(FILE.text);
 
-  it('centers the section text and the button row as a group', () => {
-    expect(CODE).toMatch(/<section className="[^"]*\btext-center\b[^"]*">/);
-    expect(CODE).toMatch(/className="[^"]*flex[^"]*\bjustify-center\b[^"]*"/);
+  it('offers exactly the two presentations, and defaults to the band', () => {
+    expect(CODE).toMatch(/variant\?: 'band' \| 'aside'/);
+    expect(CODE).toMatch(/variant = 'band'/);
+  });
+
+  it('centers the band and left-aligns the aside on the same section', () => {
+    expect(CODE).toContain("'text-left'");
+    expect(CODE).toMatch(/text-center/);
+    // The centered branch is the one that carries the filled surface; the
+    // aside is unfilled, so a reader never meets a 420px centered card.
+    expect(CODE).toMatch(/bg-muted[^']*text-center/);
+  });
+
+  it('keeps the button row aligned with whichever presentation it is in', () => {
+    expect(CODE).toMatch(/flex flex-wrap gap-3 \$\{isAside \? '' : 'justify-center'\}/);
   });
 });
 

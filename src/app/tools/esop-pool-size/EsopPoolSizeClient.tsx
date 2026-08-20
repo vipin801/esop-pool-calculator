@@ -351,7 +351,7 @@ function EsopPoolSizeApp() {
        * hairline-plus-pulse construction.
        */}
       <div className="page-edge-lines mx-auto w-full max-w-page flex-1">
-        <Hero showResults={showResults} />
+        {showResults ? <Hero variant="banner" /> : null}
         {/*
          * Two layouts, not one grid with a placeholder in its second column.
          * Empty: a single centered column, the form filling the page, nothing
@@ -362,7 +362,7 @@ function EsopPoolSizeApp() {
          */}
         <main
           id="main"
-          className={`mx-auto px-6 pb-32 lg:pb-20 ${showResults ? 'max-w-page lg:px-16' : 'max-w-[720px]'}`}
+          className={`mx-auto max-w-page px-6 pb-32 lg:px-16 lg:pb-20`}
         >
           {showResults ? (
             // The rail stays at 360px and the gutter at 24px: the report
@@ -407,26 +407,55 @@ function EsopPoolSizeApp() {
               </div>
             </div>
           ) : (
-            <div className="mt-10 min-w-0 space-y-16">
-              <OnboardingWizard
-                inputs={inputs}
-                setGroup={setGroup}
-                openingGrants={inputs.openingGrants}
-                setOpeningGrants={setOpeningGrants}
-                rounds={inputs.rounds}
-                touched={touched}
-                markTouched={markTouched}
-                markManyTouched={markManyTouched}
-                requiredPaths={requiredPaths}
-                required={required}
-                hiringMeta={hiringMeta}
-                setHiringMeta={setHiringMeta}
-                grantMeta={grantMeta}
-                setGrantMeta={setGrantMeta}
-                readyToCalculate={readyToCalculate}
-                onCalculate={onCalculate}
-              />
-              <CtaBand />
+            /*
+             * Two columns before there is an answer: the masthead and the
+             * Tabulate pitch hold a left rail, the form opens to the right.
+             *
+             * The split starts at `xl`, not `lg`. At 1024px the container has
+             * 896px of content, and a 420px rail would leave the form 432px —
+             * narrower than the 720px single column it replaces, which is a
+             * worse form, not a better layout. Below `xl` the rail simply
+             * stacks above the form, which is the layout this replaces.
+             *
+             * The rail sticks: the form is three screens tall and the pitch
+             * under the masthead is the one thing that should stay in view
+             * while a founder works down it.
+             */
+            <div className="mx-auto grid min-w-0 max-w-[720px] gap-12 pt-10 xl:max-w-none xl:grid-cols-[minmax(0,420px)_minmax(0,1fr)] xl:gap-16 xl:pt-14">
+              <div className="min-w-0 xl:sticky xl:top-10 xl:self-start">
+                <Hero />
+                {/* The pitch only joins the masthead once there is a rail to
+                    join it in. Below `xl` the two would stack between the
+                    heading and the form, pushing the first field off screen —
+                    so there it stays where it was, under the form, as the
+                    centered band. */}
+                <div className="mt-10 hidden xl:block">
+                  <CtaBand variant="aside" />
+                </div>
+              </div>
+              <div className="min-w-0 space-y-16">
+                <OnboardingWizard
+                  inputs={inputs}
+                  setGroup={setGroup}
+                  openingGrants={inputs.openingGrants}
+                  setOpeningGrants={setOpeningGrants}
+                  rounds={inputs.rounds}
+                  touched={touched}
+                  markTouched={markTouched}
+                  markManyTouched={markManyTouched}
+                  requiredPaths={requiredPaths}
+                  required={required}
+                  hiringMeta={hiringMeta}
+                  setHiringMeta={setHiringMeta}
+                  grantMeta={grantMeta}
+                  setGrantMeta={setGrantMeta}
+                  readyToCalculate={readyToCalculate}
+                  onCalculate={onCalculate}
+                />
+                <div className="xl:hidden">
+                  <CtaBand />
+                </div>
+              </div>
             </div>
           )}
           <HelpLinksBand />

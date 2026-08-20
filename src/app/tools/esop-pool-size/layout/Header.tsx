@@ -29,11 +29,13 @@ export function Header() {
     <header className="border-b border-border bg-bg">
       <div className="mx-auto flex max-w-page items-center justify-between gap-6 px-6 py-4 lg:px-16">
         <Link href="/" className="flex items-baseline gap-0.5">
-          {/* The wordmark is the design system's display face doing what it is
-              for — italic serif, tight tracking — with the accent spent on a
-              single full stop. */}
-          <span className="font-serif text-[22px] italic leading-none tracking-[-0.03em] text-ink">incentiv</span>
-          <span aria-hidden="true" className="font-serif text-[22px] italic leading-none tracking-[-0.03em] text-accent">
+          {/* The wordmark is the brand's own logotype, not the editorial
+              display face §3 reserves for headings — bold upright Inter,
+              tight tracking, the accent spent on a single full stop. Kept
+              identical here and in Footer.tsx so the mark reads as one
+              lockup wherever it appears. */}
+          <span className="text-[22px] font-bold leading-none tracking-tight text-ink">incentiv</span>
+          <span aria-hidden="true" className="text-[22px] font-bold leading-none tracking-tight text-accent">
             .
           </span>
         </Link>

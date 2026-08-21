@@ -49,7 +49,11 @@ export function GrantBasisCard({ inputs, setGroup, touched, markTouched, require
         <p className="text-2xs leading-4 text-faint">Seeds every default below. Sets the benchmark band we compare you against.</p>
       </Field>
 
-      <Field label="Grant basis" required={isRequired('grantPolicy.grantBasis.kind')} helper="Decides whether valuation growth affects the pool at all.">
+      <Field
+        label="Grant basis"
+        required={isRequired('grantPolicy.grantBasis.kind')}
+        helper={<span className="whitespace-nowrap">Decides whether valuation growth affects the pool at all.</span>}
+      >
         <RadioGroup<GrantBasis['kind']>
           name="grantBasis"
           value={isBlank('grantPolicy.grantBasis.kind') ? null : grantBasis.kind}

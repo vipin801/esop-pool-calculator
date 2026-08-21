@@ -82,6 +82,29 @@
 }
 
 .dark {
+  /*
+   * Re-declared, not just inherited from `:root`. These are aliases onto the
+   * design-system tokens (`--ink`, `--line`, etc.), and CSS custom properties
+   * substitute `var()` at the element where the alias is *specified*, not
+   * where it is used — `:root`'s `--text: var(--ink)` resolves once against
+   * `:root`'s own `--ink` and that resolved value is what inherits down,
+   * unchanged, even into a subtree that locally overrides `--ink` (as
+   * `Footer` does by setting `.dark`/`[data-theme="dark"]` on a descendant
+   * element rather than on `:root`). Without this block that subtree's text
+   * stayed the light-mode colour on the dark-mode background.
+   */
+  --surface-raised: var(--surface);
+  --surface-muted: var(--surface-2);
+  --surface-disabled: var(--surface-2);
+  --border: var(--line);
+  --border-strong: var(--ink-3);
+  --text: var(--ink);
+  --text-muted: var(--ink-2);
+  --text-faint: var(--ink-2);
+  --text-disabled: var(--ink-2);
+  --ok: var(--positive);
+  --chart-grid: var(--line);
+
   /* UNMAPPED, as above. */
   --accent-soft: #101e33;
   --warn: #e0ab5f;

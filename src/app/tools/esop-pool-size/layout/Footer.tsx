@@ -65,18 +65,15 @@ function FooterColumn({ heading, links }: { readonly heading: string; readonly l
 }
 
 /**
- * Always-dark: the document's marketing chrome, not this tool's own
- * light/dark toggle — the reference footer stays on the dark ladder
- * regardless of which theme the calculator above it is in. `data-theme`
- * and `.dark` are set together directly on the section root, the same
- * pairing `ThemeProvider` sets on `<html>` (see `lib/theme.tsx`), so every
- * token this subtree reads — `--bg`, `--text`, `--accent`, `--border` —
- * resolves off the already-audited dark ladder without a single `dark:`
- * prefix, and without touching the page's own theme state.
+ * Follows the page's own light/dark toggle rather than forcing a theme:
+ * no `data-theme`/`.dark` override here, so this subtree reads whichever
+ * ladder `ThemeProvider` has set on `<html>` (see `lib/theme.tsx`) — cream
+ * and ink in light mode, the dark surface ladder in dark mode — the same
+ * as every other section on the page.
  */
 export function Footer() {
   return (
-    <footer data-theme="dark" className="dark mt-16 bg-bg text-ink">
+    <footer className="mt-16 border-t border-border bg-bg text-ink">
       <div className="mx-auto max-w-page px-6 py-16 lg:px-16">
         <div className="grid grid-cols-2 gap-x-8 gap-y-12 sm:grid-cols-3 lg:grid-cols-[minmax(0,1fr)_repeat(5,max-content)] lg:gap-x-12">
           <div className="col-span-2 max-w-xs sm:col-span-3 lg:col-span-1">

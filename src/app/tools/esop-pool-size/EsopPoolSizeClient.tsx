@@ -451,6 +451,7 @@ function EsopPoolSizeApp() {
                   setGrantMeta={setGrantMeta}
                   readyToCalculate={readyToCalculate}
                   onCalculate={onCalculate}
+                  calculateBlockedReason={complete && !outcome.ok ? outcome.message : undefined}
                 />
                 <div className="xl:hidden">
                   <CtaBand />

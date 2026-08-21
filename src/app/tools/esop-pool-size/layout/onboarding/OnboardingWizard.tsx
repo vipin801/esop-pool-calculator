@@ -33,6 +33,10 @@ interface OnboardingWizardProps {
   readonly setGrantMeta: (meta: GrantMeta) => void;
   readonly readyToCalculate: boolean;
   readonly onCalculate: () => void;
+  /** Set when every required field is filled but the pricing engine itself
+   *  rejected the inputs — the one case `readyToCalculate` is false for a
+   *  reason no missing-field count explains. */
+  readonly calculateBlockedReason?: string;
 }
 
 /**
@@ -58,10 +62,28 @@ export function OnboardingWizard({
   setGrantMeta,
   readyToCalculate,
   onCalculate,
+  calculateBlockedReason,
 }: OnboardingWizardProps) {
   const [step, setStep] = useState<OnboardingScreen>(0);
   const stepReady = isScreenComplete(step, required, touched);
   const isLast = step === STEPS.length - 1;
+  const missingOnStep = requiredPathsForScreen(step, required).filter((path) => !touched.has(path)).length;
+  /**
+   * The primary button going disabled was previously silent — nothing told a
+   * founder *why* "Continue"/"Calculate pool" wasn't responding, only that it
+   * wasn't. Two distinct reasons, surfaced here rather than left for the
+   * founder to guess: an unfilled required field further down the screen
+   * (`missingOnStep`, most commonly the "Average age of those grants" row
+   * that only appears once "Granted and outstanding" goes above zero), or —
+   * on the last screen only — the pricing engine itself rejecting an
+   * otherwise-complete set of inputs, whose message previously only rendered
+   * after results were reached and so was unreachable from here at all.
+   */
+  const blockedHint = !stepReady
+    ? `${missingOnStep} field${missingOnStep === 1 ? '' : 's'} on this step still ${missingOnStep === 1 ? 'needs' : 'need'} an answer.`
+    : isLast && !readyToCalculate && calculateBlockedReason
+      ? `This plan can’t be priced yet: ${calculateBlockedReason}`
+      : null;
 
   function goNext() {
     if (!stepReady) return;
@@ -148,6 +170,11 @@ export function OnboardingWizard({
         {/* Footer nav, moved inside the card: a hairline divider, then the
             same 32px group rhythm above it, 16px below it to the buttons. */}
         <div className="mt-10 border-t border-border pt-6">
+          {blockedHint ? (
+            <p role="status" className="mb-4 text-center text-eyebrow leading-4 text-warn sm:text-right">
+              {blockedHint}
+            </p>
+          ) : null}
           <div className="flex flex-col-reverse items-center gap-4 sm:flex-row sm:justify-between">
             <Button variant="ghost" size="md" className="w-full sm:w-auto" onClick={goBack} disabled={step === 0}>
               ← Back

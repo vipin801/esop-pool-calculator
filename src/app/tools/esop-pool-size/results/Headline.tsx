@@ -136,10 +136,10 @@ export function Headline({ inputs, result, action, onReviewAssumptions }: Headli
         Three facts on one hairline grid, not three bordered tiles: the rules
         between them carry the grouping, and the figures carry the weight.
       */}
-      <dl className="grid grid-cols-1 gap-y-6 sm:grid-cols-3 sm:gap-x-6 sm:gap-y-0">
+      <dl className="grid grid-cols-1 gap-y-6 text-center sm:grid-cols-3 sm:gap-x-6 sm:gap-y-0">
         <div className="sm:border-r sm:border-border sm:pr-6">
-          <dt className="section-label text-faint">{topUpLabel}</dt>
-          <dd className="number-display mt-3 text-ink">
+          <dt className="section-label text-accent">{topUpLabel}</dt>
+          <dd className="number-display mt-3 font-bold text-ink">
             {formatShares(recommendedPool.selected.poolOptions)}
           </dd>
           <p className="mt-1.5 text-2xs leading-4 text-sub">
@@ -155,16 +155,16 @@ export function Headline({ inputs, result, action, onReviewAssumptions }: Headli
           </p>
         </div>
         <div className="sm:border-r sm:border-border sm:pr-6">
-          <dt className="section-label text-faint">Hires your current pool supports</dt>
-          <dd className="number-display mt-3 text-ink">
+          <dt className="section-label text-accent">Hires your current pool supports</dt>
+          <dd className="number-display mt-3 font-bold text-ink">
             {formatShares(current.exhaustion.hiresSupported)}
             <span className="text-sub"> / {formatShares(totalPlannedHires)}</span>
           </dd>
           <p className="mt-2 text-2xs leading-4 text-faint">From the unallocated pool you hold right now.</p>
         </div>
         <div>
-          <dt className="section-label text-faint">{costStat.label}</dt>
-          <dd className="number-display mt-3 text-ink">{costStat.value}</dd>
+          <dt className="section-label text-accent">{costStat.label}</dt>
+          <dd className="number-display mt-3 font-bold text-ink">{costStat.value}</dd>
           <p className="mt-2 text-2xs leading-4 text-faint">{costStat.helper}</p>
         </div>
       </dl>

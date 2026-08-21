@@ -215,7 +215,7 @@ export function ResultsPanel({
             locked
           />
           {takeaway ? (
-            <p className="rounded border-l-2 border-accent bg-muted px-4 py-3 text-2xs leading-5 text-sub">{takeaway}</p>
+            <p className="rounded border-l-2 border-accent bg-muted px-4 py-3 text-center text-2xs leading-5 text-sub">{takeaway}</p>
           ) : null}
         </section>
 

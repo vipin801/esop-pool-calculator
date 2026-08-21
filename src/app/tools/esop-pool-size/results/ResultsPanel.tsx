@@ -164,7 +164,7 @@ export function ResultsPanel({
       */}
       <nav
         aria-label="Report sections"
-        className="sticky top-0 z-10 flex flex-wrap gap-x-5 border-b border-border bg-surface/95 px-6 backdrop-blur-sm sm:px-8"
+        className="sticky top-0 z-10 flex flex-wrap justify-center gap-x-5 border-b border-border bg-surface/95 px-6 backdrop-blur-sm sm:px-8"
       >
         {NAV_SECTIONS.map((s) => (
           <button

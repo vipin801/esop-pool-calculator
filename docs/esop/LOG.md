@@ -660,7 +660,7 @@ Decisions:
 Open items:
 - Carried unchanged from [034]: the results state is verified through the temporary `reachedResults` patch rather than by driving the wizard; `.badge`/`.icon-box`/`.persona-chip` have no consumer; §4's sticky header is deliberately not adopted; `--surface-elevated` in dark puts the accent at 4.27:1; `InfoPageShell`'s H1 is not width-solved.
 
-[036] 2026-10-22 | prompt P36 (see [028]'s numbering note) | branch main | commit (uncommitted at time of writing)
+[036] 2026-10-22 | prompt P36 (see [028]'s numbering note) | branch main | commit da6427c (one commit carries [036] to [042], as [028] bundled two; sha backfilled by the follow-up commit, also covered by these entries)
 Changed: Removed the seniority dropdown from the "Average age of those grants" field in both `layout/onboarding/ScreenCompany.tsx` and `inputs/CompanyTodayCard.tsx`, from a Linear review comment ("Shouldn't this be a number? ... Why are we taking seniority here?"). The field is a single years input now. `lib/visibility.ts` resolves `openingGrants.0.band` to `hidden`; `lib/completeness.ts` no longer declares it. Recorded D16.
 Tests: all passing after the change. `visibility.test.ts` changed on purpose: the band tier case now asserts `hidden`, and the opening-cohort test asserts the band is NOT required while the age still is. `ui-quality.test.ts` dropped `company-granted-band` and `company-granted-age` from its multi-control-group list, since one control is gone and the other is now named by its own `Field` label. tsc pass; lint unchanged at the same 2 errors / 16 warnings as [031]-[035].
 Decisions:
@@ -668,7 +668,7 @@ Decisions:
 Open items:
 - A real company has several grant cohorts; one cohort at `mid` is still a simplification (carried from [021]). Band would belong per cohort if a multi-cohort editor is built.
 
-[037] 2026-10-22 | prompt P37 (see [028]'s numbering note) | branch main | commit (uncommitted at time of writing)
+[037] 2026-10-22 | prompt P37 (see [028]'s numbering note) | branch main | commit da6427c (one commit carries [036] to [042], as [028] bundled two; sha backfilled by the follow-up commit, also covered by these entries)
 Changed: `layout/onboarding/ScreenHiring.tsx` no longer prints the "We'll use approximately Leadership ... Junior ..." split until total hires has been entered and is above zero; until then it shows "Enter total hires above to see your split." From a Linear review comment asking for the math behind the split and why it differed from the Notion page. Same formula in both: with no hires `mixFromProfile` returns the unscaled preset (5/20/45/30), so the screen showed a fallback as the answer and ignored the leadership figure typed. `mixFromProfile` is unchanged.
 Tests: one describe added to `translate-hiring-plan.test.ts` reading the screen source.
 Decisions:
@@ -676,7 +676,7 @@ Decisions:
 Open items:
 - None from this item.
 
-[038] 2026-10-22 | prompt P38 (see [028]'s numbering note) | branch main | commit (uncommitted at time of writing)
+[038] 2026-10-22 | prompt P38 (see [028]'s numbering note) | branch main | commit da6427c (one commit carries [036] to [042], as [028] bundled two; sha backfilled by the follow-up commit, also covered by these entries)
 Changed: Hiring by year no longer silently disagrees with total hires. With 50 eligible hires entered, typing 25 + 25 + 13 across the years was accepted. `lib/translateHiringPlan.ts` gains `hiresPerYearMismatch` (sums the first `horizonYears` entries, wording differs for over and under); `ScreenHiring.tsx` shows it as the error on the total-hires field so it is visible with "Enter hiring by year" collapsed; `OnboardingWizard.tsx` blocks Continue on the hiring step and surfaces the message in the footer hint; `ModelPanel.tsx` disables Recalculate with a one-line reason.
 Tests: `hiresPerYearMismatch` unit cases (including 25 + 25 + 13 against 50, under, the horizon cut-off, and a negative year) and three source checks that the screens use it.
 Decisions:
@@ -685,7 +685,7 @@ Decisions:
 Open items:
 - None from this item.
 
-[039] 2026-10-22 | prompt P39 (see [028]'s numbering note) | branch main | commit (uncommitted at time of writing)
+[039] 2026-10-22 | prompt P39 (see [028]'s numbering note) | branch main | commit da6427c (one commit carries [036] to [042], as [028] bundled two; sha backfilled by the follow-up commit, also covered by these entries)
 Changed: `layout/onboarding/ScreenGrants.tsx`: the valuation growth field is labelled "Expected annual valuation growth" with a helper saying it is per year and compounding, with a worked 40% example. From a Linear review comment asking whether the field is annual growth. It always was — the value is `growth.valuationGrowthPctPerYear` and `ScreenGrants` already compounds it in the trajectory readout — the label just never said so. Value, presets and engine unchanged.
 Tests: no new test; wording only.
 Decisions:
@@ -693,7 +693,7 @@ Decisions:
 Open items:
 - None from this item.
 
-[040] 2026-10-22 | prompt P40 (see [028]'s numbering note) | branch main | commit (uncommitted at time of writing)
+[040] 2026-10-22 | prompt P40 (see [028]'s numbering note) | branch main | commit da6427c (one commit carries [036] to [042], as [028] bundled two; sha backfilled by the follow-up commit, also covered by these entries)
 Changed: The engine's `negativeShareCount` refusal (pool plus granted options above the fully diluted count) was only reachable by pressing "Calculate pool" on the last screen, and nothing on the way showed how many options were left to grant. `lib/shareCount.ts` (new, pure) answers it on the first screen from the same arithmetic: `shareCountError` becomes the error on the fully diluted field in both `ScreenCompany.tsx` and `CompanyTodayCard.tsx`, blocks Continue on the company step (`OnboardingWizard.tsx`) and Recalculate in `ModelPanel.tsx`; `shareBreakdownLine` prints "Of N fully diluted shares: X issued, Y granted, Z unallocated, available to grant" under About your company. From a Linear review comment. The engine keeps its own guard, unchanged.
 Tests: new `share-count.test.ts`, including a check that `shareCountError` fires exactly when `calculateEsopPool` throws `negativeShareCount`. The earlier hiring-mismatch source checks in `translate-hiring-plan.test.ts` were updated to the shared `stepError`/`blockReason` shape.
 Decisions:
@@ -702,7 +702,7 @@ Root cause, found afterwards and fixed in the same entry: the error was reachabl
 Open items:
 - The same review comment asked how grant sizes per seniority were chosen: they are presets (percent: midpoints of the advisory ranges; rupees: provisional, scaled by grant philosophy), shown read-only on the grant step with "Customize grants". Not changed here.
 
-[041] 2026-10-22 | prompt P41 (see [028]'s numbering note) | branch main | commit (uncommitted at time of writing)
+[041] 2026-10-22 | prompt P41 (see [028]'s numbering note) | branch main | commit da6427c (one commit carries [036] to [042], as [028] bundled two; sha backfilled by the follow-up commit, also covered by these entries)
 Changed: Fixed a defect [040] introduced, found by the QA pass: on a fresh page the new breakdown line read "Of 1,00,00,000 fully diluted shares: 1,00,00,000 issued..." before anything was typed, printing the form's 10,000,000 seed as the founder's company. `ScreenCompany.tsx` now renders the line only once `company.fullyDilutedShares` has been entered.
 Tests: the source check in `share-count.test.ts` now asserts the line is gated on the field being entered.
 Decisions:
@@ -711,7 +711,7 @@ Changed: Same class, fixed in the same entry at the founder's request: the pool 
 Open items:
 - None from this item.
 
-[042] 2026-10-22 | prompt P42 (see [028]'s numbering note) | branch main | commit (uncommitted at time of writing)
+[042] 2026-10-22 | prompt P42 (see [028]'s numbering note) | branch main | commit da6427c (one commit carries [036] to [042], as [028] bundled two; sha backfilled by the follow-up commit, also covered by these entries)
 Changed: Fixed bugs 2 to 8 from the QA pass that followed [041]. UI only; `src/lib/esop` untouched.
 - Bug 2: Discard in `Your model` left a permanent hiring mismatch. `HiringMeta`/`GrantMeta` are UI state outside `draftInputs`, so a total changed 50 -> 60 and discarded stayed at 60 against years that went back to 50. `EsopPoolSizeClient.tsx` now snapshots both metas at Calculate and at every Recalculate, restores them on Discard, clears the snapshot on Reset.
 - Bug 3: tabbing out of an empty fully diluted shares field wiped a % pool. Two causes, both fixed: `NumberField` committed an empty blur as 0 (now it leaves a still-blank field unanswered), and the [040] rescale ran against or to zero (now `fullyDilutedSharesPatch` in shareCount.ts reads the percentage against the last count above zero and never rescales to zero; 10% of the seed, then 0, then 20,000 gives 2,000). The %/Shares toggle moved from `ScreenCompany` to `OnboardingWizard`, which stays mounted, so Back no longer resets a shares pool to percent and rescales it.

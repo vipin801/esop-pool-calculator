@@ -36,7 +36,7 @@ function allDeclaredFieldPaths(inputs: EsopInputs): readonly string[] {
     'company.grantedOutstandingOptions',
   );
   if (inputs.company.grantedOutstandingOptions > 0) {
-    paths.push('openingGrants.0.band', 'openingGrants.0.ageYearsAtPlanStart');
+    paths.push('openingGrants.0.ageYearsAtPlanStart');
   }
 
   /* 03 Your hiring plan */

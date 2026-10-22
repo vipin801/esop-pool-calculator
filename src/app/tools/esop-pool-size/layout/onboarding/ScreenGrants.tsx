@@ -109,9 +109,10 @@ export function ScreenGrants({ inputs, setGroup, meta, setMeta, touched, markTou
           </Field>
 
           <Field
-            label="Expected valuation growth"
+            label="Expected annual valuation growth"
             htmlFor="onb-growth"
             required={isRequired('growth.valuationGrowthPctPerYear')}
+            helper="Per year, compounding. A 40% rate takes ₹100 Cr to ₹140 Cr after one year."
           >
             <SliderField
               id="onb-growth"

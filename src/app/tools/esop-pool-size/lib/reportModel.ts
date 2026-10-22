@@ -722,7 +722,9 @@ function scenariosSection(inputs: EsopInputs, result: EsopResult): ReportSection
         ? [scenario.label, 'Out of range', '—', scenario.note]
         : [
             scenario.label,
-            formatPct(scenarioResult.recommendedPool.selected.displayPoolPctOfFullyDiluted),
+            // The whole pool, matching the "Recommended pool" header and the
+            // cover's headline; `selected` is the top-up (M23).
+            formatPct(displayPoolPct(scenarioResult.recommended.openingPoolPctOfFullyDiluted)),
             currentPoolRunwayLabel(scenarioResult.current),
             scenario.note,
           ],

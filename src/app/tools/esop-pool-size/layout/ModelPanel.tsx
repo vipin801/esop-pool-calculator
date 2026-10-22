@@ -9,6 +9,8 @@ import { ReportOnlyCard } from '../inputs/ReportOnlyCard';
 import { InputCard, type EsopGroupKey } from '../inputs/InputCard';
 import { ScreenHiring, type HiringMeta } from './onboarding/ScreenHiring';
 import { ScreenGrants, type GrantMeta } from './onboarding/ScreenGrants';
+import { shareCountError } from '../lib/shareCount';
+import { hiringPlanError } from '../lib/translateHiringPlan';
 
 interface ModelPanelProps {
   readonly modelInputs: EsopInputs;
@@ -64,6 +66,12 @@ export function ModelPanel({
   onReset,
 }: ModelPanelProps) {
   const cardProps = { inputs: modelInputs, setGroup: setDraftGroup, touched, markTouched, requiredPaths };
+  /** Same rule as the wizard: years that no longer add up to the total would
+   *  recalculate against hires the founder did not mean. */
+  const hiringError = hiringPlanError(hiringMeta, modelInputs.hiring);
+  /** Also a pool and granted options that exceed the fully diluted count: the
+   *  engine would refuse it on Recalculate, so refuse it before. */
+  const blockReason = shareCountError(modelInputs.company) ?? hiringError;
 
   return (
     <div className="space-y-5">
@@ -117,14 +125,17 @@ export function ModelPanel({
 
       {isDirty ? (
         <div className="sticky bottom-0 flex items-center justify-between gap-3 rounded-lg border border-strong bg-raised p-3.5 shadow-panel">
-          <p className="text-2xs font-medium text-ink">
-            {changeCount} {changeCount === 1 ? 'change' : 'changes'} not applied
-          </p>
+          <div>
+            <p className="text-2xs font-medium text-ink">
+              {changeCount} {changeCount === 1 ? 'change' : 'changes'} not applied
+            </p>
+            {blockReason ? <p className="mt-1 text-2xs leading-4 text-warn">Fix the error in your model to recalculate.</p> : null}
+          </div>
           <div className="flex gap-2">
             <Button size="sm" variant="ghost" onClick={onDiscard}>
               Discard
             </Button>
-            <Button size="sm" onClick={onRecalculate}>
+            <Button size="sm" onClick={onRecalculate} disabled={blockReason !== null}>
               Recalculate
             </Button>
           </div>

@@ -35,8 +35,9 @@ export const ReportCharts = forwardRef<HTMLDivElement, ReportChartsProps>(functi
     <div
       ref={ref}
       aria-hidden="true"
-      // @ts-expect-error -- `inert` is a valid HTML attribute; React 19 types lag on it.
-      inert=""
+      // A boolean in React 19. The old `inert=""` was read as false, so the
+      // tree was never actually inert, and React said so in the console.
+      inert
       style={{ position: 'fixed', top: 0, left: '-20000px', width: '880px', pointerEvents: 'none' }}
     >
       <PoolRunwayChart recommended={result.recommended} current={result.current} />

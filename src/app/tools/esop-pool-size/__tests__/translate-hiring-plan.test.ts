@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'vitest';
+import { sourceFiles, withoutComments } from './ui-source';
 import { BANDS, DEFAULTS, DEFAULT_GRANT_PCT_BY_BAND, DEFAULT_GRANT_VALUE_BY_BAND, DEFAULT_SENIORITY_MIX_PCT } from '@/lib/esop';
 import {
   distributeHires,
   grantPctPresetFor,
   grantValuePresetFor,
+  hiresPerYearMismatch,
+  hiringPlanError,
+  leadershipHiresError,
   mixFromProfile,
 } from '../lib/translateHiringPlan';
 
@@ -128,5 +132,105 @@ describe('grantValuePresetFor (Basis B)', () => {
       expect(low[band]).toBeLessThanOrEqual(mid[band]);
       expect(mid[band]).toBeLessThanOrEqual(high[band]);
     }
+  });
+});
+
+/**
+ * The preview line under the team-profile choice. `mixFromProfile` returns the
+ * preset unchanged when there are no hires to divide leadership by, so the
+ * screen must not print it until total hires has been entered — otherwise the
+ * fallback reads as the answer and the leadership figure typed is ignored.
+ */
+describe('ScreenHiring: the split preview waits for total hires', () => {
+  const FILE = sourceFiles(['.tsx']).find((f) => f.rel === '/layout/onboarding/ScreenHiring.tsx')!;
+  const CODE = withoutComments(FILE.text);
+
+  it('only builds the preview once hires have been entered and are above zero', () => {
+    expect(CODE).toMatch(/hasHires = meta\.hasEnteredHires && meta\.totalHires > 0/);
+    expect(CODE).toMatch(/!hasHires \? null : mixFromProfile/);
+  });
+
+  it('says what is missing instead of showing nothing', () => {
+    expect(CODE).toContain('Enter total hires above to see your split.');
+  });
+});
+
+describe('hiresPerYearMismatch', () => {
+  it('is null when the years add up to the total', () => {
+    expect(hiresPerYearMismatch(50, [25, 25, 0], 3)).toBeNull();
+    expect(hiresPerYearMismatch(0, [0, 0, 0, 0], 4)).toBeNull();
+  });
+
+  it('refuses 25 + 25 + 13 against a total of 50, and says by how much', () => {
+    const message = hiresPerYearMismatch(50, [25, 25, 13], 3);
+    expect(message).toContain('63');
+    expect(message).toContain('more than the 50');
+  });
+
+  it('refuses years that fall short of the total too', () => {
+    expect(hiresPerYearMismatch(50, [10, 10, 10], 3)).toContain('fewer than the 50');
+  });
+
+  it('counts only the first horizonYears entries', () => {
+    // hiresPerYear can be longer than the horizon; the engine ignores the rest.
+    expect(hiresPerYearMismatch(40, [10, 10, 10, 10, 999], 4)).toBeNull();
+  });
+
+  it('never lets a negative year offset an overshoot', () => {
+    expect(hiresPerYearMismatch(10, [20, -10], 2)).not.toBeNull();
+  });
+});
+
+describe('the hiring step refuses years that do not add up to the total', () => {
+  const read = (rel: string) => withoutComments(sourceFiles(['.tsx']).find((f) => f.rel === rel)!.text);
+
+  it('shows the message on the total-hires field, where it is visible with the by-year disclosure closed', () => {
+    expect(read('/layout/onboarding/ScreenHiring.tsx')).toMatch(/error=\{meta\.hasEnteredHires \? \(hiresPerYearMismatch\(/);
+  });
+
+  it('blocks Continue on the hiring step', () => {
+    const wizard = read('/layout/onboarding/OnboardingWizard.tsx');
+    expect(wizard).toMatch(/step === 1 \? hiringError : null/);
+    expect(wizard).toContain('hiringPlanError(hiringMeta, inputs.hiring)');
+    expect(wizard).toMatch(/isScreenComplete\(step, required, touched\) && !stepError/);
+  });
+
+  it('blocks Recalculate in Your model', () => {
+    expect(read('/layout/ModelPanel.tsx')).toMatch(/disabled=\{blockReason !== null\}/);
+    expect(read('/layout/ModelPanel.tsx')).toMatch(/blockReason = shareCountError\(modelInputs\.company\) \?\? hiringError/);
+    expect(read('/layout/ModelPanel.tsx')).toContain('hiringPlanError(hiringMeta, modelInputs.hiring)');
+  });
+});
+
+describe('leadershipHiresError and hiringPlanError', () => {
+  it('refuses more leadership hires than total hires', () => {
+    expect(leadershipHiresError(2, 50)).toBeNull();
+    expect(leadershipHiresError(50, 50)).toBeNull();
+    expect(leadershipHiresError(80, 50)).toContain('80');
+  });
+
+  const meta = { hasEnteredHires: true, totalHires: 50, leadershipHires: 2, profile: 'balanced' };
+  const hiring = { hiresPerYear: [25, 25, 0], horizonYears: 3 };
+
+  it('passes a plan whose years add up and whose leadership fits', () => {
+    expect(hiringPlanError(meta, hiring)).toBeNull();
+  });
+
+  it('reports the years first, then leadership', () => {
+    expect(hiringPlanError(meta, { ...hiring, hiresPerYear: [25, 25, 13] })).toContain('63');
+    expect(hiringPlanError({ ...meta, leadershipHires: 80 }, hiring)).toContain('Leadership hires (80)');
+  });
+
+  it('does not check leadership under a custom mix, which never asks for it', () => {
+    expect(hiringPlanError({ ...meta, leadershipHires: 80, profile: 'custom' }, hiring)).toBeNull();
+  });
+
+  it('checks nothing before total hires is entered', () => {
+    expect(hiringPlanError({ ...meta, hasEnteredHires: false, leadershipHires: 80 }, { ...hiring, hiresPerYear: [1, 1, 1] })).toBeNull();
+  });
+
+  it('shows the leadership error on its own field', () => {
+    const screen = withoutComments(sourceFiles(['.tsx']).find((f) => f.rel === '/layout/onboarding/ScreenHiring.tsx')!.text);
+    expect(screen).toContain('leadershipHiresError(meta.leadershipHires, meta.totalHires)');
   });
 });

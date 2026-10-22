@@ -378,8 +378,6 @@ describe('form controls are named', () => {
     // These have no `Field` label of their own, so they carry an `ariaLabel`.
     const inGroups = [
       'strike-discount',
-      'company-granted-band',
-      'company-granted-age',
       'onb-hires-y',
       'mix-',
       'grant-pct-',

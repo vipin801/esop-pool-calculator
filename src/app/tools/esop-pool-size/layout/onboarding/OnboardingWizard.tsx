@@ -6,7 +6,9 @@ import type { EsopInputs, FundingRound, OpeningGrantCohortInput } from '@/lib/es
 import { Button } from '../../ui/Button';
 import type { EsopGroupKey } from '../../inputs/InputCard';
 import { isScreenComplete, requiredPathsForScreen, type OnboardingScreen } from '../../lib/onboardingScreens';
-import { ScreenCompany } from './ScreenCompany';
+import { shareCountError } from '../../lib/shareCount';
+import { hiringPlanError } from '../../lib/translateHiringPlan';
+import { ScreenCompany, type PoolUnit } from './ScreenCompany';
 import { ScreenHiring, type HiringMeta } from './ScreenHiring';
 import { ScreenGrants, type GrantMeta } from './ScreenGrants';
 
@@ -65,7 +67,15 @@ export function OnboardingWizard({
   calculateBlockedReason,
 }: OnboardingWizardProps) {
   const [step, setStep] = useState<OnboardingScreen>(0);
-  const stepReady = isScreenComplete(step, required, touched);
+  const [poolUnit, setPoolUnit] = useState<PoolUnit>('percent');
+  /** The per-year hires are what the engine reads, so a total they no longer
+   *  add up to blocks the hiring step, not just the field that shows why. */
+  const hiringError = hiringPlanError(hiringMeta, inputs.hiring);
+  /** Same idea on the company step: a pool and granted options that exceed the
+   *  fully diluted count would only surface as an engine error on the last
+   *  screen, so it blocks here, where the numbers were typed. */
+  const stepError = step === 0 ? shareCountError(inputs.company) : step === 1 ? hiringError : null;
+  const stepReady = isScreenComplete(step, required, touched) && !stepError;
   const isLast = step === STEPS.length - 1;
   const missingOnStep = requiredPathsForScreen(step, required).filter((path) => !touched.has(path)).length;
   /**
@@ -80,7 +90,9 @@ export function OnboardingWizard({
    * after results were reached and so was unreachable from here at all.
    */
   const blockedHint = !stepReady
-    ? `${missingOnStep} field${missingOnStep === 1 ? '' : 's'} on this step still ${missingOnStep === 1 ? 'needs' : 'need'} an answer.`
+    ? missingOnStep === 0 && stepError
+      ? stepError
+      :`${missingOnStep} field${missingOnStep === 1 ? '' : 's'} on this step still ${missingOnStep === 1 ? 'needs' : 'need'} an answer.`
     : isLast && !readyToCalculate && calculateBlockedReason
       ? `This plan can’t be priced yet: ${calculateBlockedReason}`
       : null;
@@ -142,6 +154,8 @@ export function OnboardingWizard({
               touched={touched}
               markTouched={markTouched}
               requiredPaths={requiredPaths}
+              poolUnit={poolUnit}
+              setPoolUnit={setPoolUnit}
             />
           ) : step === 1 ? (
             <ScreenHiring

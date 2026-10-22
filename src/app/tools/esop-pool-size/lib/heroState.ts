@@ -63,3 +63,27 @@ export function likelyDrivers(inputs: EsopInputs): readonly string[] {
 
   return drivers;
 }
+
+/**
+ * The `adequate` state's missing half. When the pool a founder holds already
+ * covers the plan, the headline's recommended pool *is* that pool — section
+ * 4.5 never recommends shrinking one — so on its own it said "10.0%" for a plan
+ * that only draws on a fraction of it, and the founder had no way to see the
+ * gap. This reads it off the engine's own `current` roll forward: the most the
+ * plan ever draws down is the opening pool less the lowest balance any year
+ * closes on. A display transform of returned figures, not a second model, and
+ * it carries no buffer — it is what the plan uses, not what to reserve.
+ */
+export function heldPoolUsage(result: EsopResult): {
+  readonly held: number;
+  readonly used: number;
+  readonly spare: number;
+  readonly usedPctOfFullyDiluted: number;
+} {
+  const { current } = result;
+  const lowest = Math.min(...current.years.map((y) => y.closingAvailable));
+  const spare = Math.max(0, lowest);
+  const used = Math.max(0, current.openingPoolOptions - spare);
+  const fd = current.fullyDilutedSharesAtYear0;
+  return { held: current.openingPoolOptions, used, spare, usedPctOfFullyDiluted: fd > 0 ? (used / fd) * 100 : 0 };
+}

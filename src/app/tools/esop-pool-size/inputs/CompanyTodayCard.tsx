@@ -1,14 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { BANDS, type OpeningGrantCohortInput } from '@/lib/esop';
+import type { OpeningGrantCohortInput } from '@/lib/esop';
 import { CroreField } from '../ui/CroreField';
 import { Field } from '../ui/Field';
 import { NumberField } from '../ui/NumberField';
 import { SegmentedControl } from '../ui/SegmentedControl';
-import { SelectField } from '../ui/SelectField';
 import { SliderField } from '../ui/SliderField';
 import { formatShares } from '../lib/format';
+import { fullyDilutedSharesPatch, shareCountError } from '../lib/shareCount';
 import { makeTouchHelpers } from '../lib/touched';
 import { makeVisibilityHelpers } from '../lib/visibility';
 import { InputCard, type CardProps } from './InputCard';
@@ -49,21 +49,23 @@ export function CompanyTodayCard({
 }: CompanyTodayCardProps) {
   const { company, growth } = inputs;
   const [poolUnit, setPoolUnit] = useState<PoolUnit>('percent');
+  const [lastPositiveFd, setLastPositiveFd] = useState(company.fullyDilutedShares);
   const existingCohort = openingGrants[0];
   const { isBlank, isRequired, withTouch } = makeTouchHelpers(touched, markTouched, requiredPaths, inputs);
   const { isHidden, isReportOnly } = makeVisibilityHelpers(inputs);
 
-  const existingPoolPct =
-    company.fullyDilutedShares > 0
-      ? (company.existingUnallocatedOptions / company.fullyDilutedShares) * 100
-      : 0;
+  /** What the pool's percentage is read and written against: the count, or
+   *  the last count above zero while it reads zero. Without it a % typed while
+   *  the count was 0 was stored as 0 shares and lost. */
+  const pctBase = company.fullyDilutedShares > 0 ? company.fullyDilutedShares : lastPositiveFd;
+  const existingPoolPct = pctBase > 0 ? (company.existingUnallocatedOptions / pctBase) * 100 : 0;
 
   function setExistingPoolShares(shares: number) {
     setGroup('company', { existingUnallocatedOptions: Math.max(0, shares) });
   }
 
   function setExistingPoolFromPct(pct: number) {
-    setExistingPoolShares((pct / 100) * company.fullyDilutedShares);
+    setExistingPoolShares((pct / 100) * pctBase);
   }
 
   function setGrantedOutstanding(next: number) {
@@ -87,12 +89,21 @@ export function CompanyTodayCard({
         label="Fully diluted shares" htmlFor="company-fd-shares"
         required={isRequired('company.fullyDilutedShares')}
         helper="Sets your share numbers. Founders + investors + options already granted, including the unallocated pool."
+        error={shareCountError(company) ?? undefined}
       >
         <NumberField
           id="company-fd-shares"
           value={company.fullyDilutedShares}
           blank={isBlank('company.fullyDilutedShares')}
-          onChange={withTouch('company.fullyDilutedShares', (fullyDilutedShares) => setGroup('company', { fullyDilutedShares }))}
+          onChange={withTouch('company.fullyDilutedShares', (next) => {
+            // Same rule as the wizard (ScreenCompany): the pool keeps its
+            // percentage against the last count above zero.
+            if (company.fullyDilutedShares > 0) setLastPositiveFd(company.fullyDilutedShares);
+            setGroup(
+              'company',
+              fullyDilutedSharesPatch({ next, poolShares: company.existingUnallocatedOptions, lastPositiveFullyDiluted: pctBase, poolUnit }),
+            );
+          })}
           grouped
         />
       </Field>
@@ -154,43 +165,25 @@ export function CompanyTodayCard({
       {company.grantedOutstandingOptions > 0 ? (
         <Field
           label="Average age of those grants"
-          required={isRequired('openingGrants.0.band')}
+          htmlFor="company-granted-age"
+          required={isRequired('openingGrants.0.ageYearsAtPlanStart')}
           helper="Years since grant. Needed to project how they vest and lapse from here."
         >
-          <div className="grid grid-cols-2 gap-2">
-            <SelectField
-              id="company-granted-band"
-              ariaLabel="Band of the existing grants"
-              value={existingCohort?.band ?? 'mid'}
-              blank={isBlank('openingGrants.0.band')}
-              onChange={withTouch('openingGrants.0.band', (band) =>
-                setOpeningGrants([
-                  {
-                    band,
-                    outstandingOptions: company.grantedOutstandingOptions,
-                    ageYearsAtPlanStart: existingCohort?.ageYearsAtPlanStart ?? 2,
-                  },
-                ]),
-              )}
-              options={BANDS.map((band) => ({ value: band, label: band }))}
-            />
-            <NumberField
-              id="company-granted-age"
-              ariaLabel="Average age of the existing grants, in years"
-              value={existingCohort?.ageYearsAtPlanStart ?? 2}
-              blank={isBlank('openingGrants.0.ageYearsAtPlanStart')}
-              onChange={withTouch('openingGrants.0.ageYearsAtPlanStart', (age) =>
-                setOpeningGrants([
-                  {
-                    band: existingCohort?.band ?? 'mid',
-                    outstandingOptions: company.grantedOutstandingOptions,
-                    ageYearsAtPlanStart: age,
-                  },
-                ]),
-              )}
-              suffix="yrs"
-            />
-          </div>
+          <NumberField
+            id="company-granted-age"
+            value={existingCohort?.ageYearsAtPlanStart ?? 2}
+            blank={isBlank('openingGrants.0.ageYearsAtPlanStart')}
+            onChange={withTouch('openingGrants.0.ageYearsAtPlanStart', (age) =>
+              setOpeningGrants([
+                {
+                  band: existingCohort?.band ?? 'mid',
+                  outstandingOptions: company.grantedOutstandingOptions,
+                  ageYearsAtPlanStart: age,
+                },
+              ]),
+            )}
+            suffix="yrs"
+          />
         </Field>
       ) : null}
 

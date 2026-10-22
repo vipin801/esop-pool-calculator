@@ -3,7 +3,7 @@ import type { EsopInputs, EsopResult, GrantBasisKind, StrikePolicyKind } from '@
 import { Abbr } from '../ui/Abbr';
 import { Button } from '../ui/Button';
 import { displayPoolPct, formatPct, formatShares, lakhCrore, monthLabel } from '../lib/format';
-import { heroStateFor, isAboveAdvisoryCeiling, likelyDrivers } from '../lib/heroState';
+import { heldPoolUsage, heroStateFor, isAboveAdvisoryCeiling, likelyDrivers } from '../lib/heroState';
 
 const GRANT_BASIS_LABEL: Record<GrantBasisKind, string> = {
   percentOfEquity: 'percent-of-equity',
@@ -111,6 +111,8 @@ export function Headline({ inputs, result, action, onReviewAssumptions }: Headli
         {STRIKE_LABEL[recommendedPool.selected.strikePolicyKind]}.
       </p>
 
+      {state === 'adequate' ? <HeldPoolUsageLine result={result} /> : null}
+
       {softWarning ? (
         <p className="rounded border-l-2 border-warn bg-warn-soft px-3 py-2 text-2xs leading-4 text-warn">
           Well above the advisory benchmark for your stage. Not an error — a converged answer is never
@@ -169,6 +171,17 @@ export function Headline({ inputs, result, action, onReviewAssumptions }: Headli
         </div>
       </dl>
     </div>
+  );
+}
+
+function HeldPoolUsageLine({ result }: { readonly result: EsopResult }) {
+  const { held, used, spare, usedPctOfFullyDiluted } = heldPoolUsage(result);
+  return (
+    <p className="rounded border-l-2 border-accent bg-muted px-3 py-2 text-2xs leading-4 text-sub">
+      Your plan uses at most <span className="figure text-ink">{formatShares(used)}</span> of these{' '}
+      <span className="figure text-ink">{formatShares(held)}</span> options ({formatPct(usedPctOfFullyDiluted)} of FD), leaving at
+      least <span className="figure text-ink">{formatShares(spare)}</span> unused.
+    </p>
   );
 }
 

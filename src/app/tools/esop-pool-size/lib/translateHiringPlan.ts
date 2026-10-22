@@ -139,3 +139,49 @@ export function grantValuePresetFor(philosophy: GrantPhilosophy): Record<Band, n
   }
   return result;
 }
+
+/**
+ * "Enter hiring by year" edits `hiring.hiresPerYear` directly, and nothing
+ * else — `HiringMeta.totalHires` is UI-only state — so the two can disagree:
+ * 50 eligible hires entered, then 25 + 25 + 13 typed across the years. The
+ * years are what the engine reads, which makes a total that no longer matches
+ * them a wrong answer on screen, not a harmless label, so the screens refuse
+ * to move on while they differ. Only the first `horizonYears` entries count:
+ * `hiresPerYear` may be longer than the horizon, and the engine ignores the
+ * rest.
+ *
+ * Returns the message to show, or null when they agree. Hires are whole
+ * people, so the comparison rounds each year the way `distributeHires` does.
+ */
+export function hiresPerYearMismatch(totalHires: number, hiresPerYear: readonly number[], horizonYears: number): string | null {
+  const total = Math.max(0, Math.round(totalHires));
+  const sum = hiresPerYear.slice(0, Math.max(1, Math.round(horizonYears))).reduce((acc, n) => acc + Math.max(0, Math.round(n)), 0);
+  if (sum === total) return null;
+  return sum > total
+    ? `Your years add up to ${sum}, more than the ${total} hires you entered. Lower a year or raise the total.`
+    : `Your years add up to ${sum}, fewer than the ${total} hires you entered. Raise a year or lower the total.`;
+}
+
+/** Leadership hires are a subset of total hires; more of them than the total
+ *  turns `mixFromProfile` into a 100% leadership mix with no warning. */
+export function leadershipHiresError(leadershipHires: number, totalHires: number): string | null {
+  if (leadershipHires <= totalHires) return null;
+  return `Leadership hires (${leadershipHires}) can't be more than your ${totalHires} total hires.`;
+}
+
+/**
+ * The one check the hiring step and `Your model` both gate on, so they cannot
+ * disagree about whether a hiring plan is usable. Nothing is checked until
+ * total hires has been entered; leadership hires is only asked outside the
+ * custom mix, which sets every band directly.
+ */
+export function hiringPlanError(
+  meta: { readonly hasEnteredHires: boolean; readonly totalHires: number; readonly leadershipHires: number; readonly profile: string },
+  hiring: { readonly hiresPerYear: readonly number[]; readonly horizonYears: number },
+): string | null {
+  if (!meta.hasEnteredHires) return null;
+  return (
+    hiresPerYearMismatch(meta.totalHires, hiring.hiresPerYear, hiring.horizonYears) ??
+    (meta.profile === 'custom' ? null : leadershipHiresError(meta.leadershipHires, meta.totalHires))
+  );
+}

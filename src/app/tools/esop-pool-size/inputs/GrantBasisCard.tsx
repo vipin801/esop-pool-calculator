@@ -3,11 +3,13 @@ import {
   DEFAULT_GRANT_VALUE_BY_BAND,
   STAGES,
   type GrantBasis,
+  type Stage,
 } from '@/lib/esop';
 import { Field } from '../ui/Field';
 import { RadioGroup } from '../ui/RadioGroup';
 import { SelectField } from '../ui/SelectField';
 import { STAGE_LABEL } from '../lib/labels';
+import { strikePolicyForStage } from '../lib/seedInputs';
 import { makeTouchHelpers } from '../lib/touched';
 import { InputCard, type CardProps } from './InputCard';
 
@@ -27,6 +29,14 @@ export function GrantBasisCard({ inputs, setGroup, touched, markTouched, require
   const { grantBasis, comparisonGrantBasis } = grantPolicy;
   const { isBlank, isRequired, withTouch } = makeTouchHelpers(touched, markTouched, requiredPaths, inputs);
 
+  /** D17: same touched-aware reseed as the wizard's stage control. */
+  function setStage(stage: Stage) {
+    setGroup('company', { stage });
+    if (!touched.has('grantPolicy.strikePolicy.kind')) {
+      setGroup('grantPolicy', { strikePolicy: strikePolicyForStage(stage) });
+    }
+  }
+
   function switchBasis(kind: GrantBasis['kind']) {
     if (kind === grantBasis.kind) return;
     if (comparisonGrantBasis.kind === kind) {
@@ -43,7 +53,7 @@ export function GrantBasisCard({ inputs, setGroup, touched, markTouched, require
           id="company-stage"
           value={company.stage}
           blank={isBlank('company.stage')}
-          onChange={withTouch('company.stage', (stage) => setGroup('company', { stage }))}
+          onChange={withTouch('company.stage', setStage)}
           options={STAGES.map((stage) => ({ value: stage, label: STAGE_LABEL[stage] }))}
         />
         <p className="text-2xs leading-4 text-faint">Seeds every default below. Sets the benchmark band we compare you against.</p>

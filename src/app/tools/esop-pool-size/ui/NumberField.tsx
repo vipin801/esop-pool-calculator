@@ -92,6 +92,11 @@ export function NumberField({
         onChange={(e) => setRaw(e.target.value)}
         onBlur={(e) => {
           setFocused(false);
+          // Tabbing through a field nobody has answered is not an answer. An
+          // empty commit would parse as 0 and mark the field touched, so a
+          // required field like fully diluted shares counted as entered — as
+          // zero — and only failed at "Calculate pool". Leave it blank instead.
+          if (blank && e.target.value.trim() === '') return;
           commit(e.target.value);
         }}
         onKeyDown={(e) => {

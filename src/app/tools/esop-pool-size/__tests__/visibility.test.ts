@@ -40,7 +40,11 @@ describe('tierFor', () => {
     const neither = withInputs({ exercise: { recycleForfeited: false }, grantPolicy: { refresh: { ...BASE.grantPolicy.refresh, ratePct: 0 } } });
     it('is reportOnly when neither recycling nor refresh is on', () => {
       expect(tierFor('company.grantedOutstandingOptions', neither)).toBe('reportOnly');
-      expect(tierFor('openingGrants.0.band', neither)).toBe('reportOnly');
+      expect(tierFor('openingGrants.0.ageYearsAtPlanStart', neither)).toBe('reportOnly');
+    });
+    it('never asks for the opening cohort band (D16)', () => {
+      expect(tierFor('openingGrants.0.band', neither)).toBe('hidden');
+      expect(tierFor('openingGrants.0.band', BASE)).toBe('hidden');
     });
     it('drives the pool when recycling is on', () => {
       const recycling = withInputs({ exercise: { recycleForfeited: true }, grantPolicy: { refresh: { ...BASE.grantPolicy.refresh, ratePct: 0 } } });
@@ -323,12 +327,13 @@ describe('requiredFieldPaths', () => {
     expect(requiredFieldPaths(RUPEE_NOTIONAL)).not.toContain('grantPolicy.fairValue.theta');
   });
 
-  /** M21: the engine refuses to invent a grant year and a band, so the two
-   *  cohort fields stay required once there is a cohort to describe. */
-  it('adds the opening cohort once something has been granted', () => {
+  /** M21: the engine refuses to invent a grant year, so the cohort's age stays
+   *  required once there is a cohort to describe. The band does not (D16): it
+   *  rides along as `mid`. */
+  it('adds the opening cohort age once something has been granted', () => {
     const withGrants = { ...BASIS_A, company: { ...BASIS_A.company, grantedOutstandingOptions: 250_000 } };
     const required = requiredFieldPaths(withGrants);
-    expect(required).toContain('openingGrants.0.band');
+    expect(required).not.toContain('openingGrants.0.band');
     expect(required).toContain('openingGrants.0.ageYearsAtPlanStart');
   });
 

@@ -2,26 +2,27 @@
 
 import { useState } from 'react';
 import {
-  BANDS,
   DEFAULT_GRANT_BASIS_BY_STAGE,
   DEFAULT_GRANT_PCT_BY_BAND,
   DEFAULT_GRANT_VALUE_BY_BAND,
   STAGES,
   type GrantBasis,
+  type Stage,
   type OpeningGrantCohortInput,
 } from '@/lib/esop';
 import { Button } from '../../ui/Button';
 import { Field } from '../../ui/Field';
 import { NumberField } from '../../ui/NumberField';
 import { SegmentedControl } from '../../ui/SegmentedControl';
-import { SelectField } from '../../ui/SelectField';
 import { formatShares } from '../../lib/format';
 import { STAGE_LABEL } from '../../lib/labels';
+import { fullyDilutedSharesPatch, shareBreakdownLine, shareCountError } from '../../lib/shareCount';
+import { strikePolicyForStage } from '../../lib/seedInputs';
 import { makeTouchHelpers } from '../../lib/touched';
 import type { EsopGroupKey } from '../../inputs/InputCard';
 import type { EsopInputs } from '@/lib/esop';
 
-type PoolUnit = 'percent' | 'shares';
+export type PoolUnit = 'percent' | 'shares';
 
 function otherGrantBasis(kind: GrantBasis['kind']): GrantBasis {
   return kind === 'percentOfEquity'
@@ -37,6 +38,11 @@ interface ScreenCompanyProps {
   readonly touched: ReadonlySet<string>;
   readonly markTouched: (path: string) => void;
   readonly requiredPaths: ReadonlySet<string>;
+  /** Lifted to the wizard, which stays mounted across steps: held here it
+   *  reset to percent on every Back, and a pool typed in shares would then be
+   *  rescaled as if it were a percentage the next time the count changed. */
+  readonly poolUnit: PoolUnit;
+  readonly setPoolUnit: (unit: PoolUnit) => void;
 }
 
 /**
@@ -53,22 +59,46 @@ export function ScreenCompany({
   touched,
   markTouched,
   requiredPaths,
+  poolUnit,
+  setPoolUnit,
 }: ScreenCompanyProps) {
   const { company, grantPolicy } = inputs;
   const { grantBasis, comparisonGrantBasis } = grantPolicy;
-  const [poolUnit, setPoolUnit] = useState<PoolUnit>('percent');
+  const [lastPositiveFd, setLastPositiveFd] = useState(company.fullyDilutedShares);
   const existingCohort = openingGrants[0];
   const { isBlank, isRequired, withTouch } = makeTouchHelpers(touched, markTouched, requiredPaths, inputs);
 
-  const existingPoolPct =
-    company.fullyDilutedShares > 0 ? (company.existingUnallocatedOptions / company.fullyDilutedShares) * 100 : 0;
+  /** What the pool's percentage is read and written against: the count, or
+   *  the last count above zero while it reads zero. Without it a % typed while
+   *  the count was 0 was stored as 0 shares and lost. */
+  const pctBase = company.fullyDilutedShares > 0 ? company.fullyDilutedShares : lastPositiveFd;
+  const existingPoolPct = pctBase > 0 ? (company.existingUnallocatedOptions / pctBase) * 100 : 0;
 
   function setExistingPoolShares(shares: number) {
     setGroup('company', { existingUnallocatedOptions: Math.max(0, shares) });
   }
 
   function setExistingPoolFromPct(pct: number) {
-    setExistingPoolShares((pct / 100) * company.fullyDilutedShares);
+    setExistingPoolShares((pct / 100) * pctBase);
+  }
+
+  /** In percent mode the pool keeps its percentage when the count under it
+   *  changes; in shares mode it stays the absolute number the founder typed. */
+  function setFullyDilutedShares(next: number) {
+    if (company.fullyDilutedShares > 0) setLastPositiveFd(company.fullyDilutedShares);
+    setGroup(
+      'company',
+      fullyDilutedSharesPatch({ next, poolShares: company.existingUnallocatedOptions, lastPositiveFullyDiluted: pctBase, poolUnit }),
+    );
+  }
+
+  /** D17: a stage change reseeds the strike policy to the stage's default,
+   *  unless the founder has already chosen one. */
+  function setStage(stage: Stage) {
+    setGroup('company', { stage });
+    if (!touched.has('grantPolicy.strikePolicy.kind')) {
+      setGroup('grantPolicy', { strikePolicy: strikePolicyForStage(stage) });
+    }
   }
 
   function switchBasis(kind: GrantBasis['kind']) {
@@ -104,17 +134,39 @@ export function ScreenCompany({
       <Field label="What stage are you at?" group required={isRequired('company.stage')}>
         <SegmentedControl
           value={isBlank('company.stage') ? null : company.stage}
-          onChange={withTouch('company.stage', (stage) => setGroup('company', { stage }))}
+          onChange={withTouch('company.stage', setStage)}
           ariaLabel="Company stage"
           size="lg"
           options={STAGES.map((stage) => ({ value: stage, label: STAGE_LABEL[stage] }))}
         />
       </Field>
 
+      {/* Asked before the pool, not after: a pool typed as a percentage is
+          converted to shares against this number, so it has to exist first. */}
+      <Field
+        label="Fully diluted shares"
+        htmlFor="onb-fd-shares"
+        required={isRequired('company.fullyDilutedShares')}
+        helper="Founders + investors + options already granted, including the unallocated pool."
+        error={shareCountError(company) ?? undefined}
+      >
+        <NumberField
+          id="onb-fd-shares"
+          value={company.fullyDilutedShares}
+          blank={isBlank('company.fullyDilutedShares')}
+          onChange={withTouch('company.fullyDilutedShares', setFullyDilutedShares)}
+          grouped
+        />
+      </Field>
+
       <Field
         label="How much unallocated ESOP pool do you have today?"
         required={isRequired('company.existingUnallocatedOptions')}
-        readout={isBlank('company.existingUnallocatedOptions') ? undefined : `${formatShares(company.existingUnallocatedOptions)} shares`}
+        readout={
+          isBlank('company.existingUnallocatedOptions') || (poolUnit === 'percent' && isBlank('company.fullyDilutedShares'))
+            ? undefined
+            : `${formatShares(company.existingUnallocatedOptions)} shares`
+        }
       >
         {/* 2026-08-18: the unit toggle moved out of the label row into this
             one row with the input and "No pool yet" — same baseline, 12px
@@ -171,6 +223,13 @@ export function ScreenCompany({
         </div>
       </Field>
 
+      {/* Only once the founder has entered the count: before that,
+          `fullyDilutedShares` is the form's 10,000,000 seed, and printing a
+          breakdown of it would present an invented number as their company. */}
+      {!isBlank('company.fullyDilutedShares') && shareBreakdownLine(company) ? (
+        <p className="figure -mt-4 text-eyebrow leading-5 text-sub">{shareBreakdownLine(company)}</p>
+      ) : null}
+
       <Field label="How do you usually quote ESOP grants?" group required={isRequired('grantPolicy.grantBasis.kind')}>
         <div role="radiogroup" aria-label="Grant basis" className="grid gap-2 sm:grid-cols-2">
           {(
@@ -217,21 +276,6 @@ export function ScreenCompany({
           <p className="text-eyebrow font-medium text-ink">About your company</p>
 
           <Field
-            label="Fully diluted shares"
-            htmlFor="onb-fd-shares"
-            required={isRequired('company.fullyDilutedShares')}
-            helper="Founders + investors + options already granted, including the unallocated pool."
-          >
-            <NumberField
-              id="onb-fd-shares"
-              value={company.fullyDilutedShares}
-              blank={isBlank('company.fullyDilutedShares')}
-              onChange={withTouch('company.fullyDilutedShares', (fullyDilutedShares) => setGroup('company', { fullyDilutedShares }))}
-              grouped
-            />
-          </Field>
-
-          <Field
             label="Granted and outstanding"
             htmlFor="onb-granted-outstanding"
             required={isRequired('company.grantedOutstandingOptions')}
@@ -247,41 +291,27 @@ export function ScreenCompany({
           </Field>
 
           {company.grantedOutstandingOptions > 0 ? (
-            <Field label="Average age of those grants" required={isRequired('openingGrants.0.band')} helper="Years since grant.">
-              <div className="grid grid-cols-2 gap-2">
-                <SelectField
-                  id="onb-granted-band"
-                  ariaLabel="Band of the existing grants"
-                  value={existingCohort?.band ?? 'mid'}
-                  blank={isBlank('openingGrants.0.band')}
-                  onChange={withTouch('openingGrants.0.band', (band) =>
-                    setOpeningGrants([
-                      {
-                        band,
-                        outstandingOptions: company.grantedOutstandingOptions,
-                        ageYearsAtPlanStart: existingCohort?.ageYearsAtPlanStart ?? 2,
-                      },
-                    ]),
-                  )}
-                  options={BANDS.map((band) => ({ value: band, label: band }))}
-                />
-                <NumberField
-                  id="onb-granted-age"
-                  ariaLabel="Average age of the existing grants, in years"
-                  value={existingCohort?.ageYearsAtPlanStart ?? 2}
-                  blank={isBlank('openingGrants.0.ageYearsAtPlanStart')}
-                  onChange={withTouch('openingGrants.0.ageYearsAtPlanStart', (age) =>
-                    setOpeningGrants([
-                      {
-                        band: existingCohort?.band ?? 'mid',
-                        outstandingOptions: company.grantedOutstandingOptions,
-                        ageYearsAtPlanStart: age,
-                      },
-                    ]),
-                  )}
-                  suffix="yrs"
-                />
-              </div>
+            <Field
+              label="Average age of those grants"
+              htmlFor="onb-granted-age"
+              required={isRequired('openingGrants.0.ageYearsAtPlanStart')}
+              helper="Years since grant."
+            >
+              <NumberField
+                id="onb-granted-age"
+                value={existingCohort?.ageYearsAtPlanStart ?? 2}
+                blank={isBlank('openingGrants.0.ageYearsAtPlanStart')}
+                onChange={withTouch('openingGrants.0.ageYearsAtPlanStart', (age) =>
+                  setOpeningGrants([
+                    {
+                      band: existingCohort?.band ?? 'mid',
+                      outstandingOptions: company.grantedOutstandingOptions,
+                      ageYearsAtPlanStart: age,
+                    },
+                  ]),
+                )}
+                suffix="yrs"
+              />
             </Field>
           ) : null}
         </div>

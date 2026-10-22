@@ -61,6 +61,15 @@ function strikePolicyFor(kind: StrikePolicyKind): StrikePolicy {
   }
 }
 
+/**
+ * D17. The strike policy the stage defaults to, for a stage change to reseed
+ * with — but only while the founder has not chosen one (`touched` decides,
+ * at the call site), so an explicit choice is never overruled (M16's rule).
+ */
+export function strikePolicyForStage(stage: Stage): StrikePolicy {
+  return strikePolicyFor(DEFAULT_STRIKE_POLICY_BY_STAGE[stage]);
+}
+
 function isoDateYearsAgo(years: number, from: Date): string {
   const d = new Date(Date.UTC(from.getUTCFullYear() - years, from.getUTCMonth(), 1));
   return d.toISOString().slice(0, 10);

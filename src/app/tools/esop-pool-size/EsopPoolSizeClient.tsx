@@ -121,6 +121,15 @@ function EsopPoolSizeApp() {
   const [hiringMeta, setHiringMeta] = useState<HiringMeta>(DEFAULT_HIRING_META);
   const [grantMeta, setGrantMeta] = useState<GrantMeta>(DEFAULT_GRANT_META);
 
+  /**
+   * The meta as it stood when `inputs` was last applied (Calculate pool or
+   * Recalculate). `Your model` edits the meta directly — it is UI state, not
+   * part of `draftInputs` — so Discard has to put it back too, or a total
+   * changed from 50 to 60 and then discarded stays at 60 against years that
+   * went back to 50, and the hiring check reports a mismatch nobody made.
+   */
+  const [appliedMeta, setAppliedMeta] = useState<{ readonly hiring: HiringMeta; readonly grant: GrantMeta } | null>(null);
+
   /** Runs after every commit; a no-op except the one right after a touch that
    *  moved the anchored element, so the field the founder is looking at holds
    *  its screen position through both the state-A-to-B layout switch and any
@@ -177,12 +186,17 @@ function EsopPoolSizeApp() {
 
   function onDiscardDraft() {
     setDraftInputsState(null);
+    if (appliedMeta) {
+      setHiringMeta(appliedMeta.hiring);
+      setGrantMeta(appliedMeta.grant);
+    }
   }
 
   function onRecalculate() {
     if (!draftInputs) return;
     setInputs(draftInputs);
     setDraftInputsState(null);
+    setAppliedMeta({ hiring: hiringMeta, grant: grantMeta });
   }
 
   const [modelSheetOpen, setModelSheetOpen] = useState(false);
@@ -240,7 +254,9 @@ function EsopPoolSizeApp() {
   const readyToCalculate = complete && outcome.ok;
 
   function onCalculate() {
-    if (readyToCalculate) setReachedResults(true);
+    if (!readyToCalculate) return;
+    setReachedResults(true);
+    setAppliedMeta({ hiring: hiringMeta, grant: grantMeta });
   }
 
   /**
@@ -305,6 +321,7 @@ function EsopPoolSizeApp() {
     setReachedResults(false);
     setHiringMeta(DEFAULT_HIRING_META);
     setGrantMeta(DEFAULT_GRANT_META);
+    setAppliedMeta(null);
     setDraftInputsState(null);
     setModelSheetOpen(false);
   }

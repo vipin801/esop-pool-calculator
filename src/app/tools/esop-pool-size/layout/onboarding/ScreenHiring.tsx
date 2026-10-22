@@ -8,7 +8,7 @@ import { RequiredMarker } from '../../ui/RequiredMarker';
 import { SegmentedControl } from '../../ui/SegmentedControl';
 import { makeTouchHelpers, META_LEADERSHIP_HIRES } from '../../lib/touched';
 import { BAND_LABEL } from '../../lib/labels';
-import { distributeHires, mixFromProfile, type HiringTiming, type TeamProfile } from '../../lib/translateHiringPlan';
+import { distributeHires, hiresPerYearMismatch, leadershipHiresError, mixFromProfile, type HiringTiming, type TeamProfile } from '../../lib/translateHiringPlan';
 import type { EsopGroupKey } from '../../inputs/InputCard';
 import { SeniorityMix } from '../../inputs/SeniorityMix';
 
@@ -124,7 +124,11 @@ export function ScreenHiring({ inputs, setGroup, meta, setMeta, touched, markTou
     applyMix(next);
   }
 
-  const previewMix = meta.profile === 'custom' ? null : mixFromProfile(meta.profile, meta.leadershipHires, meta.totalHires);
+  /** `mixFromProfile` returns the preset untouched while there are no hires to
+   *  divide leadership by, so showing it before total hires is entered would
+   *  present a fallback as the answer and ignore the leadership figure typed. */
+  const hasHires = meta.hasEnteredHires && meta.totalHires > 0;
+  const previewMix = meta.profile === 'custom' || !hasHires ? null : mixFromProfile(meta.profile, meta.leadershipHires, meta.totalHires);
 
   return (
     <div className="space-y-8">
@@ -142,6 +146,7 @@ export function ScreenHiring({ inputs, setGroup, meta, setMeta, touched, markTou
         label="How many ESOP-eligible people will you hire?"
         htmlFor="onb-total-hires"
         helper="Enter your planned hires, even if it's zero — this is what unlocks the year-by-year plan below."
+        error={meta.hasEnteredHires ? (hiresPerYearMismatch(meta.totalHires, hiring.hiresPerYear, hiring.horizonYears) ?? undefined) : undefined}
       >
         <NumberField
           id="onb-total-hires"
@@ -185,7 +190,11 @@ export function ScreenHiring({ inputs, setGroup, meta, setMeta, touched, markTou
         />
       ) : (
         <>
-          <Field label="How many leadership / CXO hires?" htmlFor="onb-leadership-hires">
+          <Field
+            label="How many leadership / CXO hires?"
+            htmlFor="onb-leadership-hires"
+            error={meta.hasEnteredHires ? (leadershipHiresError(meta.leadershipHires, meta.totalHires) ?? undefined) : undefined}
+          >
             <NumberField
               id="onb-leadership-hires"
               value={meta.leadershipHires}
@@ -204,7 +213,9 @@ export function ScreenHiring({ inputs, setGroup, meta, setMeta, touched, markTou
                 .join(' · ')}
               .
             </p>
-          ) : null}
+          ) : (
+            <p className="text-2xs leading-4 text-faint">Enter total hires above to see your split.</p>
+          )}
         </>
       )}
 

@@ -58,8 +58,11 @@ describe('ScenarioStrip: Slow/Fast detail blocks are locked, Base is not', () =>
   // Isolate the percentage-and-below block — `key === 'base'` also gates the
   // unrelated "Current"/"Load" header above it, so splitting on the literal
   // percentage read pins this to the second occurrence, not the first.
+  // The read is the whole recommended pool since LOG [042] (it was the top-up,
+  // which disagreed with the headline); the anchor follows it, the lock checks
+  // below are unchanged.
   const [, afterPct = ''] = STRIP_CODE.split(
-    "{formatPct(result.recommendedPool.selected.displayPoolPctOfFullyDiluted)}",
+    "{formatPct(displayPoolPct(result.recommended.openingPoolPctOfFullyDiluted))}",
   );
   const [, afterBaseCond = ''] = afterPct.split(/key === 'base' \? \(/);
   const [baseArm = '', nonBaseArm = ''] = afterBaseCond.split(') : (');
@@ -91,7 +94,7 @@ describe('ScenarioStrip: Slow/Fast detail blocks are locked, Base is not', () =>
     // The lock sits below the percentage read, and `Load` is rendered
     // unconditionally for any non-base, non-error scenario — neither is
     // inside the `key === 'base'` branch this test just checked.
-    expect(STRIP_CODE).toMatch(/formatPct\(result\.recommendedPool\.selected\.displayPoolPctOfFullyDiluted\)/);
+    expect(STRIP_CODE).toMatch(/formatPct\(displayPoolPct\(result\.recommended\.openingPoolPctOfFullyDiluted\)\)/);
     expect(STRIP_CODE).toContain('Load');
   });
 });

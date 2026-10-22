@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { calculateEsopPool, isEsopEngineError, type EsopInputs, type EsopResult } from '@/lib/esop';
 import { currentPoolRunwayLabel } from '../lib/describe';
-import { formatPct, lakhCrore } from '../lib/format';
+import { displayPoolPct, formatPct, lakhCrore } from '../lib/format';
 import { applyScenario, SCENARIOS, type ScenarioKey } from '../lib/scenarios';
 
 interface ScenarioStripProps {
@@ -67,8 +67,12 @@ export function ScenarioStrip({ inputs, baseResult, onLoad }: ScenarioStripProps
               </p>
             ) : (
               <>
+                {/* The whole recommended pool, the same figure and rounding as the
+                    headline — not `recommendedPool.selected`, which is the
+                    top-up (M23). Printing the top-up here put "Base 0.0%"
+                    under a "10.0%" headline for the same inputs. */}
                 <p className="number-display mt-3 text-ink">
-                  {formatPct(result.recommendedPool.selected.displayPoolPctOfFullyDiluted)}
+                  {formatPct(displayPoolPct(result.recommended.openingPoolPctOfFullyDiluted))}
                 </p>
                 {key === 'base' ? (
                   <>

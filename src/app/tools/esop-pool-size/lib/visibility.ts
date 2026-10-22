@@ -160,9 +160,16 @@ export function tierFor(path: string, inputs: EsopInputs): Tier {
      *  refuse (`missingOpeningCohorts`) rather than invent a grant year and a
      *  band, and a wrong figure here misstates paid-up capital. */
     case 'company.grantedOutstandingOptions':
-    case 'openingGrants.0.band':
     case 'openingGrants.0.ageYearsAtPlanStart':
       return inputs.exercise.recycleForfeited || isRefreshOn(inputs) ? 'drivesPool' : 'reportOnly';
+
+    /** D16: never asked. A founder cannot say what seniority "the existing
+     *  grants" are — it is a mix, and the cohort model holds one band. The band
+     *  only picks leadership's attrition override and the refresh grant size,
+     *  so the cohort carries `mid` (or whatever it already holds) and the
+     *  control is gone from both surfaces. */
+    case 'openingGrants.0.band':
+      return 'hidden';
 
     /** D2, and never downgraded: required where it decides the denominator,
      *  visible and on screen everywhere else. Correction 2 above is why the

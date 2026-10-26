@@ -728,3 +728,18 @@ Decisions:
 - D17 recorded in PROJECT.md.
 Open items:
 - From the same QA pass, not fixed (low): switching the planning horizon redistributes over hand-typed years without a warning; the grant-basis helper in `Your model` is clipped by `whitespace-nowrap`; the step progress shows a tick on Grant economics before it is visited and "5 fields" when four are visible; a dark system preference renders light under `next dev` (likely StrictMode double effects; unverified on a production build).
+
+[043] 2026-10-26 | PDF report rework | branch claude/peaceful-pasteur-n9wz56 | commit (this one)
+Changed: The downloaded report, from a review of a real 13-page download. UI and renderer only; `src/lib/esop` untouched.
+- Every ₹, ≈ and − printed as mojibake ("¹", "\"H"): jsPDF's Helvetica is WinAnsi and has none of them. `lib/reportFonts.ts` (new, generated) embeds Inter, the tool's own face, subset to ~19 KB a weight (OFL 1.1); `reportPdf.ts` falls back to Helvetica with the copy transliterated only if jsPDF refuses the font.
+- Charts were rasterised mid-animation, so lines stopped short of their own last point. The four charts take `animated` (default true); `ReportCharts.tsx` passes false.
+- Page one is now an executive summary: the headline with grant basis, strike policy and value basis beside it in one panel (the "of fully diluted" label no longer overlaps the number), the answer in a sentence, six figures off the result (top-up, current pool runway, founders before and after, next-round top-up or gross grants, ESOP expense, compliance count) and the compliance rows to review, by title. `ReportCover` gained `summary`, `highlights` and `attention`; `coverText` carries them.
+- Sections flow instead of taking a page each (a new page only below 60 mm left); charts, checklist rows, callouts and a table's caption, header and first row are measured and move whole. 13 pages became 9 on the founder's inputs. Running head on every inner page, numbered sections. The CTA keeps its own page, now a back cover with clickable links.
+- Tables: widths from content, numbers right-aligned, negatives in red, total rows ruled, two-line headers (the roll-forward's "Closing available" was truncated to "Closing"). Roll-forward gained "Opening available" (and "Top-up" when any year has one) so a row reconciles. Cap table is one before/after table with the change in points. Expense table names its unit once in the header instead of "≈ ₹" in every cell. Inputs are grouped under five headings; glossary uses the full width.
+- `downloadReport.ts` imports the renderer on demand, taking jsPDF and the fonts out of the initial bundle.
+Tests: new `report-pdf.test.ts` (fonts embedded, sections flow, closing links). 1175 passed. tsc pass; lint unchanged at 2 pre-existing errors in OwnershipImpact.tsx.
+QA: Playwright through the wizard on the dev server with the founder's inputs (Seed, 10,000 FD, 500 pool, 100 granted, 25 hires over 3 years, ₹20 crore, 40% growth), downloaded and rasterised the PDF and checked every page.
+Decisions:
+- None.
+Open items:
+- The pool runway chart plots the current pool's bars against both pools' balance lines and is still the hardest chart to read on paper; drawing the report's charts natively in the PDF, rather than capturing the screen's, would let them be designed for print.

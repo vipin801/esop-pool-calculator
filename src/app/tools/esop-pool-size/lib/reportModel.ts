@@ -20,6 +20,7 @@ import {
   DEFAULTS,
   calculateEsopPool,
   type Band,
+  type CapTable,
   type ComplianceCheck,
   type ComplianceStatus,
   type EsopInputs,
@@ -77,12 +78,19 @@ export type ReportBlock =
   | { readonly kind: 'paragraph'; readonly text: string }
   | { readonly kind: 'callout'; readonly text: string }
   | { readonly kind: 'bullets'; readonly items: readonly string[] }
-  | { readonly kind: 'keyValue'; readonly rows: readonly KeyValueRow[] }
+  | {
+      readonly kind: 'keyValue';
+      /** A group label, so forty rows read as five groups rather than one list. */
+      readonly heading?: string;
+      readonly rows: readonly KeyValueRow[];
+    }
   | {
       readonly kind: 'table';
       readonly caption?: string;
       readonly headers: readonly string[];
       readonly rows: readonly (readonly string[])[];
+      /** A line under the table: units, or what a sign means. */
+      readonly note?: string;
     }
   | {
       readonly kind: 'chart';
@@ -138,7 +146,26 @@ export interface ReportCover {
   readonly topUpValue: string;
   readonly topUpPct: string;
   readonly currentPoolRunway: string;
+  /**
+   * The answer in one sentence, for a reader who stops at page one. Every
+   * figure in it is one the tiles and the headline already print.
+   */
+  readonly summary: string;
+  /** The executive summary: six figures, each read straight off the result. */
+  readonly highlights: readonly ReportHighlight[];
+  /**
+   * Compliance rows that are not a pass, by title only. The finding and the
+   * statutory reference stay in the checklist, with their disclaimer; the
+   * cover only says where to look.
+   */
+  readonly attention: readonly { readonly title: string; readonly status: ComplianceStatus }[];
   readonly disclaimer: string;
+}
+
+export interface ReportHighlight {
+  readonly label: string;
+  readonly value: string;
+  readonly detail: string;
 }
 
 export interface ReportModel {
@@ -196,6 +223,13 @@ function money(rupees: number): string {
   return `${formatMoney(rupees)} · ${lakhCrore(rupees)}`;
 }
 
+/** Two decimals, with a true minus sign, for a table that names its unit once. */
+function formatSignedAmount(n: number): string {
+  const rounded = Math.round(n * 100) / 100;
+  if (rounded === 0) return '0.00';
+  return `${rounded < 0 ? '−' : ''}${formatIndian(Math.abs(rounded), 2)}`;
+}
+
 function yesNo(value: boolean): string {
   return value ? 'Yes' : 'No';
 }
@@ -217,14 +251,30 @@ function buildCover(args: {
   const { inputs, result, lead, preparedOn } = args;
   const sizing = result.recommendedPool.selected;
   const holdsAPool = result.current.openingPoolOptions > 0;
+  const plannedHires = result.recommended.years.reduce((sum, y) => sum + y.hires, 0);
+  const headlinePoolPct = formatPct(displayPoolPct(result.recommended.openingPoolPctOfFullyDiluted));
+  const headlinePoolOptions = `${formatShares(result.recommended.openingPoolOptions)} options`;
+  const runway = currentPoolRunwayLabel(result.current);
+
+  const summary = `Reserve ${headlinePoolOptions}, ${headlinePoolPct} of the fully diluted company, to fund ${formatShares(
+    plannedHires,
+  )} planned hires over ${inputs.hiring.horizonYears} years. ${
+    holdsAPool
+      ? `The ${formatShares(result.current.openingPoolOptions)} options you hold today ${
+          result.current.exhaustion.exhausted
+            ? `run out in ${runway.replace(/^Ends /, '').toLowerCase()}, after ${formatShares(result.current.exhaustion.hiresSupported)} of those hires.`
+            : 'last the whole plan.'
+        }`
+      : 'You hold no unallocated pool today, so all of it is a new reserve.'
+  }`;
 
   return {
     companyName: lead.company.trim(),
     stageLabel: STAGE_LABEL[inputs.company.stage],
     preparedOn,
     preparedFor: lead.name.trim(),
-    headlinePoolPct: formatPct(displayPoolPct(result.recommended.openingPoolPctOfFullyDiluted)),
-    headlinePoolOptions: `${formatShares(result.recommended.openingPoolOptions)} options`,
+    headlinePoolPct,
+    headlinePoolOptions,
     grantBasis: GRANT_BASIS_LABEL[sizing.grantBasisKind],
     strikePolicy: strikePolicyLabel(inputs.grantPolicy.strikePolicy),
     valueBasis: sizing.valueBasis === null ? 'Not applicable under percent-of-equity grants' : VALUE_BASIS_LABEL[sizing.valueBasis],
@@ -232,9 +282,83 @@ function buildCover(args: {
     topUpLabel: holdsAPool ? 'Top-up needed' : 'Pool to create',
     topUpValue: `${formatShares(sizing.poolOptions)} options`,
     topUpPct: formatPct(sizing.displayPoolPctOfFullyDiluted),
-    currentPoolRunway: currentPoolRunwayLabel(result.current),
+    currentPoolRunway: runway,
+    summary,
+    highlights: buildHighlights(inputs, result, plannedHires),
+    attention: result.complianceChecks
+      .filter((check) => check.status !== 'pass')
+      .map((check) => ({ title: check.title, status: check.status })),
     disclaimer: REPORT_DISCLAIMER,
   };
+}
+
+function founderPct(table: CapTable): number | null {
+  return table.rows.find((row) => row.holder === 'founders')?.pctOfFullyDiluted ?? null;
+}
+
+/**
+ * The six tiles under the headline. Each is a figure the engine returned or a
+ * presentation difference of two of them, never a re-derivation, and each
+ * repeats one that a later section prints in full.
+ */
+function buildHighlights(inputs: EsopInputs, result: EsopResult, plannedHires: number): ReportHighlight[] {
+  const sizing = result.recommendedPool.selected;
+  const holdsAPool = result.current.openingPoolOptions > 0;
+  const round = result.rounds[0];
+  const foundersBefore = founderPct(result.capTables.before);
+  const foundersAfter = founderPct(result.capTables.after);
+  const passing = result.complianceChecks.filter((c) => c.status === 'pass').length;
+  const flagged = result.complianceChecks.length - passing;
+
+  const highlights: ReportHighlight[] = [
+    {
+      label: holdsAPool ? 'Top-up needed' : 'Pool to create',
+      value: `${formatShares(sizing.poolOptions)} options`,
+      detail: `${formatPct(sizing.displayPoolPctOfFullyDiluted)} of fully diluted, on top of the ${formatShares(
+        result.current.openingPoolOptions,
+      )} held`,
+    },
+    {
+      label: 'Your current pool',
+      value: currentPoolRunwayLabel(result.current),
+      detail: holdsAPool
+        ? `Funds ${formatShares(result.current.exhaustion.hiresSupported)} of ${formatShares(plannedHires)} planned hires`
+        : 'No unallocated options held today',
+    },
+    {
+      label: 'Founders, fully diluted',
+      value:
+        foundersBefore === null || foundersAfter === null
+          ? '—'
+          : `${formatPct(foundersBefore, 1)} → ${formatPct(foundersAfter, 1)}`,
+      detail: 'Today, then with the pool reserved. The split is an editable estimate',
+    },
+    round && result.topUpAtNextRound
+      ? {
+          label: `At the ${round.label}`,
+          value: `${formatSignedShares(result.topUpAtNextRound.topUpOptions)} options`,
+          detail: `Further top-up for a ${formatPct(result.topUpAtNextRound.investorRequiredPostRoundPoolPct)} post-round pool`,
+        }
+      : {
+          label: 'Options granted over the plan',
+          value: formatShares(result.recommended.totalGrossConsumptionOptions),
+          detail: `${formatShares(result.recommended.totalReturnedToPool)} come back through forfeiture and lapse`,
+        },
+    {
+      label: 'Estimated ESOP expense',
+      value: lakhCrore(result.esopExpense.totalExpenseRupees),
+      detail: `Over ${inputs.hiring.horizonYears} years, ${
+        result.esopExpense.basis === 'indAS102' ? 'Ind AS 102 fair value' : 'intrinsic value'
+      } basis`,
+    },
+    {
+      label: 'Compliance (India)',
+      value: flagged === 0 ? `All ${passing} pass` : `${flagged} to review`,
+      detail: flagged === 0 ? 'General information, not legal advice' : `${passing} of ${result.complianceChecks.length} pass. General information, not legal advice`,
+    },
+  ];
+
+  return highlights;
 }
 
 /**
@@ -259,6 +383,9 @@ export function coverText(cover: ReportCover): string {
     `Value basis: ${cover.valueBasis}`,
     `${cover.topUpLabel}: ${cover.topUpValue}, ${cover.topUpPct} of fully diluted`,
     `Your current pool: ${cover.currentPoolRunway}`,
+    cover.summary,
+    ...cover.highlights.map((h) => `${h.label}: ${h.value}. ${h.detail}`),
+    ...cover.attention.map((a) => `Review: ${a.title}`),
     cover.disclaimer,
   ].join('\n');
 }
@@ -421,11 +548,11 @@ function inputsSection(inputs: EsopInputs): ReportSection {
         kind: 'paragraph',
         text: 'Everything the model used, with where each figure came from. Nothing here is measured data about your company: figures you entered are yours, and every other line is an estimate you can change.',
       },
-      { kind: 'keyValue', rows: companyRows },
-      { kind: 'keyValue', rows: planRows },
-      { kind: 'keyValue', rows: grantRows },
-      { kind: 'keyValue', rows: behaviourRows },
-      { kind: 'keyValue', rows: complianceRows },
+      { kind: 'keyValue', heading: 'Your company', rows: companyRows },
+      { kind: 'keyValue', heading: 'Hiring and growth plan', rows: planRows },
+      { kind: 'keyValue', heading: 'Grant policy', rows: grantRows },
+      { kind: 'keyValue', heading: 'Attrition, exercise and vesting', rows: behaviourRows },
+      { kind: 'keyValue', heading: 'Compliance profile', rows: complianceRows },
     ],
   };
 }
@@ -434,23 +561,35 @@ function inputsSection(inputs: EsopInputs): ReportSection {
  * Section 3 — the roll forward, both series
  * ------------------------------------------------------------------------- */
 
-const ROLL_FORWARD_HEADERS = [
-  'Year',
-  'Valuation (₹ cr)',
-  'Price/share (₹)',
-  'Hires',
-  'New grants',
-  'Refresh',
-  'Returned',
-  'Closing available',
-] as const;
+/**
+ * The roll-forward columns, in the order the balance moves, so a reader can
+ * check each row: opening, plus any top-up, less grants, plus returns, is
+ * closing. The top-up column appears only when some year has one; a column
+ * of zeros on every report would be noise.
+ */
+function rollForwardHeaders(withTopUp: boolean): readonly string[] {
+  return [
+    'Year',
+    'Valuation (₹ cr)',
+    'Price/share (₹)',
+    'Hires',
+    'Opening available',
+    ...(withTopUp ? ['Top-up'] : []),
+    'New grants',
+    'Refresh',
+    'Returned',
+    'Closing available',
+  ];
+}
 
-function rollForwardRows(series: PoolPlanSeries): readonly (readonly string[])[] {
+function rollForwardRows(series: PoolPlanSeries, withTopUp: boolean): readonly (readonly string[])[] {
   return series.years.map((y) => [
     `Y${y.year + 1}`,
     crores(y.valuation, 1),
     formatIndian(y.pricePerShare, 2),
     formatShares(y.hires),
+    formatSignedShares(y.openingAvailable),
+    ...(withTopUp ? [formatShares(y.topUp)] : []),
     formatShares(y.newHireGrants),
     formatShares(y.refreshGrants),
     formatShares(y.returnedToPool),
@@ -459,6 +598,9 @@ function rollForwardRows(series: PoolPlanSeries): readonly (readonly string[])[]
 }
 
 function rollForwardSection(result: EsopResult): ReportSection {
+  const withTopUp = [...result.recommended.years, ...result.current.years].some((y) => Math.round(y.topUp) !== 0);
+  const headers = rollForwardHeaders(withTopUp);
+
   return {
     id: 'roll-forward',
     title: 'Year-by-year roll-forward',
@@ -470,14 +612,15 @@ function rollForwardSection(result: EsopResult): ReportSection {
       {
         kind: 'table',
         caption: `Recommended pool — ${result.recommended.description}`,
-        headers: ROLL_FORWARD_HEADERS,
-        rows: rollForwardRows(result.recommended),
+        headers,
+        rows: rollForwardRows(result.recommended, withTopUp),
       },
       {
         kind: 'table',
         caption: `Your current pool — ${result.current.description}`,
-        headers: ROLL_FORWARD_HEADERS,
-        rows: rollForwardRows(result.current),
+        headers,
+        rows: rollForwardRows(result.current, withTopUp),
+        note: `Opening${withTopUp ? ', plus any top-up,' : ''} less new and refresh grants, plus options returned, is closing. A negative balance is options the plan needs that this pool does not have.`,
       },
       {
         kind: 'paragraph',
@@ -535,7 +678,7 @@ function chartsSection(basisKind: GrantBasisKind): ReportSection {
 
   return {
     id: 'charts',
-    title: 'The charts, as shown on screen',
+    title: 'The plan, charted',
     blocks: [
       {
         kind: 'chart',
@@ -606,14 +749,59 @@ function capTableBlock(table: { readonly label: string; readonly rows: readonly 
   };
 }
 
+/**
+ * Today and after the reserve, side by side, with the change in points. Two
+ * stacked tables made the reader do the subtraction the section exists for.
+ * Holders are matched by name; a holder present on one side only reads as
+ * zero on the other.
+ */
+function capTableComparison(before: CapTable, after: CapTable): ReportBlock {
+  const holders = [...before.rows.map((r) => r.holder), ...after.rows.map((r) => r.holder)].filter(
+    (holder, i, all) => all.indexOf(holder) === i,
+  );
+  const find = (table: CapTable, holder: string) => table.rows.find((r) => r.holder === holder);
+  const change = (from: number, to: number) => {
+    const delta = to - from;
+    if (Math.abs(delta) < 0.005) return '0.00';
+    return `${delta > 0 ? '+' : '−'}${formatIndian(Math.abs(delta), 2)}`;
+  };
+
+  return {
+    kind: 'table',
+    caption: `${before.label}, and ${after.label.charAt(0).toLowerCase()}${after.label.slice(1)}`,
+    headers: ['Holder', 'Shares today', '% today', 'Shares after', '% after', 'Change (pts)'],
+    rows: [
+      ...holders.map((holder) => {
+        const b = find(before, holder);
+        const a = find(after, holder);
+        return [
+          CAP_HOLDER_LABEL[holder] ?? holder,
+          formatShares(b?.shares ?? 0),
+          formatPct(b?.pctOfFullyDiluted ?? 0, 2),
+          formatShares(a?.shares ?? 0),
+          formatPct(a?.pctOfFullyDiluted ?? 0, 2),
+          change(b?.pctOfFullyDiluted ?? 0, a?.pctOfFullyDiluted ?? 0),
+        ];
+      }),
+      [
+        'Total',
+        formatShares(before.total.shares),
+        formatPct(before.total.pctOfFullyDiluted, 2),
+        formatShares(after.total.shares),
+        formatPct(after.total.pctOfFullyDiluted, 2),
+        '',
+      ],
+    ],
+  };
+}
+
 function capTableSection(result: EsopResult): ReportSection {
   const blocks: ReportBlock[] = [
     {
       kind: 'paragraph',
       text: 'The register as it stands, and once the recommended pool is reserved. Both are struck as at today, so the comparison is like for like.',
     },
-    capTableBlock(result.capTables.before),
-    capTableBlock(result.capTables.after),
+    capTableComparison(result.capTables.before, result.capTables.after),
   ];
 
   if (result.capTables.afterModelledRound) {
@@ -791,6 +979,11 @@ function expenseSection(result: EsopResult): ReportSection {
   const { esopExpense } = result;
   const basisLabel = esopExpense.basis === 'indAS102' ? 'Ind AS 102 fair value' : 'ICAI Guidance Note intrinsic value';
 
+  /** One unit for the whole table, chosen by its largest figure, so the column reads down. */
+  const largest = Math.max(0, ...esopExpense.years.map((y) => Math.abs(y.cumulativeExpenseRupees)));
+  const unit = largest >= 10_000_000 ? { label: 'crore', size: 10_000_000 } : { label: 'lakh', size: 100_000 };
+  const inUnit = (rupees: number) => formatSignedAmount(rupees / unit.size);
+
   const blocks: ReportBlock[] = [
     {
       kind: 'paragraph',
@@ -798,14 +991,21 @@ function expenseSection(result: EsopResult): ReportSection {
     },
     {
       kind: 'table',
-      headers: ['Year', 'Charge for the year', 'Amortisation', 'Forfeiture reversal', 'Cumulative'],
+      headers: [
+        'Year',
+        `Amortisation (₹ ${unit.label})`,
+        `Forfeiture reversal (₹ ${unit.label})`,
+        `Charge for the year (₹ ${unit.label})`,
+        `Cumulative (₹ ${unit.label})`,
+      ],
       rows: esopExpense.years.map((y) => [
         `Y${y.year + 1}`,
-        lakhCrore(y.expenseRupees),
-        lakhCrore(y.amortisationChargeRupees),
-        lakhCrore(y.forfeitureReversalRupees),
-        lakhCrore(y.cumulativeExpenseRupees),
+        inUnit(y.amortisationChargeRupees),
+        inUnit(y.forfeitureReversalRupees),
+        inUnit(y.expenseRupees),
+        inUnit(y.cumulativeExpenseRupees),
       ]),
+      note: `Estimates, in ₹ ${unit.label}. Amortisation net of the forfeiture reversal is the charge for the year.`,
     },
     {
       kind: 'paragraph',

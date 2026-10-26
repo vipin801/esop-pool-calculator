@@ -29,6 +29,10 @@ interface ReportChartsProps {
  *
  * 880px is close to the widest the on-screen chart column reaches, so the
  * captured aspect ratio matches what a founder saw.
+ *
+ * `animated={false}` on every chart, because the capture runs two frames
+ * after mount: with Recharts animating, the lines were rasterised part-way
+ * through their draw-in, ending short of their own last data point.
  */
 export const ReportCharts = forwardRef<HTMLDivElement, ReportChartsProps>(function ReportCharts({ result }, ref) {
   return (
@@ -40,12 +44,13 @@ export const ReportCharts = forwardRef<HTMLDivElement, ReportChartsProps>(functi
       inert
       style={{ position: 'fixed', top: 0, left: '-20000px', width: '880px', pointerEvents: 'none' }}
     >
-      <PoolRunwayChart recommended={result.recommended} current={result.current} />
-      <PoolPctChart recommended={result.recommended} current={result.current} />
-      <HiresSupportedChart recommended={result.recommended} current={result.current} />
+      <PoolRunwayChart recommended={result.recommended} current={result.current} animated={false} />
+      <PoolPctChart recommended={result.recommended} current={result.current} animated={false} />
+      <HiresSupportedChart recommended={result.recommended} current={result.current} animated={false} />
       <GrantCostChart
         years={result.recommended.years}
         grantBasisKind={result.recommendedPool.selected.grantBasisKind}
+        animated={false}
       />
     </div>
   );

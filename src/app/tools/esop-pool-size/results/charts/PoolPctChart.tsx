@@ -13,16 +13,19 @@ interface PoolPctChartProps {
   readonly recommended: PoolPlanSeries;
   readonly current: PoolPlanSeries;
   readonly locked?: boolean;
+  /** False for the off-screen PDF capture, which rasterises the SVG on the next frame: an animating line is captured half drawn. */
+  readonly animated?: boolean;
 }
 
 function pctOfFd(closingAvailable: number, fullyDilutedShares: number): number {
   return fullyDilutedShares > 0 ? Number(((closingAvailable / fullyDilutedShares) * 100).toFixed(2)) : 0;
 }
 
-export function PoolPctChart({ recommended, current, locked = false }: PoolPctChartProps) {
+export function PoolPctChart({ recommended, current, locked = false, animated = true }: PoolPctChartProps) {
   const { theme } = useTheme();
   const p = paletteFor(theme);
-  const animate = !usePrefersReducedMotion();
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const animate = animated && !prefersReducedMotion;
 
   const data = recommended.years.map((y, i) => {
     const currentYear = current.years[i];

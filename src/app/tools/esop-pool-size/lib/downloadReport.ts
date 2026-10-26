@@ -10,7 +10,6 @@
 import type { EsopInputs, EsopResult } from '@/lib/esop';
 import { captureCharts } from './chartCapture';
 import { buildReportModel, reportFileName, REPORT_CHART_IDS } from './reportModel';
-import { renderReportPdf } from './reportPdf';
 import type { Lead } from '../results/LeadModal';
 
 /**
@@ -49,6 +48,8 @@ export async function generateAndDownloadReport(args: {
 
   const captured = chartsRoot ? await captureCharts(chartsRoot, REPORT_CHART_IDS) : new Map();
   const model = buildReportModel({ inputs, result, lead, preparedOn });
+  /* Loaded on demand: jsPDF and the embedded fonts are ~400 KB that no one needs until they download. */
+  const { renderReportPdf } = await import('./reportPdf');
 
   renderReportPdf(model, captured).save(reportFileName(model));
 }

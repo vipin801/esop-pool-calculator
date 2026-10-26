@@ -24,12 +24,15 @@ interface PoolRunwayChartProps {
   readonly recommended: PoolPlanSeries;
   readonly current: PoolPlanSeries;
   readonly locked?: boolean;
+  /** False for the off-screen PDF capture, which rasterises the SVG on the next frame: an animating line is captured half drawn. */
+  readonly animated?: boolean;
 }
 
-export function PoolRunwayChart({ recommended, current, locked = false }: PoolRunwayChartProps) {
+export function PoolRunwayChart({ recommended, current, locked = false, animated = true }: PoolRunwayChartProps) {
   const { theme } = useTheme();
   const p = paletteFor(theme);
-  const animate = !usePrefersReducedMotion();
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const animate = animated && !prefersReducedMotion;
 
   const data = current.years.map((y, i) => ({
     name: `Y${y.year + 1}`,

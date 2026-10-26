@@ -13,6 +13,8 @@ interface GrantCostChartProps {
   readonly years: readonly RollForwardYear[];
   readonly grantBasisKind: GrantBasisKind;
   readonly locked?: boolean;
+  /** False for the off-screen PDF capture, which rasterises the SVG on the next frame: an animating line is captured half drawn. */
+  readonly animated?: boolean;
 }
 
 const TEN_LAKH = 1_000_000;
@@ -26,10 +28,11 @@ function valueText(value: unknown, name: unknown): string {
   return name === 'Valuation (₹ crore)' ? `₹${formatIndian(n, 1)} crore` : formatIndian(n);
 }
 
-export function GrantCostChart({ years, grantBasisKind, locked = false }: GrantCostChartProps) {
+export function GrantCostChart({ years, grantBasisKind, locked = false, animated = true }: GrantCostChartProps) {
   const { theme } = useTheme();
   const p = paletteFor(theme);
-  const animate = !usePrefersReducedMotion();
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const animate = animated && !prefersReducedMotion;
   const isRupeeValue = grantBasisKind === 'rupeeValue';
 
   const data = years.map((y) => ({

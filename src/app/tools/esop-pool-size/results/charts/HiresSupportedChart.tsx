@@ -13,6 +13,8 @@ interface HiresSupportedChartProps {
   readonly recommended: PoolPlanSeries;
   readonly current: PoolPlanSeries;
   readonly locked?: boolean;
+  /** False for the off-screen PDF capture, which rasterises the SVG on the next frame: an animating line is captured half drawn. */
+  readonly animated?: boolean;
 }
 
 /** Both series flatten at the engine's own `hiresSupported` scalar once the
@@ -21,10 +23,11 @@ function supportedCumulative(series: PoolPlanSeries, cumulativePlanned: number):
   return Math.min(cumulativePlanned, series.exhaustion.hiresSupported);
 }
 
-export function HiresSupportedChart({ recommended, current, locked = false }: HiresSupportedChartProps) {
+export function HiresSupportedChart({ recommended, current, locked = false, animated = true }: HiresSupportedChartProps) {
   const { theme } = useTheme();
   const p = paletteFor(theme);
-  const animate = !usePrefersReducedMotion();
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const animate = animated && !prefersReducedMotion;
 
   const cumulativePlannedByYear = recommended.years.reduce<number[]>((acc, y) => {
     const previous = acc[acc.length - 1] ?? 0;
